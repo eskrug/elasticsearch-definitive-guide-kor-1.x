@@ -1,54 +1,26 @@
 [[fielddata-intro]]
 === Fielddata
 
-Our final topic in this chapter is about an internal aspect of Elasticsearch.
-While we don't demonstrate any new techniques here, fielddata is an
-important topic that we will refer to repeatedly, and is something that you
-should be aware of.((("fielddata")))
+이 장의 마지막 주제는 Elasticsearch의 내부에 대한 것이다. 여기에서는 새로운 기술을 보여주지는 않지만, fielddata는 반복적으로 언급할 중요한 주제이며, 알아야 한다.((("fielddata")))
 
-When you sort on a field, Elasticsearch needs access to the value of that
-field for every document that matches the query.((("inverted index", "sorting and")))  The inverted index, which
-performs very well when searching, is not the ideal structure for sorting on
-field values:
+field를 정렬할 때, Elasticsearch는 query에 일치하는 모든 document에 대해, 해당 field 값을 액세스해야 한다.((("inverted index", "sorting and"))) 검색 시에 매우 잘 동작하는 inverted index는, field값으로 정렬하는 경우에는, 이상적인 구조가 아니다:
 
-* When searching, we need to be able to map a term to a list of documents.
+* 검색 시에는 단어를 document의 목록에 mapping해야 한다.
+* 정렬 시에는 document를 단어에 mapping해야 한다. 즉, inverted index를 ``uninvert'' 해야 한다.
 
-* When sorting, we need to map a document to its terms. In other words, we
-  need to ``uninvert'' the inverted index.
+효율적으로 정렬하기 위해, Elasticsearch는 정렬하려는 field의 값 모두를 메모리에 로드한다. 이것이 `fielddata` 이다.
 
-To make sorting efficient, Elasticsearch loads all the values for
-the field that you want to sort on into memory. This is referred to as
-_fielddata_.
+WARNING: 특정 query에 일치하는 document의 값만을 로드하는 것이 아니다. document `type` 에 관계없이, _index에 있는 모든 document_ 의 값을 로드한다.
 
-WARNING: Elasticsearch doesn't just load the values for the documents that matched a
-particular query. It loads the values from _every document in your index_,
-regardless of the document `type`.
+메모리에 모든 값을 불러오는 이유는, 디스크에서 index를 uninvert하는 것은, 느리기 때문이다. 현재의 요청에는 소수의 document의 값들만 필요하다 할지라도, 아마도 다음 요청에는 다른 document의 값을 액세스해야 할 것이다. 그래서, 메모리에 모든 값을 한번에 불러와, 거기에 유지하는 것이 적절하다.
 
-The reason that Elasticsearch loads all values into memory is that uninverting the index
-from disk is slow.  Even though you may need the values for only a few docs
-for the current request, you will probably need access to the values for other
-docs on the next request, so it makes sense to load all the values into memory
-at once, and to keep them there.
+fielddata는 Elasticsearch의 여러 곳에서 사용된다:
 
-Fielddata is used in several places in Elasticsearch:
+* field 정렬
+* field 집계
+* 특정 filter, 예를 들면, 위치정보 filter
+* field가 참조하는 Script
 
-* Sorting on a field
-* Aggregations on a field
-* Certain filters (for example, geolocation filters)
-* Scripts that refer to fields
+email 본문처럼, 특히 높은 cardinality string fields -- 유일한 값을 많이 가지고 있는 string field -- 는, 분명히 많은 메모리를 사용할 수 있다. 다행히도 메모리 부족은, cluster에 node를 더 추가하는, 수평확장으로 해결할 수 있는 문제이다.
 
-Clearly, this can consume a lot of memory, especially for high-cardinality
-string fields--string fields that have many unique values--like the body
-of an email. Fortunately, insufficient memory is a problem that can be solved
-by horizontal scaling, by adding more nodes to your cluster.
-
-For now, all you need to know is what fielddata is, and to be aware that it
-can be memory hungry.  Later, we will show you how to determine the amount of memory that fielddata
-is using, how to limit the amount of memory that is available to it, and
-how to preload fielddata to improve the user experience.
-
-
-
-
-
-
+지금까지 fielddata가 무엇이고, 메모리 부족이 나타날 수 있다는 것을 알게 되었다. 나중에 fielddata가 얼마나 많은 메모리를 사용하는지를 보는 방법, fielddata에 이용할 수 있는 메모리의 한계를 제한하는 방법, user experience를 향상시키기 위해 fielddata를 미리 불러오는 방법을 보여줄 것이다.

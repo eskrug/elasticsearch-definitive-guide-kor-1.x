@@ -1,39 +1,13 @@
 [[sorting]]
 == 정렬과 Relevance
-////
-== Sorting and Relevance
-////
 
 기본적으로, 결과는 _relevance_ 에 의해서 정렬되어 가장 관련 있는 document가 먼저 나오도록 반환된다. 이 장의 후반부에서, _relevance_ 의 의미와 계산되는 방법에 대해 설명할 것이다. 먼저 `sort` 매개변수를 살펴보고, 사용하는 방법을 알아보자.
 
-////
-By default, results are returned sorted by _relevance_&#x2014;with the most
-relevant docs first.((("sorting", "by relevance")))((("relevance", "sorting results by"))) Later in this chapter, we explain what we mean by
-_relevance_ and how it is calculated, but let's start by looking at the `sort`
-parameter and how to use it.
-////
-
 === 정렬
-////
-=== Sorting
-////
 
 relevance로 정렬하기 위해, relevance를 값으로 표시해야 한다. Elasticsearch에서 _relevance score_ 는 검색 결과에 `_score` 로 반환되는 부동 소수점 숫자로 표시된다. 기본 정렬 순서는 `_score` 의 내림차순이다.
 
-////
-In order to sort by relevance, we need to represent relevance as a value. In
-Elasticsearch,  the _relevance score_ is represented by the floating-point
-number returned in the search results as the `_score`, ((("relevance scores", "returned in search results score")))((("score", "relevance score of search results")))so the default sort
-order is `_score` descending.
-////
-
 그러나, 가끔 의미 있는 relevance score를 가지지 않을 수도 있다. 예를 들어, 아래 query는 `user_id` field의 값이 `1` 인 모든 tweet을 반환한다.
-
-////
-Sometimes, though, you don't have a meaningful relevance score. For instance,
-the following query just returns all tweets whose `user_id` field has the
-value `1`:
-////
 
 [source,js]
 --------------------------------------------------
@@ -53,23 +27,9 @@ GET /_search
 
 filter는 `_score` 와 아무 관련이 없으며, 묵시적 누락(missing-but-implied)인 `match_all` query는 모든 document의 `_score` 에 기본값 `1` 을 설정한다. 즉, 모든 document는 똑같이 관련 있다고 간주된다.
 
-////
-Filters have no bearing on `_score`, and the((("score", seealso="relevance; relevance scores")))((("match_all query", "score as neutral 1")))((("filters", "score and"))) missing-but-implied `match_all`
-query just sets the `_score` to a neutral value of `1` for all documents. In
-other words, all documents are considered to be equally relevant.
-////
-
 ==== Field 값에 의한 정렬
-////
-==== Sorting by Field Values
-////
 
 이 경우에는, 아마 가장 최근의 tweet이 우선하도록, 정렬하는 것이 의미가 있을 것이다. 이는 `sort` 매개변수로 가능하다.
-
-////
-In this case, it probably makes sense to sort tweets by recency, with the most
-recent tweets first.((("sorting", "by field values")))((("fields", "sorting search results by field values")))((("sort parameter")))  We can do this with the `sort` parameter:
-////
 
 [source,js]
 --------------------------------------------------
@@ -86,10 +46,6 @@ GET /_search
 // SENSE: 056_Sorting/85_Sort_by_date.json
 
 결과에서 두 가지 차이점을 발견할 수 있다.
-
-////
-You will notice two differences in the results:
-////
 
 [source,js]
 --------------------------------------------------
@@ -113,39 +69,13 @@ You will notice two differences in the results:
 <1> 정렬에 사용되지 않았기 때문에 `_score` 는 계산되지 않는다. 
 <2> `date` field의 값은 millisecond로 표시되어, `sort` 값으로 반환된다. 
 
-////
-<1> The `_score` is not calculated, because it is not being used for sorting.
-<2> The value of the `date` field, expressed as milliseconds since the epoch,
-    is returned in the `sort` values.
-////
-
 각 결과에서 볼 수 있는 새로운 요소 중, 첫 번째는 정렬에 사용되는 값을 포함하고 있는 `sort` 이다. 이 경우에, 내부적으로 _epoch 이후로 누적된 밀리초_ 로 색인된 `date` 로 정렬하였다. long number `1411516800000` 는 date string `2014-09-24 00:00:00 UTC` 와 동일한 값이다.
 
-////
-The first is that we have ((("date field, sorting search results by")))a new element in each result called `sort`, which
-contains the value(s) that was used for sorting.  In this case, we sorted on
-`date`, which internally is((("milliseconds-since-the-epoch (date)"))) indexed as _milliseconds since the epoch_. The long
-number `1411516800000` is equivalent to the date string `2014-09-24 00:00:00
-UTC`.
-////
-
 두 번째는 `_score` 와 `max_score` 가 모두 `null` 이라는 점이다. `_score` 를 계산한다는 것은 꽤 비용이 발생하는 작업이고, 그것의 목적은 정렬이다. 지금은 relevance로 정렬하지 않았고, 따라서 `_score` 를 추적하는 것은 의미가 없다. 그럼에도 불구하고, `_score` 가 계산되기를 원한다면, `track_scores` 매개변수를 `true` 로 설정하면 된다.
-
-////
-The second is that the `_score` and `max_score` are both `null`. ((("score", "not calculating"))) Calculating
-the `_score` can be quite expensive, and usually its only purpose is for
-sorting; we're not sorting by relevance, so it doesn't make sense to keep
-track of the `_score`.  If you want the `_score` to be calculated regardless,
-you can set((("track_scores parameter"))) the `track_scores` parameter to `true`.
-////
 
 [TIP]
 ====
 간략하게, 정렬할 field의 이름만 지정할 수 있다.
-
-////
-As a shortcut, you can ((("sorting", "specifying just the field name to sort on")))specify just the name of the field to sort on:
-////
 
 [source,js]
 --------------------------------------------------
@@ -153,22 +83,11 @@ As a shortcut, you can ((("sorting", "specifying just the field name to sort on"
 --------------------------------------------------
 
 field는 기본적으로 오름차순으로 정렬된다. 그리고 `_score` 는 내림차순이다.
-////
-Fields will be sorted in ((("sorting", "default ordering")))ascending order by default, and
-the `_score` value in descending order.
-////
 ====
 
 ==== 다단계 정렬
-////
-==== Multilevel Sorting
-////
 
 `date` 를 가진 query에 `_score` 를 조합하여, 모든 일치하는 결과를 date로 먼저 정렬하고 그 다음에 relevance로 정렬하기를 원할 수 있다.
-////
-Perhaps we want to combine the `_score` from a((("sorting", "multilevel")))((("multilevel sorting"))) query with the `date`, and
-show all matching results sorted first by date, then by relevance:
-////
 
 [source,js]
 --------------------------------------------------
@@ -189,26 +108,12 @@ GET /_search
 // SENSE: 056_Sorting/85_Multilevel_sort.json
 
 순서가 중요하다. 결과는 첫 번째 기준에 의해 먼저 정렬되어야 한다. 첫 번째 `sort` 값이 동일하면, 결과는 두 번째 기준에 의해 정렬된다.
-////
-Order is important.  Results are sorted by the first criterion first. Only
-results whose first `sort` value is identical will then be sorted by the
-second criterion, and so on.
-////
 
 다단계 정렬이 `_score` 를 반드시 포함해야 하는 것은 아니다. 지리적 거리나 script에 의해 계산된 사용자 정의 값 등, 여러 가지 다른 field를 사용해 정렬할 수 있다.
-////
-Multilevel sorting doesn't have to involve the `_score`. You could sort
-by using several different fields,((("fields", "sorting by multiple fields"))) on geo-distance or on a custom value
-calculated in a script.
-////
 
 [NOTE]
 ====
 Query-string 검색 또한, `sort` 매개변수를 사용하여 사용자 정의 정렬을 지원한다.
-////
-Query-string search((("sorting", "in query string searches")))((("sort parameter", "using in query strings")))((("query strings", "sorting search results for"))) also supports custom sorting, using the `sort` parameter
-in the query string:
-////
 
 [source,js]
 --------------------------------------------------
@@ -217,23 +122,10 @@ GET /_search?sort=date:desc&sort=_score&q=search
 ====
 
 ==== 다중 값 field의 정렬
-////
-==== Sorting on Multivalue Fields
-////
 
 하나 이상의 값을 가진 field를 정렬하는 경우, 값들은 어떤 고유한 순서도 가지고 있지 않다는 점을 기억하자. 다중 값 field는 단지 값의 주머니일 뿐이다. 정렬하기 위해 어떤 것을 선택해야 할까?
-////
-When sorting on fields with more than one value,((("sorting", "on multivalue fields")))((("fields", "multivalue", "sorting on"))) remember that the values do
-not have any intrinsic order; a multivalue field is just a bag of values.
-Which one do you choose to sort on?
-////
 
 number나 date의 경우, 다중 값 field를 `min`, `max`, `avg` 또는 `sum` _sort mode_ 를 사용하여 하나의 값으로 줄일 수 있다. 예를 들어, 각 `dates` field에 있는 가장 빠른 날짜로 정렬할 수 있다.
-////
-For numbers and dates, you can reduce a multivalue field to a single value
-by using the `min`, `max`, `avg`, or `sum` _sort modes_. ((("sum sort mode")))((("avg sort mode")))((("max sort mode")))((("min sort mode")))((("sort modes")))((("dates field, sorting on earliest value")))For instance, you
-could sort on the earliest date in each `dates` field by using the following:
-////
 
 [role="pagebreak-before"]
 [source,js]
@@ -245,7 +137,3 @@ could sort on the earliest date in each `dates` field by using the following:
     }
 }
 --------------------------------------------------
-
-
-
-
