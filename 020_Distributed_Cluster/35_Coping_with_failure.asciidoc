@@ -1,41 +1,36 @@
-=== Coping with Failure
+=== 장애 대응
 
-We've said that Elasticsearch can cope when nodes fail, so let's go
-ahead and try it out. ((("shards", "horizontal scaling and safety of data")))((("failure of nodes, coping with")))((("master node", "killing and replacing")))((("nodes", "failure of")))((("clusters", "coping with failure of nodes")))If we kill the first node, our cluster looks like
-<<cluster-post-kill>>.
+node에 장애가 발생할 경우, Elasticsearch는 대응할 수 있다고 했는데, 그럼 한 번 시도해 보자.((("shards", "horizontal scaling and safety of data")))((("failure of nodes, coping with")))((("master node", "killing and replacing")))((("nodes", "failure of")))((("clusters", "coping with failure of nodes")))　
+cluster의 첫 번째 node를 kill하면, <<cluster-post-kill>>처럼 보일 것이다.
 
 [[cluster-post-kill]]
-.Cluster after killing one node
-image::images/elas_0206.png["The cluster after killing one node"]
+.하나의 node를 kill한 후의 Cluster
+image::images/elas_0206.png["하나의 node를 kill한 후의 Cluster"]
 
-The node we killed was the master node. A cluster must have a master node in
-order to function correctly, so the first thing that happened was that the
-nodes elected a new master: `Node 2`.
+kill한 node는 master node였다. cluster가 올바르게 동작하기 위해서는 반드시 master를 가져야 한다.
+그래서 첫 번째로 일어난 일은, 새로운 master를 선출하는 것이었다: `Node 2`
 
-Primary shards `1` and `2` were lost when we killed `Node 1`, and our index
-cannot function properly if it is missing primary shards.((("primary shards", "node failure and"))) If we had checked
-the cluster health at this point, we would have seen status `red`: not all
-primary shards are active!
+primary shard `1`과 `2`는 `Node 1`을 kill했을 때 손실되었고,
+primary shard를 잃어버렸다면 index는 제대로 동작할 수 없다.((("primary shards", "node failure and")))
+이 시점에 cluster health를 확인해 보면, `red` 상태를 볼 수 있다: 모든 primary가 정상인 것은 아니다
 
-Fortunately, a complete copy of the two lost primary shards exists on other
-nodes, so the first thing that the new master node did was to promote the
-replicas of these shards on `Node 2` and `Node 3` to be primaries, putting us
-back into cluster health `yellow`.  This promotion process was instantaneous,
-like the flick of a switch.
+다행히도, 잃어버린 primary shard 두 개의 완벽한 복사본이 다른 node에 존재하기에,
+새로운 master node가 했던 첫 번째 작업은 `Node 2`와 `Node 3`에 있는 이들 shard의 replica를
+primary로 승격시키고 cluster health를 `yellow`로 바꾸었다. 이 승격 프로세스는 작업은 스위치를 켜는 것처럼
+순식간에 일어난다.
 
-So why is our cluster health `yellow` and not `green`? We have all three primary
-shards, but we specified that we wanted two replicas of each primary, and
-currently only one replica is assigned. This prevents us from reaching
-`green`, but we're not too worried here: were we to kill `Node 2` as well, our
-application could _still_ keep running without data loss, because `Node 3`
-contains a copy of every shard.
+그럼 왜 cluster health는 `yellow`이 아니고 `green`인가? 모두 3개의 primary shard를
+가지고 있고, 각 primary당 2개의 replica를 지정하였으나, 현재는 1개의 replica만
+할당되어 있다. 이것이 `green`이 되지 못하는 이유이지만, 이것 때문에 너무 걱정하지 않아도 된다:
+`Node 2`가 kill 되더라도, `Node 3`이 모든 node의 복사본을 가지고 있기 때문에,
+응용프로그램은 _여전히_ 데이터 손실 없이 동작할 수 있다.
 
-If we restart `Node 1`, the cluster would be able to allocate the missing
-replica shards, resulting in a state similar to the one described in
-<<cluster-three-nodes-two-replicas>>.  If `Node 1` still has copies of the old
-shards, it will try to reuse them, copying over from the primary shard
-only the files that have changed in the meantime.
+만약 `Node 1`을 다시 시작하면, cluster는 잃어버린 replica shard를 할당될 것이고,
+<<cluster-three-nodes-two-replicas>>에서 묘사된 것과 유사한 상태가 될 것이다.
+`Node 1`이 여전히 기존 shard의 복사본을 가지고 있다면,
+primary shard로 부터 그동안 변경된 파일을 복사하여,
+그것을 재사용하려 할 것이다.
 
-By now, you should have a reasonable idea of how shards allow Elasticsearch to
-scale horizontally and to ensure that your data is safe. Later we will examine
-the life cycle of a shard in more detail.
+이제 여러분은 Elasticsearch에서 shard를 수평 확장 하는 방법과,
+데이터가 안전하다는 확인하는 것에 대해 이해하고 있을 것이다.
+이후에 shard의 life-cycle에 대해 더 자세히 살펴보겠다.
