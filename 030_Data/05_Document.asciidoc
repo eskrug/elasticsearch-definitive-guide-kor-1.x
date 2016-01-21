@@ -69,7 +69,7 @@ indices를 생성하고 관리하는 방법에 대해서는 <<index-management, 
 각 오브젝트는 property나 오브젝트에 관련된 데이터를 정의하는 _class_ 에 포함된다. `user` class의 오브젝트는 이름, 성별, 나이, email을 가지고 있을 것이다.
 
 RDB에서는 일반적으로 동일한 class의 오브젝트를 동일한 table에 저장한다. 왜냐하면 그것들은 동일한 데이터 구조를 공유하기 때문이다. 
-같은 이유로 Elasticsearch에서 동일한 class를 나타내는 _무엇인가_를 나타내는 ((("types", "&#x5f;type, in document metadata)))document는 동일한 
+같은 이유로 Elasticsearch에서 동일한 class를 나타내는 _무엇인가_ 를 나타내는 ((("types", "&#x5f;type, in document metadata)))document는 동일한 
 _type_ 을 사용한다. 왜냐하면 그들은 동일한 데이터 구조를 공유하기 때문이다.
 
 모든 type은 해당 type의 document에 대한 데이터 구조를 정의하는, 자신만의 <<mapping,mapping>>이나 schema ((("mapping (types)")))((("schema definition, types")))구조를 가진다. 
