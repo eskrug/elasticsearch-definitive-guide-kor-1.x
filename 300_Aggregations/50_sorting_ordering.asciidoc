@@ -116,7 +116,7 @@ GET /cars/transactions/_search?search_type=count
 
 아래처럼, `>` (angle brackets)을 사용하여, 더 깊은 nested metric으로, 경로(path)를 지정할 수 있다:
 
- `my_bucket>another_bucket>metric`
+`my_bucket>another_bucket>metric`
 
  
 주의할 점은, 경로에 있는 각각의 중첩된 bucket은 반드시 _단일 값_ bucket이어야 한다. `filter` bucket은 단일 bucket(필터링 기준에 일치하는 모든 document)을 생성한다.((("filter bucket")))  
