@@ -1,7 +1,7 @@
 [[document]]
 === Document 란 무엇인가?
 
-대부분의 응용프로그램에서 대부분의 요소나 오브젝트는 key 와 value를 통한 JSON 오브젝트로 나타낼 수 있다. (("objects")))((("JSON", "objects")))((("keys and values")))
+대부분의 응용프로그램에서 대부분의 요소나 오브젝트는 key 와 value를 통한 JSON 오브젝트로 나타낼 수 있다. ((("objects")))((("JSON", "objects")))((("keys and values")))
 _key_ 는 field나 property의 이름이다. _value_ 는((("values"))) 문자열, 숫자, boolean, 다른 오브젝트, 배열, 날짜를 나타내는 문자열이나 
 위치 정보를 나타내는 오브젝트 같은 특별한 형태가 될 수 있다.
 
