@@ -55,7 +55,7 @@ Elasticsearch에 있는 모든 document는 버전을 가지고 있다. document�
 ==== 자동으로 생성되는 ID
 
 데이터에 고유의 식별자가 없다면, Elasticsearch가 자동으로 식별자를 생성하도록 할 수 있다.  ((("id", "autogenerating")))요청 구조에 변화가 있다. 
-((("HTTP methods", "POST")))((("POST method")))`PUT`(``해당 URL에 이 document를 저장해라'')이 아닌, `POST`(``해당 URL _아래_ 에 이 document를 저장해라'')를 사용한다.
+((("HTTP methods", "POST")))((("POST method")))`PUT`(``해당 URL에 이 document를 저장해라'' )이 아닌, `POST`(``해당 URL _아래_ 에 이 document를 저장해라'' )를 사용한다.
 
 URL은 이제 `_index` 와 `_type` 만을 가지고 있다:
 
