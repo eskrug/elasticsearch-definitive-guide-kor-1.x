@@ -384,7 +384,7 @@ GET mlratings/_search?search_type=count
 <3> 해당 bucket의 `doc_count`
 <4> 그리고 background 수, 전체 background에서 이 값이 나타나는 비율을 보여준다.
 
-첫 번째 bucket이 _Talladega Nights_임을 알 수 있다. 놀랄 필요도 없이, 
+첫 번째 bucket이 _Talladega Nights_ 임을 알 수 있다. 놀랄 필요도 없이, 
 모두 271개의 document가 발견되었다. 다음 bucket(key: `52245` )를 보자.
 
 이 ID는 _Blades of Glory_ 에 해당한다. 남자 피겨 스케이팅에 대한 코미디로, 
