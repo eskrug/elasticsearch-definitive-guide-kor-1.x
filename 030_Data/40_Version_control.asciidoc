@@ -2,7 +2,7 @@
 === 충돌 취급
 
 ((("conflicts", "dealing with")))`index` API를 사용하여 document를 업데이트할 경우, 원래의 document를 읽고, 
-변경을 하고, 한번에 _전체 document_를 재색인 한다. 가장 최근의 색인 요청이 저장된다. 마지막으로 색인된 document가 Elasticsearch에 한번 저장된다. 
+변경을 하고, 한번에 _전체 document_ 를 재색인 한다. 가장 최근의 색인 요청이 저장된다. 마지막으로 색인된 document가 Elasticsearch에 한번 저장된다. 
 누군가 그 사이에 document를 변경했다면, 그 변경 사항은 사라진다. 
 
 많은 경우, 이런 상황은 문제가 되지 않는다. 아마 주 데이터의 저장소는 RDB이고, Elasticsearch에 검색 가능하도록 그 데이터를 복사할 뿐이다. 
@@ -47,7 +47,7 @@ document의 새로운 버전은 cluster의 다른 node로 복제된다. Elastics
 Elasticsearch는 변경 사항이 올바르게 적용되었다는 것을 보장하기 위해, `_version` 넘버를 사용한다. 기존 버전의 document가 새로운 버전보다 늦게 도착하면, 간단히 무시한다.
 
 응용프로그램에 의해 만들어지는 변경 사항의 충돌이, 데이터 손실로 나타나지 않도록 보장하기 위해((("version number (documents)", "using to avoid conflicts"))), 
-'_version' 넘버를 이용할 수 있다. 변경하려는 document의 `버전` 넘버를 지정함으로써 가능하다. 해당 버전이 더 이상 최신이 아니면, 요청은 실패한다.
+`_version` 넘버를 이용할 수 있다. 변경하려는 document의 `버전` 넘버를 지정함으로써 가능하다. 해당 버전이 더 이상 최신이 아니면, 요청은 실패한다.
 
 새로운 블로그 포스트를 생성하자:
 
