@@ -1,7 +1,7 @@
 
 == 다중 값 bucket의 정렬
 
-다중 값 bucket&#x2014;`terms`, `histogram`, ++date_histogram++&#x2014; 은 동적으로 많은 bucket을 생성한다.((("sorting", "of multivalue buckets")))((("buckets", "multivalue, sorting")))((("aggregations", "sorting multivalue buckets")))  
+다중 값 bucket(`terms`, `histogram`, ++date_histogram++) 은 동적으로 많은 bucket을 생성한다.((("sorting", "of multivalue buckets")))((("buckets", "multivalue, sorting")))((("aggregations", "sorting multivalue buckets")))  
 Elasticsearch에서, 이런 bucket이 사용자에게 표시되는 순서를 Elasticsearch는 어떻게 결정할까?
 
 기본적으로, bucket은 `doc_count` 를 기준으로, ((("doc_count", "buckets ordered by")))내림차순으로 정렬된다. 
