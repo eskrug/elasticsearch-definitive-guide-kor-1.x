@@ -1,30 +1,14 @@
 [[controlling-relevance]]
-== Controlling Relevance
+== Relevance 제어
 
-Databases that deal purely in structured data (such as dates, numbers, and
-string enums) have it easy: they((("relevance", "controlling"))) just have to check whether a document (or a
-row, in a relational database) matches the query.
+오직 구조화된 데이터(date, number, string enum)만을 다루는 데이터베이스는 쉽다. document(RDB에서 row)가 query에 일치하는지 여부만을 확인한다.
 
-While Boolean yes/no matches are an essential part of full-text search, they
-are not enough by themselves. Instead, we also  need to know how relevant each
-document is to the query.  Full-text search engines have to not only find the
-matching documents, but also sort them by relevance.
+일치 여부(yes/no)는 full text 검색의 필수적인 부분이나, 그 자체로 충분하지 않다. 대신, 각 document가 query에 얼마나 관련 있는지 알아야 한다. full text 검색 엔진은 일치하는 document를 검색할 뿐만 아니라, relevance에 의해 그들을 정렬한다.
 
-Full-text relevance ((("similarity algorithms")))formulae, or _similarity algorithms_,  combine several
-factors to produce a single relevance `_score` for each document.  In this
-chapter, we examine the various moving parts and discuss how they can be
-controlled.
+각 document에 대해 하나의 relevance `_score` 를 만들어 내기 위해, full text relevance ((("similarity algorithms")))수식이나 _유사성 알고리즘_ 은 여러 가지 요소를 조합한다. 이 장에서, 다양한 유동적 요소를 확인하고, 그들을 제어할 수 있는 방법에 대해 이야기할 것이다.
 
-Of course, relevance is not just about full-text queries; it may need to
-take structured data into account as well. Perhaps we are looking for a
-vacation home with particular features (air-conditioning, sea view, free
-WiFi).  The more features that a property has, the more relevant it is. Or
-perhaps we want to factor in sliding scales like recency, price, popularity, or
-distance, while still taking the relevance of a full-text query into account.
+물론, relevance가 full text query에 대한 것만은 아니다. 구조화된 데이터에서도 고려할 필요가 있다. 에어컨, 바다가 보이는 전망, wifi 등의 특별한 기능을 가진 별장을 찾으려 한다면, 어떤 속성을 가진 기능이 더 많을수록, 더 적절할 것이다. 또는, 최근 방문일, 가격, 인기, 거리 등의 연동 요소를 원한다면, 여전히 full text query의 relevance를 고려해야 한다.
 
-All of this is possible thanks to the powerful scoring infrastructure
-available in Elasticsearch.
+이 모든 것이, Elasticsearch에서 이용할 수 있는, 강력한 score 계산 구조 때문에 가능하다.
 
-We will start by looking at the theoretical side of how Lucene calculates
-relevance, and then move on to practical examples of how you can control the
-process.
+Lucene이 relevance를 계산하는 방법의 이론적인 부분을 살펴보면서 시작할 것이다. 그리고, 프로세스를 제어할 수 있는 방법의 실제적인 예제로 옮겨갈 것이다.
