@@ -1,5 +1,5 @@
 [[controlling-memory]]
-== Controlling Memory Use and Latency
+== 지연시간 과 메모리사용 제어
 
 include::300_Aggregations/90_fielddata.asciidoc[]
 
