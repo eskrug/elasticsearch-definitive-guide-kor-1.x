@@ -1,22 +1,18 @@
-=== Scale Horizontally
+=== 수평 확장
 
-What about scaling as the demand for our application grows?((("scaling", "horizontally")))((("clusters", "three-node cluster")))((("primary shards", "in three-node cluster"))) If we start a
-third node, our cluster reorganizes itself to look like
-<<cluster-three-nodes>>.
+응용프로그램에 대한 수요가 증가함에 따라, 확장하면 어떠할까? ((("scaling", "horizontally")))((("clusters", "three-node cluster")))((("primary shards", "in three-node cluster"))) 만약
+세 번째 node를 시작하면, cluster는 <<cluster-three-nodes>>처럼 스스로를 인식할 것이다.
 
 [[cluster-three-nodes]]
-.A three-node cluster--shards have been reallocated to spread the load
-image::images/elas_0204.png["A three-node cluster"]
+.세 개의 node를 가진 cluster--shard는 재할당되었고 부하를 분산하였다.
+image::images/elas_0204.png["세 개의 node를 가진 cluster"]
 
-One shard each from `Node 1` and `Node 2` have moved to the new
-`Node 3`, and we have two shards per node, instead of three.
-This means that the hardware resources (CPU, RAM, I/O) of each node
-are being shared among fewer shards, allowing each shard to perform
-better.
+`Node 1`과 `Node 2`에서, 각각 하나의 shard가 새로운 `Node 3`으로 이동하였고,
+각 node는 3개 대신 2개의 shard를 가지게 되었다.
+이것은 각 shard가 더 잘 수행될 수 있도록, 각 node의 H/W 자원(CPU, RAM, I/O)이
+더 작은 수의 shard 사이에서 공유되고 있다는 것을 의미한다.
 
-A shard is a fully fledged search engine in its own right, and is
-capable of using all of the resources of a single node.  With our
-total of six shards (three primaries and three replicas), our index is capable
-of scaling out to a maximum of six nodes, with one shard on each node
-and each shard having access to 100% of its node's resources.
-
+shard는 그 자체로 충분한 검색 엔진이고, 단일 node의 자원 모두를 사용할 수 있다.
+총 6개의 shard(3개의 primary와 3개의 replica)를 가진 index는,
+각 node당 하나의 shard를 가지면서 각 shard는 각 node의 지원을 100% 활용할 수 있는,
+최대 6개의 node로 확장할 수 있다.

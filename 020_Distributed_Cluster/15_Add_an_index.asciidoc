@@ -1,45 +1,42 @@
-=== Add an Index
+=== Index추가
 
-To add data to Elasticsearch, we need an _index_&#x2014;a place to store related
-data.((("indices")))((("clusters", "adding an index")))  In reality, an index is just a _logical namespace_ that points to
-one or more physical _shards_.
+Elasticsearch에 데이터를 추가하기 위해서는, 관련된 데이터를 저장할 수 있는 _index_&#x2014;저장소가 필요하다.
+((("indices")))((("clusters", "index 추가하기"))) 실제로, index는 단지 하나 또는 그 이상의 물리적인 _shards_를 가리키는
+_logical namespace_일 뿐이다.
 
-A _shard_ is a low-level _worker unit_ that holds((("shards", "defined"))) just a slice of all the
-data in the index. In <<inside-a-shard>>, we explain in detail how a
-shard works, but for now it is enough to know that a shard is a single
-instance of Lucene, and is a complete search engine in its own right. Our
-documents are stored and indexed in shards, but our applications don't talk to
-them directly. Instead, they talk to an index.
+_shard_는 index안에 있는 모든 data의 한조각만을 가진((("shards", "defined"))), low-level _worker unit_이다.
+<<inside-a-shard>>에서 shard가 동작하는 방법에 대해 자세히 설명하겠지만,
+지금은 각 shard가 Lucene의 single instance이고,
+그 자체로 완벽한 검색 엔진이라는 것을 아는 것으로 충분하다.
+document들은 shard에 저장되고, 색인된다. 그러나 응용프로그램들은 shard와 직접 이야기하지 않고,
+대신에 index와 이야기한다.
 
-Shards are how Elasticsearch distributes data around your cluster. Think of
-shards as containers for data. Documents are stored in shards, and shards are
-allocated to nodes in your cluster. As your cluster grows or shrinks,
-Elasticsearch will automatically migrate shards between nodes so that the
-cluster remains balanced.
+shard는 Elasticsearch가 cluster로 데이터를 분산시키는 방법이다.
+데이터 저장소로서 shard를 생각해 보자. document는 shard에 저장되고, shard는
+cluster내 node에게 할당된다. cluster가 증가/감소함에 따라,
+Elasticsearch는 cluster가 균형이 맞도록, 자동으로 node간에 shard를 이동시킨다.
 
-A shard can be either a _primary_ shard or a _replica_ shard.((("primary shards")))((("replica shards")))((("shards", "primary"))) Each document in
-your index belongs to a single primary shard, so the number of primary shards
-that you have determines the maximum amount of data that your index can hold.
+shard는 _primary_ shard나 _replica_ shard가 될 수 있다. ((("primary shards")))((("replica shards")))((("shards", "primary")))
+index에 있는 각각의 document는 단일 primary shard에 속한다. 그래서 primary shard의 수는
+index가 가질 수 있는 데이터 양의 최대값을 결정한다.
 
 [NOTE]
 ====
-While a primary shard can technically contain up to Integer.MAX_VALUE - 128 documents, 
-the practical limit depends on your use case: the hardware you have, the size and
-complexity of your documents, how you index and query your documents, and your
-expected response times.
+primary shard는 기술적으로 Integer.MAX_VALUE - 128 document까지 가질 수 있으며,
+실질적인 한계는 사용 사례에 달려 있다: 가지고 있는 H/W, document의 크기나 복잡함,
+document를 색인하고 검색하는 방법, 기대하는 응답 시간.
 ====
 
-A replica shard is just a copy of a primary shard.((("shards", "replica"))) Replicas are used to provide
-redundant copies of your data to protect against hardware failure, and to
-serve read requests like searching or retrieving a document.
+replica shard는 단순히 primary shard의 복사본이다.((("shards", "replica"))) replica는
+H/W 장애로부터 데이터를 보호하기 위하여 복사본을 제공하고,
+document를 검색하거나 가져오는 것과 같은, 읽기 요청을 처리한다.
 
-The number of primary shards in an index is fixed at the time that an index is
-created, but the number of replica shards can be changed at any time.
+index의 primary shard의 수는 index가 생성되는 시점에 결정된다.
+그러나 replica shard의 수는 어느 때라도 변경할 수 있다.
 
-Let's create an index called `blogs` in our empty one-node cluster.((("indices", "creating"))) By
-default, indices are assigned five primary shards,((("primary shards", "assigned to indices")))((("replica shards", "assigned to indices"))) but for the purpose of this
-demonstration, we'll assign just three primary shards and one replica (one replica
-of every primary shard):
+비어있는 하나의 node를 가진 cluster에 `blogs`라 불리는 index를 생성해 보자.((("indices", "creating")))
+기본적으로, index는 5개의 primary shard를 할당한다. ((("primary shards", "assigned to indices")))((("replica shards", "assigned to indices")))
+그러나 여기서는 예제를 위해 3개의 primary shard와 1개의 replica를 할당하자. (각각의 primary shard에 대해 하나의 replica)
 
 [source,js]
 --------------------------------------------------
@@ -53,14 +50,13 @@ PUT /blogs
 --------------------------------------------------
 // SENSE: 020_Distributed_Cluster/15_Add_index.json
 
-Our cluster now looks like <<cluster-one-node>>. All three primary shards have been allocated to `Node 1`.
+cluster는 이제 <<cluster-one-node>>처럼 보일 것이다. node 1에 모두 3개의 primary shard가 `Node 1`에 할당되었다.
 
 [[cluster-one-node]]
 .A single-node cluster with an index
-image::images/elas_0202.png["A single-node cluster with an index"]
+image::images/elas_0202.png["하나의 index를 가진 단일 node cluster"]
 
-If we were to check the
-<<cluster-health,`cluster-health`>> now, ((("cluster health", "checking after adding an index")))we would see this:
+만약 지금 상태에서 <<cluster-health,`cluster-health`>>를 확인해 보면, ((("cluster health", "checking after adding an index"))) 아래와 같이 나타날 것이다:
 
 [source,js]
 --------------------------------------------------
@@ -78,16 +74,14 @@ If we were to check the
 }
 --------------------------------------------------
 
-<1> Cluster `status` is `yellow`.
-<2> Our three replica shards have not been allocated to a node.
+<1> status file가 “yellow”이다. Cluster `status` is `yellow`.
+<2> 3개의 replica shard가 node에 할당되지 않았다. Our three replica shards have not been allocated to a node.
 
-A cluster health of `yellow` means that all _primary_ shards are up and
-running (the cluster is capable of serving any request successfully) but
-not  all _replica_ shards are active.  In fact, all three of our replica shards
-are currently `unassigned`&#x2014;they haven't been allocated to a node. It
-doesn't make sense to store copies of the same data on the same node. If we
-were to lose that node, we would lose all copies of our data.
+cluster health에서 `yellow`는 모든 _primary_ shard가 올라와
+실행 중인 것을 의미한다 (cluster가 모든 요청을 성공적으로 제공할 수 있다).
+그러나, 모든 _replica_ shard가 Active인 것은 아니다. 사실, 3개의 모든 replica shard는
+현재 `unassigned`&#x2014;되지 않았다(그들은 node에 할당되지 않았다).
+동일한 node에, 동일한 데이터의 복사본을 저장하는 것은 말이 되지 않는다.
+만약 해당 node를 잃어버리면, 우리는 데이터의 모든 복사본을 잃어버리게 된다.
 
-Currently, our cluster is fully functional but at risk of data loss in case of
-hardware failure.
-
+현재, cluster는 모든 기능을 다하고 있지만, H/W 장애 시에는 데이터 분실의 위험이 있다.

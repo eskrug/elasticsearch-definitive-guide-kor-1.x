@@ -1,5 +1,5 @@
 [[deploy]]
-== Production Deployment
+== 제품의 배포
 
 include::510_Deployment/10_intro.asciidoc[]
 
@@ -16,4 +16,3 @@ include::510_Deployment/50_heap.asciidoc[]
 include::510_Deployment/60_file_descriptors.asciidoc[]
 
 include::510_Deployment/70_conclusion.asciidoc[]
-

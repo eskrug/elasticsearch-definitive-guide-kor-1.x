@@ -2,24 +2,20 @@ ifndef::es_build[= placeholder7]
 
 
 [[administration]]
-= Administration, Monitoring, and Deployment
+= 관리, 모니터링, 배포
 
 [partintro]
 --
-The majority of this book is aimed at building applications by using Elasticsearch
-as the backend.  This section is a little different.  Here, you will learn
-how to manage Elasticsearch itself.  Elasticsearch is a complex piece of
-software, with many moving parts.  Many APIs are designed
-to help you manage your Elasticsearch deployment.
+이 책의 대부분은 Elasticsearch를 사용하여 응용프로그램을 구축하는 것을 목표로 하고 있다.
+이 장에서는 약간 다르다. 여기에서는 Elasticsearch 자체를 관리하는 방법을 배울 것이다.
+Elasticsearch는 많은 이동 구성 요소들이 있는 복잡한 소프트웨어이다. Elasticsearch 배포를
+관리할 수 있도록 설계된 다수의 API가 있다.
 
-In this chapter, we cover three main topics:
+이 장에서, 세가지 주요 주제를 다룰 것이다:
 
-- Monitoring your cluster's vital statistics, understanding which behaviors are normal and which
-should be cause for alarm, and interpreting various stats provided by Elasticsearch
-- Deploying your cluster to production, including best practices and important
-configuration that should (or should not!) be changed
-- Performing post-deployment logistics, such as a rolling restart or backup of
-your cluster
+- cluster의 주요 통계를 모니터링, 어떤 동작이 정상이며, 경고에 대한 원인이 무엇인지, Elasticsearch에 의해 제공되는 다양한 통계를 해석하는 방법.
+- 제품에 cluster를 배포, 운영 사례와 변경할 수 있는(또는 변경할 수 없는) 중요한 구성
+- cluster를 규칙적으로 다시 시작하거나 백업하는 방법 같은, 배포 후 실행 계획
 --
 
 include::500_Cluster_Admin.asciidoc[]
@@ -27,5 +23,3 @@ include::500_Cluster_Admin.asciidoc[]
 include::510_Deployment.asciidoc[]
 
 include::520_Post_Deployment.asciidoc[]
-
-

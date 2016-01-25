@@ -1,10 +1,10 @@
 [[post_deploy]]
-== Post-Deployment
+== 배포 후
 
-Once you have deployed your cluster in production, there are some tools and
-best practices to keep your cluster running in top shape.  In this short
-chapter, we talk about configuring settings dynamically, tweaking
-logging levels, improving indexing performance, and backing up your cluster.
+일단 제품에 cluster를 배포했다면, cluster를 최상의 상태로 유지하기 위한,
+몇 가지 도구와 모범 사례가 있다. 이 장에서는, 동적으로 설정을 구성하는 방법,
+로깅 수준을 조정하는 방법, 색인 성능 팁, 그리고 cluster를 백업하는 방법에 대해
+이야기할 것이다.
 
 include::520_Post_Deployment/10_dynamic_settings.asciidoc[]
 

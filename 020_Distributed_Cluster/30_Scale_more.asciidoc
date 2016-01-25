@@ -1,16 +1,14 @@
-==== Then Scale Some More
+==== 그리고 조금 더 확장하기
 
-But what if we want to scale our search to more than six nodes?
+하지만, 6개 이상의 node로 검색을 확장하고 싶다면?
 
-The number of primary shards is fixed at the moment an((("indices", "fixed number of primary shards")))((("primary shards", "fixed number in an index"))) index is created.
-Effectively, that number defines the maximum amount of data that can be
-_stored_ in the index.  (The actual number depends on your data, your hardware
-and your use case.) However, read requests--searches or document retrieval--can be handled by a primary _or_ a replica shard, so the more copies of
-data that you have, the more search throughput you can handle.
+primary shard의 수는 index가 생성되는 순간((("indices", "fixed number of primary shards")))((("primary shards", "fixed number in an index")))에 고정된다.
+실제로, 그 수는 index안에 _저장_ 될 수 있는 데이터의 최대값을 뜻 한다.
+(실제 수는 데이터, H/W, 사용 사례에 따라 달라진다.) 그러나, 읽기 요청--검색 또는 document 검색--은 primary _또는_ replica shard에 의해 처리된다. 따라서
+가지고 있는 데이터의 복사본이 많을수록, 더 많은 검색을 처리할 수 있다.
 
-The number of ((("scaling", "increasing number of replica shards")))replica shards can be changed dynamically on a live cluster,
-allowing us to scale up or down as demand requires. Let's increase the number
-of replicas from the default of `1` to `2`:
+((("scaling", "replica shard수의 증가")))replica shard의 수는 동작하는 cluster에서 동적으로 변경 가능하며,
+요청에 따라 확장 또는 축소를 허용한다. replica의 수를 기본값인 `1`에서 `2`로 증가시켜 보자.
 
 [source,js]
 --------------------------------------------------
@@ -21,26 +19,25 @@ PUT /blogs/_settings
 --------------------------------------------------
 // SENSE: 020_Distributed_Cluster/30_Replicas.json
 
-As can be seen in <<cluster-three-nodes-two-replicas>>, the `blogs` index now
-has nine shards: three primaries and six replicas. This means that we can scale out to
-a total of nine nodes, again with one shard per node. This would allow us to
-_triple_ search performance compared to our original three-node cluster.
+<<cluster-three-nodes-two-replicas>>에서 볼수 있듯이, `blogs` index는 지금
+9개의 shard를 가진다: 3개의 primary와 6개의 replica이다. 이것은 반복하면 노드당 한개의 Shard로,
+총 9개의 노드까지 확장할 수 있음을 의미한다. 이것은 원래의 three-node cluster와 비교해서,
+ _3배의_ 검색 성능을 허용한다.
 
 [[cluster-three-nodes-two-replicas]]
-.Increasing the `number_of_replicas` to 2
-image::images/elas_0205.png["A three-node cluster with two replica shards"]
+.`number_of_replicas`를 2로 증가
+image::images/elas_0205.png["2개의 replica shard를 가진 2개의 node cluster"]
 
 
 [NOTE]
 ===================================================
 
-Of course, just having more replica shards on the same number of nodes doesn't
-increase our performance at all because each shard has access to a smaller
-fraction of its node's resources.  You need to add hardware to increase
-throughput.
+물론, 단지 같은 수의 node에서 더 많은 replica shard를 가진다는 것은
+각 shard는 node 자원의 더 작은 부분을 차지 하기 때문에,
+모든 경우에 있어서 성능을 향상시키는 것은 아니다.
+처리량을 늘리기 위해서는 H/W를 추가해야 한다.
 
-But these extra replicas do mean that we have more redundancy: with the node
-configuration above, we can now afford to lose two nodes without losing any
-data.
+그러나, 이러한 추가 replica는 더 많은 복사본을 가지고 있다는 것을 의미한다:
+위에서의 node 구성에 있어서,  데이터 손실 없는 두 개의 node 장애를 허용한다.
 
 ===================================================

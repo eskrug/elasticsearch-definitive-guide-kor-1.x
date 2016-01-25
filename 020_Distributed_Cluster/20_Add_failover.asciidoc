@@ -1,39 +1,35 @@
-=== Add Failover
+=== 장애 대비 추가
 
-Running a single node means that you have a single point of failure--there
-is no redundancy.((("failover, adding"))) Fortunately, all we need to do to protect ourselves from data
-loss is to start another node.
+단일 node를 실행한다는 것은 단일 장애 지점(SPOF)을 가진다는 의미이다.--중복이 없다.((("failover, adding")))
+다행히, 데이터 손실을 피하기 위해서는 다른 node를 시작할 필요가 있다.
 
-.Starting a Second Node
+.두 번째 node를 시작하기
 ***************************************
 
-To test what happens when you add a second((("nodes", "starting a second node"))) node, you can start a new node
-in exactly the same way as you started the first one (see
-<<running-elasticsearch>>), and from the same directory. Multiple nodes can
-share the same directory.
+두 번째 node((("nodes", "starting a second node")))를 추가하는 경우에 어떤 일이 일어나는지를 테스트하기 위해,
+첫 번째 node를 시작하는 것과, 처음한 것과 정확하게 동일한 방법( <<running-elasticsearch>>를 참고)으로,
+동일한 디렉토리에서, 새로운 node를 시작할 수 있다. 여러 node는 동일한 디렉토리를 공유할 수 있다.
 
-As long as the second node has the same `cluster.name` as the first node (see
-the `./config/elasticsearch.yml` file), it should automatically discover and
-join the cluster run by the first node. If it doesn't, check the logs to find
-out what went wrong.  It may be that multicast is disabled on your network, or
-that a firewall is preventing your nodes from communicating.
+두 번째 node가 첫 번째 node( `./config/elasticsearch.yml` 파일을  참조)와 동일한
+`cluster.name`을 가지는 동안, 첫 번째 node에 의해 실행된 cluster를 자동으로 발견하고 조인한다.
+그렇지 않다면, 무엇이 잘못되었는지를 찾기 위해, log를 확인하자. 네트워크에 멀티캐스트(multicast)가
+비활성화되어 있거나, 방화벽이 node가 통신하는 것을 막고 있을 수 있다.
 
 ***************************************
 
-If we start a second node, our cluster would look like <<cluster-two-nodes>>.
+두 번째 node를 시작하면, cluster는 <<cluster-two-nodes>>처럼 보인다.
 
 [[cluster-two-nodes]]
-.A two-node cluster--all primary and replica shards are allocated
-image::images/elas_0203.png["A two-node cluster"]
+.두 개의 node를 가진 cluster-–모든 primary/replica shard가 할당되었다.
+image::images/elas_0203.png["두 개의 node를 가진 cluster"]
 
-The((("clusters", "two-node cluster"))) second node has joined the cluster, and three _replica shards_ have ((("replica shards", "allocated to second node")))been
-allocated to it--one for each primary shard.  That means that we can lose
-either node, and all of our data will be intact.
+((("clusters", "two-node cluster"))) 두 번째 node가 cluster에 합류하고, 거기에 3개의 _replica shards_ ((("replica shards", "allocated to second node")))
+가 각primary shard에 하나씩 할당된다. 즉, 어떤 node 하나를 잃어도 데이터 모두는 그대로 있을 것이다.
 
-Any newly indexed document will first be stored on a primary shard, and then copied in parallel to the associated replica shard(s). This ensures that our document can be retrieved from a primary shard or from any of its replicas.
+새로 색인된 document는 먼저 primary shard에 저장되고, 할당된 replica shard에 병렬로 복사된다. 이것은 document를 primary shard나 replica shard에서 검색할 수 있도록 한다.
 
-The `cluster-health` now ((("cluster health", "checking after adding second node")))shows a status of `green`, which means that all six
-shards (all three primary shards and all three replica shards) are active:
+`cluster-health`는((("cluster health", "checking after adding second node"))) 이제 `green`이라는 상태를 나타낸다. 즉, 모두 6개
+shard (모든 3개의 primary shard와 모든 3개의 replica shard)가 동작 중이다:
 
 [source,js]
 --------------------------------------------------
@@ -50,6 +46,6 @@ shards (all three primary shards and all three replica shards) are active:
    "unassigned_shards":     0
 }
 --------------------------------------------------
-<1> Cluster `status` is `green`.
+<1> Cluster의 `status`는 `green`이다.
 
-Our cluster is not only fully functional, but also _always available_.
+cluster는 모든 기능을 사용가능할 뿐만 아니라, _항상 이용_ 가능하다.
