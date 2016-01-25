@@ -1,48 +1,45 @@
 [[language-intro]]
-== Getting Started with Languages
+== 언어를 시작해 보자
 
-Elasticsearch ships with a collection of language analyzers that provide
-good, basic, out-of-the-box ((("language analyzers")))((("languages", "getting started with")))support for many of the world's most common
-languages:
+Elasticsearch는 세상의 대부분의 공용 언어에 대해, 적절하고 기본적인, 즉시 사용 가능한 language analyzer collection(언어 분석기 모음)을 ((("language analyzers")))((("languages", "getting started with"))) 탑재하고 있다.
 
-Arabic, Armenian, Basque, Brazilian, Bulgarian, Catalan, Chinese,
-Czech, Danish, Dutch, English, Finnish, French, Galician, German, Greek,
-Hindi, Hungarian, Indonesian, Irish, Italian, Japanese, Korean, Kurdish, 
-Norwegian, Persian, Portuguese, Romanian, Russian, Spanish, Swedish, 
-Turkish, and Thai.
+아랍어(Arabic), 아르메니아어(Armenian), 바스크어(Basque), 브라질(Brazilian), 불가리아어
+(Bulgarian), 카탈로니아(Catalan), 중국어(Chinese), 체코어(Czech), 덴마크어(Danish), 네덜란드어
+(Dutch), 영어(English), 핀란드어(Finnish), 프랑스어(French), 갈리시아어(Galician), 독일어(German),
+그리스어(Greek), 힌디어(Hindi, 인도 북부 공용어), 헝가리어(Hungarian), 인도네시아어(Indonesian),
+아일랜드어(Irish), 이탈리아어(Italian), 일본어(Japanese), 한국어(Korean), 쿠르드어(Kurdish), 노르웨
+이어(Norwegian), 페르시아어(Persian), 포르투갈어(Portuguese), 루마니아어(Romanian), 러시아어
+(Russian), 스페인어(Spanish), 스웨덴어(Swedish), 태국어(Turkish), 태국어(Thai).
 
-These analyzers typically((("language analyzers", "roles performed by"))) perform four roles:
+이들 analyzer는((("language analyzers", "roles performed by"))) 일반적으로 아래 4개의 규칙을 가지고 실행된다.
 
-* Tokenize text into individual words:
+* 텍스트를 개별 단어로 분리(Tokenize)한다:
 +
 `The quick brown foxes` -> [`The`, `quick`, `brown`, `foxes`]
 
-* Lowercase tokens:
+* token을 소문자로(Lowercase) 변경한다:
 +
 `The` -> `the`
 
-* Remove common _stopwords_:
+* 흔한 _불용어(stopwords)_ 는 제거한다:
 +
 &#91;`The`, `quick`, `brown`, `foxes`] -> [`quick`, `brown`, `foxes`]
 
-* Stem tokens to their root form:
+* token을 형태소 분석하여, 원형(root form)으로 만든다:
 +
 `foxes` -> `fox`
 
-Each analyzer may also apply other transformations specific to its language in
-order to make words from that((("language analyzers", "other transformations specific to the language"))) language more searchable:
+각 analyzer는 해당 언어에서 단어를 더 많이 검색하도록 만들기 위해, 그 언어((("language analyzers", "other transformations specific to the language"))) 특유의 다른 변환을 적용할 수도 있다:
 
-* The `english` analyzer ((("english analyzer")))removes the possessive `'s`:
+* `english` analyzer는 소유를 나타내는 `’s` 를 제거한다:
 +
 `John's` -> `john`
 
-* The `french` analyzer ((("french analyzer")))removes _elisions_ like `l'` and `qu'` and
-  _diacritics_ like `¨` or `^`:
+* `french` analyzer ((("french analyzer"))) 는 `l'` 과 `qu'` 같은 모음 _탈락 부호_ 와, `¨` 또는 `^` 같은 _발음 구별 부호_ 를 제거한다:
 +
 `l'église` -> `eglis`
 
-* The `german` analyzer normalizes((("german analyzer"))) terms, replacing `ä` and `ae` with `a`, or
-  `ß` with `ss`, among others:
+* `german` analyzer ((("german analyzer"))) 는 단어를 정규화한다. 특히 `ä` 그리고 `ae` 를 `a` 로, 또는 `ß` 를 `ss` 로 변경한다:
 +
 `äußerst` -> `ausserst`
 

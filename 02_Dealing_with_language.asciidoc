@@ -1,7 +1,7 @@
 ifndef::es_build[= placeholder2]
 
 [[languages]]
-= Dealing with Human Language
+= 인간의 언어를 다루어보자
 
 [partintro]
 --
@@ -9,58 +9,53 @@ ifndef::es_build[= placeholder2]
 ifdef::es_build[]
 [quote,Matt Groening]
 ____
-``I know all those words, but that sentence makes no sense to me.''
+``나는 저 단어 모두를 알고 있다. 하지만 저 문장은 내 상식으로는 이해가 가지 않는다.''
 ____
 endif::es_build[]
 
 ifndef::es_build[]
 ++++
 <blockquote data-type="epigraph">
-    <p>I know all those words, but that sentence makes no sense to me.</p>
+    <p>나는 저 단어 모두를 알고 있다. 하지만 저 문장은 내 상식으로는 이해가 가지 않는다.</p>
     <p data-type="attribution">Matt Groening</p>
 </blockquote>
 ++++
 endif::es_build[]
 
-Full-text search is a battle between _precision_&#x2014;returning as few
-irrelevant documents as possible--and _recall_&#x2014;returning as many relevant
-documents as possible.((("recall", "in full text search")))((("precision", "in full text search")))((("full text search", "battle between precision and recall"))) While matching only the exact words that the user has
-queried would be precise, it is not enough. We would miss out on many
-documents that the user would consider to be relevant. Instead, we need to
-spread the net wider, to also search for words that are not exactly the same
-as the original but are related.
+full text 검색은 _정확성_&#x2014;관련 없는 document를 가능한 한 적게 반환하는&#x2014;과 _recall_&#x2014;적합한 document를 가능한 한 많이 반환하는&#x2014; 사이의 전쟁이다.
+((("recall", "in full text search")))((("precision", "in full text search")))((("full text search", "battle between precision and recall")))
+사용자가 검색한 단어에 정확히 일치하는 것이 정확한 것이지만, 그것으로 충분하지 않다.
+사용자가 관련 있을 거라 생각하는 많은 document를 놓치게 될 것이다.
+대신, 정확하게 원본과 동일하지는 않지만, 관련 있는 단어도 검색하기 위해, 검색 범위를 더 넓힐 필요가 있다.
 
-Wouldn't you expect a search for ``quick brown fox'' to match a document
-containing ``fast brown foxes,'' ``Johnny Walker'' to match ``Johnnie
-Walker,'' or ``Arnolt Schwarzenneger'' to match ``Arnold Schwarzenegger''?
+``quick brown fox'' 에 대한 검색은  ``fast brown foxes'' 를 포함하는 document에 일치하고,
+``Johnny Walker'' 에 대한 검색은 ``Johnnie Walker'' 에 일치하고,
+``Arnolt Schwarzenneger'' 에 대한 검색은 ``Arnold Schwarzenegger'' 에 일치하기를 기대하지 않겠는가?
 
-If documents exist that _do_ contain exactly what the user has queried,
-those documents should appear at the top of the result set, but weaker matches
-can be included further down the list.  If no documents match
-exactly, at least we can show the user potential matches; they may even
-be what the user originally intended!
+사용자가 검색한 것을 _정확히_  포함하는 document가 존재한다면, 해당 document는 결과 집합의 상단에 나타날 것이다.
+그러나, 덜 일치하는 document는 목록의 더 아래에 포함될 수 있다.
+만약, 정확히 일치하는 document가 없다면, 사용자에게 최소한 일치할 가능성이 있는 document를 보여줄 수 있다.
+이것이 사용자가 원래 의도한 것일 수도 있다.
 
-There are several((("full text search", "finding inexact matches"))) lines of attack:
+여기에 몇 가지((("full text search", "finding inexact matches"))) 공략 지점이 있다.
 
-*   Remove diacritics like +´+, `^`, and `¨` so that a search for `rôle` will
-    also match `role`, and vice versa. See <<token-normalization>>.
+*   `rôle` 에 대한 검색은 `role` 과 일치하고, 그 반대도 마찬가지이기 위해, +´+, `^`, `¨` 같은 발음 구별 부호를 제거한다.
+    <<token-normalization>> 참고.
 
-*   Remove the distinction between singular and plural&#x2014;`fox` versus `foxes`&#x2014;or between tenses&#x2014;`jumping` versus `jumped` versus `jumps`&#x2014;by _stemming_ each word to its root form. See <<stemming>>.
+*   각 단어의 _형태소_ 를 분석하여, 원형으로 만들어, `fox` 와 `foxes` 같은 단수와 복수, `jumping`, `jumped`, `jumps` 같이 다른 시제(현재/과거/미래)의 구분을 제거한다.
+    <<stemming>> 참고.
 
-*   Remove commonly used words or _stopwords_ like `the`, `and`, and `or`
-    to improve search performance.  See <<stopwords>>.
+*   검색 성능을 향상시키기 위해, `the`, `and`, `or` 같이 흔히 쓰이는 단어나 _불용어_ 를 제거한다. <<stopwords>> 참고.
 
-*   Including synonyms so that a query for `quick` could also match `fast`,
-    or `UK` could match `United Kingdom`. See <<synonyms>>.
+*   `quick` 에 대한 검색이 `fast` 에도 일치하거나, `UK` 가 `United Kingdom` 에 일치하도록 하기 위해 동의어를 포함한다. <<synonyms>> 참고.
 
-*   Check for misspellings or alternate spellings, or match on _homophones_&#x2014;words that sound the same, like `their` versus `there`, `meat` versus
-    `meet`  versus `mete`. See <<fuzzy-matching>>.
+*   맞춤법 오류나 대체 철자, 동음 이의어( `their` 와 `there`, `meat` 와 `meet` 같이 동일하게 소리 나는 단어)를 확인한다.
+    <<fuzzy-matching>> 참고.
 
-Before we can manipulate individual words, we need to divide text into
-words, ((("words", "dividing text into")))which means that we need to know what constitutes a _word_. We will
-tackle this in <<identifying-words>>.
+개별 단어를 다루기 전에, ((("words", "dividing text into")))텍스트를 단어로 나누어야 한다.
+즉, 어떤 것을 단어로 판단해야 할지 알아야 한다. <<identifying-words>> 에서 살펴보자.
 
-But first, let's take a look at how to get started quickly and easily.
+우선은, 빠르고 쉽게 시작할 수 있는 방법을 살펴보자.
 --
 
 include::200_Language_intro.asciidoc[]
