@@ -1,15 +1,13 @@
 [[denormalization]]
-=== Denormalizing Your Data
+=== 데이터의 비정규화
 
-The way to get the best search performance out of Elasticsearch is to use it
-as it is intended, by((("relationships", "denormalizing your data")))((("denormalization", "denormalizing data at index time")))
-http://en.wikipedia.org/wiki/Denormalization[denormalizing] your data at index
-time. Having redundant copies of data in each document that requires access to
-it removes the need for joins.
+Elasticsearch로부터 가장 좋은 검색 성능을 얻을 수 있는 방법은, 
+((("relationships", "denormalizing your data")))((("denormalization", "denormalizing data at index time")))색인 시에 데이터를 
+http://en.wikipedia.org/wiki/Denormalization[비정규화]하여 데이터를 의도했던 그대로 사용하는 것이다.
+데이터에 액세스하기 위해 필요한 각 document에 데이터의 중복 복사본을 가지는 것은, 조인의 필요성을 제거하는 것이다.
 
-If we want to be able to find a blog post by the name of the user who wrote it,
-include the user's name in the blog-post document itself:
-
+블로그 게시물을 쓴 사용자의 이름으로 블로그 게시물을 찾을 수 있도록 하기 위해, 
+블로그 게시물 document 자체에 사용자의 이름을 포함한다.
 
 [source,json]
 --------------------------------
@@ -30,10 +28,9 @@ PUT /my_index/blogpost/2
   }
 }
 --------------------------------
-<1> Part of the user's data has been denormalized into the `blogpost` document.
+<1> 사용자 데이터의 일부분이 `blogpost` document로 비정규화되었다.
 
-Now, we can find blog posts about `relationships` by users called `John`
-with a single query:
+이제, 단일 query로 John이라는 사용자가 작성한 `relationships`에 대한 블로그 포스트를 찾을 수 있다.
 
 [source,json]
 --------------------------------
@@ -50,7 +47,5 @@ GET /my_index/blogpost/_search
 }
 --------------------------------
 
-The advantage of data denormalization is speed.  Because each document
-contains all of the information that is required to determine whether it
-matches the query, there is no need for expensive joins.
-
+데이터 비정규화의 장점은 속도이다. 각 document가 query와의 일치 여부를 판단하는데 필요한 
+정보 모두를 포함하고 있기 때문이다. 비용이 많이 소모되는 조인이 불필요하다.

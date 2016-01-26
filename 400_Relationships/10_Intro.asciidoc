@@ -1,61 +1,50 @@
 [[relations]]
-== Handling Relationships
+== 관계를 다루자
 
-In the real world, relationships((("relationships"))) matter: blog posts have comments, bank
-accounts have transactions, customers have bank accounts, orders have order
-lines, and directories have files and subdirectories.
+현실 세계에서도 관계((("relationships")))는 중요하다. 블로그 포스트는 댓글을 가지고 있고,
+은행 계좌는 거래 내역을 가지고 있고, 고객은 은행 계좌를 가지고 있고, 명령은 명령 체계를 가지고 있고, 
+디렉토리는 하위 디렉토리를 가지고 있다.
 
-Relational databases are specifically designed--and this will not come as a
-surprise to you--to manage((("relational databases", "managing relationships"))) relationships:
+관계형 데이터베이스는 관계를 관리((("relational databases", "managing relationships")))하기 위해 특별히 설계되었다.
 
-*   Each entity (or _row_, in the relational world) can be uniquely identified
-    by a _primary key_.((("primary key")))
+*   각각의 entity (또는 관계형의 세계에서 _행(row)_)는 _primary key_((("primary key")))에 의해 유일하게 구분될 수 있다.
 
-*   Entities are _normalized_. The data for a unique entity is stored only
-    once, and related entities store just its primary key. Changing the data of
-    an entity has to happen in only one place.((("joins", "in relational databases")))
+*   Entity는 _정규화_된다. 유일한 entity에 대한 데이터는 한 번만 저장되고, 
+    관련된 entity는 primary key만을 저장한다. entity에 대한 데이터의 변경은 한 곳에서만 일어난다.((("joins", "in relational databases")))    
 
-*   Entities can be joined at query time, allowing for cross-entity search.
+*   Entity는 entity간 검색을 위해, query시에 조인될 수 있다.
 
-*   Changes to a single entity are _atomic_, _consistent_, _isolated_, and
-    _durable_.  (See http://en.wikipedia.org/wiki/ACID_transactions[_ACID Transactions_]
-    for more on this subject.)
+*   단일 entity에 대한 변경은  _원자성(atomic)_, _일관성(consistent)_, _고립성(isolated)_, _지속성(durable)_을 가지고 있다.
+    (이주제에 대한 더 많은 정보는 http://en.wikipedia.org/wiki/ACID_transactions[_ACID Transactions_]을 참고하자.)
 
-*   Most relational databases support ACID transactions across multiple
-    entities.
+*   대부분의 관계형 데이터베이스는 여러 entity에 대해 ACID Transactions을 지원한다.
 
-But relational ((("ACID transactions")))databases do have their limitations, besides their poor support
-for full-text search. Joining entities at query time is expensive--more
-joins that are required, the more expensive the query.  Performing joins
-between entities that live on different hardware is so expensive that it is
-just not practical. This places a limit on the amount of data that can be
-stored on a single server.
+그러나 관계형 ((("ACID transactions")))데이터베이스는 full text 검색에 대한 빈약한 지원 이외에도, 
+그것들 자신의 한계를 가지고 있다. query시에 entity를 조인하려면 비용이 많이 발생한다. 
+조인이 더 많이 필요할수록, query에 더 많은 비용이 소모된다. 
+다른 H/W에 존재하는 entity간 조인을 수행하는 것은 실용적이지 않을 정도로 너무 비싸다. 
+이로 인해, 단일 서버에 저장할 수 있는 데이터의 양은 한계를 가진다.
 
-Elasticsearch, like((("NoSQL databases"))) most NoSQL databases, treats the world as though it were
-flat. An index is a flat collection of independent documents.((("indices"))) A single
-document should contain all of the information that is required to decide
-whether it matches a search request.
+대부분의 NoSQL 데이터베이스((("NoSQL databases")))처럼, Elasticsearch는 세계를 평면인 것처럼 취급한다. 
+index는 개별적인 document의 평면적인 집합이다.((("indices"))) 
+하나의 document는 그것이 검색 요청에 일치하는지 여부를 판단하기 위해, 필요한 정보 모두를 포함한다.
 
-While changing the data of a single document in Elasticsearch is
-http://en.wikipedia.org/wiki/ACID_transactions[ACIDic], transactions
-involving multiple documents are not.  There is no way to roll back the index
-to its previous state if part of a transaction fails.
+Elasticsearch에서 단일 document를 변경하는 것은 http://en.wikipedia.org/wiki/ACID_transactions[ACID]를 보장하지만, 
+여러 document를 포함하는 traction은 그렇지 않다. transaction의 일부가 실패할 경우, index를 기존의 상태로 roll back할 방법은 없다.
 
-This FlatWorld has its advantages:
+이 평면 세계는 몇 가지 이점을 가진다.
 
-*  Indexing is fast and lock-free.
-*  Searching is fast and lock-free.
-*  Massive amounts of data can be spread across multiple nodes, because each
-   document is independent of the others.
+*  색인은 빠르고 lock이 걸리지 않는다.
+*  검색은 빠르고 lock이 걸리지 않는다.
+*  각 document는 다른 것에 대해 독립적이기 때문에, 막대한 양의 데이터가 여러 node에 분산될 수 있다
 
-But relationships matter.  Somehow, we need to bridge the gap between
-FlatWorld and the real world.((("relationships", "techniques for managing relational data in Elasticsearch"))) Four common techniques are used to manage
-relational data in Elasticsearch:
+그러나, 관계는 중요하다. 어떻게든, 평면적인 세계와 현실 세계 사이의 격차를 해소해야 한다.((("relationships", "techniques for managing relational data in Elasticsearch"))) 
+Elasticsearch에서 관계가 있는 데이터를 관리하기 위해 사용되는, 4개의 일반적인 기술들이 있다.
 
-* <<application-joins,Application-side joins>>
-* <<denormalization,Data denormalization>>
-* <<nested-objects,Nested objects>>
-* <<parent-child,Parent/child relationships>>
+* <<application-joins,응용프로그램 측면의 조인>>
+* <<denormalization,데이터의 비정규화>>
+* <<nested-objects,Nested 오브젝트>>
+* <<parent-child,부모-자식 관계>>
 
-Often the final solution will require a mixture of a few of these techniques.
+최종적인 솔루션은 이런 기술들 중 몇 가지의 혼합을 요구한다.
 

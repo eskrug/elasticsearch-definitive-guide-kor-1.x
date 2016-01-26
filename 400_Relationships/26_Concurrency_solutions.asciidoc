@@ -1,36 +1,28 @@
 [[concurrency-solutions]]
-=== Solving Concurrency Issues
+=== 동시성 문제의 해법
 
-The problem comes when we want to allow more than one person to rename files
-or directories _at the same time_. ((("concurrency", "solving concurrency issues")))((("relationships", "solving concurrency issues"))) Imagine that you rename the `/clinton`
-directory, which contains hundreds of thousands of files.  Meanwhile, another
-user renames the single file `/clinton/projects/elasticsearch/README.txt`.
-That user's change, although it started after yours, will probably finish more
-quickly.
+한 명 이상이 _동시에_ 파일이나 디렉토리의 이름을 변경하려는 경우 문제가 발생한다.((("concurrency", "solving concurrency issues")))((("relationships", "solving concurrency issues")))
+당신이 수십만 개의 파일을 가지고 있는 `/clinton` 디렉토리의 이름을 변경하고, 
+다른 사용자는 `/clinton/projects/elasticsearch/README.txt`라는 파일의 이름을 변경한다고 가정해보자. 
+다른 사용자의 변경 요청이 당신의 디렉토리 이름 변경 요청 이후에 시작했더라도, 아마 더 빨리 완료될 것이다.
 
-One of two things will happen:
+이 경우 다음 두 가지 중 하나가 발생할 것이다.
 
-*   You have decided to use `version` numbers, in which case your mass rename
-    will fail with a version conflict when it hits the renamed
-    `README.asciidoc` file.
+*   당신이 `version` number를 사용하기로 결정했다면, 다른 사용자가 `README.asciidoc`으로 이름을 변경할 때, 
+    당신의 대량의 이름 변경이 버전 충돌로 실패할 것이다.
 
-*   You didn't use versioning, and your changes will overwrite the changes from
-    the other user.
+*   당신이 version number를 사용하지 않았다면, 당신의 변경 요청이 다른 사용자의 변경 사항을 덮어 쓸 것이다.
 
-The problem is that Elasticsearch does not support
-http://en.wikipedia.org/wiki/ACID_transactions[ACID transactions].((("ACID transactions")))  Changes to
-individual documents are ACIDic, but not changes involving multiple documents.
+문제는 Elasticsearch가 http://en.wikipedia.org/wiki/ACID_transactions[ACID transactions].((("ACID transactions")))을 지원하지 않는 다는 것이다.
+개별 document에 대한 변경은 ACID를 보장하지만, 여러 document에 대한 변경은 보장하지 않는다.
 
-If your main data store is a relational database, and Elasticsearch is simply
-being used as a search engine((("relational databases", "Elasticsearch used with"))) or as a way to improve performance, make
-your changes in the database first and replicate those changes to
-Elasticsearch after they have succeeded. This way, you benefit from the ACID
-transactions available in the database, and all changes to Elasticsearch happen
-in the right order. Concurrency is dealt with in the relational database.
+주 데이터 저장소가 RDB이고, Elasticsearch를 단순히 검색엔진((("relational databases", "Elasticsearch used with")))이나 성능 향상의 수단으로 사용하고 있다면,
+당신의 변경사항을 우선 RDB에 반영하고, 그것이 성공한 뒤에 Elasticsearch로 복제해라. 
+이것은 RDB에서 이용할 수 있는 ACID Transaction의 혜택을 받는 방식이고, Elasticsearch에 대한 모든 변경 사항은 올바른 순서로 일어난다. 
+즉, 동시성은 RDB에서 처리한다.
 
-If you are not using a relational store, these concurrency issues need to
-be dealt with at the Elasticsearch level.  The following are three practical
-solutions using Elasticsearch, all of which involve some form of locking:
+만약 관계형 저장소를 사용하지 않는다면, 이런 동시성 이슈를 Elasticsearch에서 처리해야 한다. 
+Elasticsearch는 아래와 같은 모두 어떤 잠금(locking)의 형태를 포함하는 3가지 유용한 해법을 제시할 것이다.
 
 * Global Locking
 * Document Locking
@@ -39,22 +31,20 @@ solutions using Elasticsearch, all of which involve some form of locking:
 [TIP]
 ==================================================
 
-The solutions described in this section could also be implemented by applying the same
-principles while using an external system instead of Elasticsearch.
+아래에 언급된 해법은, Elasticsearch 대신에 외부의 다른 시스템을 통해 동일한 원리를 적용함으로써 구현될 수도 있다
 
 ==================================================
 
 [[global-lock]]
 ==== Global Locking
 
-We can avoid concurrency issues completely by allowing only one process to
-make changes at any time.((("locking", "global lock")))((("global lock")))  Most changes will involve only a few files and will
-complete very quickly.  A rename of a top-level directory may block all other
-changes for longer, but these are likely to be much less frequent.
+항상 단일 프로세스만 변경을 하도록 허용하여, 동시성 문제를 완벽하게 피할 수 있다.((("locking", "global lock")))((("global lock")))
+대부분의 변경은 몇 개의 파일만을 포함하고, 매우 빠르게 완료된다. 
+최상위 단계 디렉토리의 이름 변경은 더 오랫동안 다른 모든 변경 모두를 막을(block) 수 있다.
+하지만 이런 동작은 그리 자주 발생하지는 않는다.
 
-Because document-level changes in Elasticsearch are ACIDic, we can use the
-existence or absence of a document as a global lock.  To request a
-lock, we try to `create` the global-lock document:
+Elasticsearch에서 document 수준의 변경은 ACID를 보장하기 때문에, global lock document의 존재 여부를 사용할 수 있다.
+잠금(lock)을 요청하기 위해서, global-lock document를 `생성(create)`해 보자.
 
 [source,json]
 --------------------------
@@ -62,29 +52,24 @@ PUT /fs/lock/global/_create
 {}
 --------------------------
 
-If this `create` request fails with a conflict exception,
-another process has already been granted the global lock and we will have to
-try again later.  If it succeeds, we are now the proud owners of the
-global lock and we can continue with our changes.  Once we are finished, we
-must release the lock by deleting the global lock document:
+이 `create` 요청이 충돌 예외로 실패하면, 그것은 다른 프로세스가 이미 global lock을 사용하고 있고, 
+나중에 다시 시도해야 된다는 것을 의미한다. 만약 성공한다면, 이제 global lock의 소유자로서, 
+변경 작업을 계속할 수 있다. 작업이 완료되면, global lock document를 삭제하여, 잠금을 해제해야 한다.
 
 [source,json]
 --------------------------
 DELETE /fs/lock/global
 --------------------------
 
-Depending on how frequent changes are, and how long they take, a global lock
-could restrict the performance of a system significantly.  We can increase
-parallelism by making our locking more fine-grained.
+변경이 얼마나 자주 일어나고, 얼마나 오래 걸리느냐에 따라, global lock은 시스템의 성능을 크게 제한할 수 있다. 
+잠금을 더 세분화하여, 병렬 처리를 증가시킬 수 있다.
 
 [[document-locking]]
 ==== Document Locking
 
-Instead of locking the whole filesystem, we could lock individual documents
-by using the same technique as previously described.((("locking", "document locking")))((("document locking")))  A process could use a
-<<scan-scroll,scan-and-scroll>> request to retrieve the IDs of all documents
-that would be affected by the change, and would need to create a lock file for
-each of them:
+전체 file system에 대한 잠금 대신, 위와 동일한 방법으로 개별 document를 잠글 수 있다.((("locking", "document locking")))((("document locking")))
+프로세스는 변경에 영향을 받는 모든 document의 ID를 가져오기 위하여, <<scan-scroll,scan-and-scroll>>을 사용할 수 있고, 
+그들 각각에 대한 잠금 파일을 생성해야 한다.
 
 [source,json]
 --------------------------
@@ -95,18 +80,13 @@ PUT /fs/lock/_bulk
 { "process_id": 123    }
 ...
 --------------------------
-<1> The ID of the `lock` document would be the same as the ID of  the file
-    that should be locked.
-<2> The `process_id` is a unique ID that represents the process that
-    wants to perform the changes.
+<1> `lock` document의 ID는 잠겨야 하는 파일의 ID와 동일해야 한다.
+<2> `process_id` 는 변경을 수행하려는 프로세스를 나타내는 어떤 고유한 ID이다
 
-If some files are already locked, parts of the `bulk` request will fail and we
-will have to try again.
+특정 파일이 이미 잠겨 있다면, `bulk` 요청의 일부는 실패하고, 다시 시도해야 한다.
 
-Of course, if we try to lock _all_ of the files again, the `create` statements
-that we used previously will fail for any file that is already locked by us!
-Instead of a simple `create` statement, we need an `update` request with an
-`upsert` parameter and this `script`:
+물론, _모든_ 파일을 잠그려고 다시 시도하면, 위에서 사용했던 `create` 문장은 이미 잠긴 어떤 파일에 대해 실패할 것이다.
+간단한 `create` 문장 대신, `upsert` 파라메터를 사용한, `update` 요청과 아래 `script`가 필요하다. 
 
 [source,groovy]
 --------------------------
@@ -115,12 +95,11 @@ if ( ctx._source.process_id != process_id ) { <1>
 }
 ctx.op = 'noop'; <3>
 --------------------------
-<1> `process_id` is a parameter that we pass into the script.
-<2> `assert false` will throw an exception, causing the update to fail.
-<3> Changing the `op` from `update` to `noop` prevents the update request
-    from making any changes, but still returns success.
+<1> `process_id` 는 script에 전달할 파라메터이다.
+<2> `assert false` update 실패의 원인인 exception을 발생시킨다.
+<3> `op` 를 `update` 에서 `noop` 로 바꾸어, update 요청이 변경되는 것을 방지한다. 하지만 여전히 success를 반환한다.
 
-The full `update` request looks like this:
+전체 `update` 요청은 아래와 같다.
 
 [source,json]
 --------------------------
@@ -135,15 +114,13 @@ POST /fs/lock/1/_update
 }
 --------------------------
 
-If the document doesn't already exist, the `upsert` document will be inserted--much the same as the `create` request we used previously.  However, if the
-document _does_ exist, the script will look at the `process_id` stored in the
-document.  If it is the same as ours, it aborts the update (`noop`) and
-returns success.  If it is different, the `assert false` throws an exception
-and we know that the lock has failed.
+document가 아직 존재하지 않는 경우, `upsert` document는 이전에 사용했던 `create` 요청과 거의 동일하게 insert 된다. 
+그러나 document가 존재한다면, script는 document에 저장된 `process_id` 를 확인할 것이다. 
+만약 동일하다면, 업데이트(`noop`)를 중단하고, success를 반환할 것이다. 
+만약 다르면, `assert false`는 exception을 발생시켜, 잠금이 실패했다는 것을 알린다.
 
-Once all locks have been successfully created, the rename operation can begin.
-Afterward, we must release((("delete-by-query request"))) all of the locks, which we can do with a
-`delete-by-query` request:
+모든 잠금이 성공적으로 생성되면, 이름 변경 작업을 시작할 수 있다. 
+그 후, 모든 잠금을 해제해야 한다.((("delete-by-query request"))) 이는 `delete-by-query` 요청을 통해 가능하다.
 
 [source,json]
 --------------------------
@@ -158,29 +135,24 @@ DELETE /fs/lock/_query
   }
 }
 --------------------------
-<1> The `refresh` call ensures that all `lock` documents are visible to
-    the `delete-by-query` request.
+<1> `refresh` 호출은 모든 `lock` document가 `delete-by-query` 요청에 보이도록 보장한다.
 
-Document-level locking enables fine-grained access control, but creating lock
-files for millions of documents can be expensive.  In certain scenarios, such
-as this example with directory trees, it is possible to achieve fine-grained
-locking with much less work.
+document 수준의 잠금은 세분화된 액세스 제어가 가능하지만, 수백 만개의 잠금 파일을 생성하려면, 많은 비용이 들 수 있다.
+디렉토리 tree 같은 예와 같은 특정 시나리오에서, 훨씬 적은 작업으로 세분화된 잠금을 하는 것이 가능하다.
 
 [[tree-locking]]
 ==== Tree Locking
 
-Rather than locking every involved document, as in the previous option, we
-could lock just part of the directory tree.((("locking", "tree locking")))  We will need exclusive access
-to the file or directory that we want to rename, which can be achieved with an
-_exclusive lock_ document:
+이전의 옵션에서처럼, 관련된 모든 document를 잠그기 보다는, 디렉토리 tree의 일부만 잠글 수도 있다.((("locking", "tree locking")))
+이름을 변경하려는 파일이나 디렉토리를 배타적으로 액세스해야 할 필요가 있다. 
+이것은 _exclusive lock_ document로 가능하다.
 
 [source,json]
 --------------------------
 { "lock_type": "exclusive" }
 --------------------------
 
-And we need shared locks on any parent directories, with a _shared lock_
-document:
+그리고 _shared lock_ document로 모든 부모 디렉토리와 잠금을 공유해야 한다
 
 [source,json]
 --------------------------
@@ -189,14 +161,13 @@ document:
   "lock_count": 1 <1>
 }
 --------------------------
-<1> The `lock_count` records the number of processes that hold a shared lock.
+<1> `lock_count` 는 shared lock을 가지고 있는 프로세스의 수를 기록한다.
 
-A process that wants to rename `/clinton/projects/elasticsearch/README.txt`
-needs an _exclusive_ lock on that file, and a _shared_ lock on `/clinton`,
-`/clinton/projects`, and `/clinton/projects/elasticsearch`.
+`/clinton/projects/elasticsearch/README.txt` 의 이름을 변경하려는 프로세스는, 해당 파일에 대한 _exclusive_ lock과
+`/clinton`, `/clinton/projects`, `/clinton/projects/elasticsearch` 에 대한 _shared_ lock 이 필요하다.
 
-A simple `create` request will suffice for the exclusive lock, but the shared
-lock needs a scripted update to implement some extra logic:
+간단한 `create` 요청으로 exclusive lock은 충분히 가능하지만, 
+shared lock은 추가로 몇 가지를 구현하기 위한 script로 된 update가 필요하다
 
 [source,groovy]
 --------------------------
@@ -205,13 +176,12 @@ if (ctx._source.lock_type == 'exclusive') {
 }
 ctx._source.lock_count++ <2>
 --------------------------
-<1> If the `lock_type` is `exclusive`, the `assert` statement will throw
-    an exception, causing the update request to fail.
-<2> Otherwise, we increment the `lock_count`.
+<1> `lock_type` 이 `exclusive` 이면, `assert` 문장은 exception(업데이트 요청이 실패한 원인)을 발생시킨다.
+<2> 그렇지 않으면, `lock_count` 를 증가시킨다.
 
-This script handles the case where the `lock` document already exists, but we
-will also need an `upsert` document to handle the case where it doesn't exist
-yet. The full update request is as follows:
+이 script는 `lock` document가 이미 존재하는 경우를 처리하지만, 
+아직 존재하지 않는 경우를 처리하기 위해서는 `upsert` document가 필요하다. 
+전체 update 요청은 아래와 같다.
 
 [source,json]
 --------------------------
@@ -225,12 +195,10 @@ POST /fs/lock/%2Fclinton/_update <1>
   { assert false }; ctx._source.lock_count++"
 }
 --------------------------
-<1> The ID of the document is `/clinton`, which is URL-encoded to `%2fclinton`.
-<2> The `upsert` document will be inserted if the document does not already
-    exist.
+<1> document의 ID는 `%2fclinton`으로 URL-Encode된 `/clinton`이다. 
+<2> `upsert` document는 document가 아직 존재하지 않으면 insert된다.
 
-Once we succeed in gaining a shared lock on all of the parent directories, we
-try to `create` an exclusive lock on the file itself:
+모든 부모 디렉토리에 대한 shared lock 확보에 성공하면, 파일 자체에 대한 exclusive lock의 `create` 를 시도한다.
 
 [source,json]
 --------------------------
@@ -238,8 +206,7 @@ PUT /fs/lock/%2Fclinton%2fprojects%2felasticsearch%2fREADME.txt/_create
 { "lock_type": "exclusive" }
 --------------------------
 
-Now, if somebody else wants to rename the `/clinton` directory, they would
-have to gain an exclusive lock on that path:
+이제, 누군가가 `/clinton` 디렉토리의 이름을 변경하려 한다면, 해당 경로에 대한 exclusive lock을 얻어야 한다.
 
 [source,json]
 --------------------------
@@ -247,17 +214,16 @@ PUT /fs/lock/%2Fclinton/_create
 { "lock_type": "exclusive" }
 --------------------------
 
-This request would fail because a `lock` document with the same ID already
-exists. The other user would have to wait until our operation is done and we
-have released our locks. The exclusive lock can just be deleted:
+동일한 ID를 가진 `lock` document가 이미 존재하기 때문에 이 요청은 실패한다. 
+다른 사용자는 우리의 연산이 종료되고, 잠금이 해제될 때까지 기다려야 한다. exclusive lock은 삭제만 가능하다.
 
 [source,json]
 --------------------------
 DELETE /fs/lock/%2Fclinton%2fprojects%2felasticsearch%2fREADME.txt
 --------------------------
 
-The shared locks need another script that decrements the `lock_count` and, if
-the count drops to zero, deletes the `lock` document:
+shared lock은, `lock_count` 를 감소시키는 또 다른 script가 필요하다. 
+그리고 count가 0이 되면 `lock` document를 삭제한다.
 
 [source,groovy]
 --------------------------
@@ -265,11 +231,9 @@ if (--ctx._source.lock_count == 0) {
   ctx.op = 'delete' <1>
 }
 --------------------------
-<1> Once the `lock_count` reaches `0`, the `ctx.op` is changed from `update`
-    to `delete`.
+<1> `lock_count` 가 `0` 이 되면, `ctx.op` 는 `update` 에서 `delete` 로 변경된다.
 
-This update request would need to be run for each parent directory in reverse
-order, from longest to shortest:
+이 업데이트 요청은 각각의 부모 디렉토리에 대해, 역순(가장 긴 것부터 가장 짧은 것까지)으로 동작해야 한다.
 
 [source,json]
 --------------------------
@@ -279,28 +243,24 @@ POST /fs/lock/%2Fclinton%2fprojects%2felasticsearch/_update
 }
 --------------------------
 
-Tree locking gives us fine-grained concurrency control with the minimum of
-effort. Of course, it is not applicable to every situation--the data model
-must have some sort of access path like the directory tree for it to work.
+Tree locking은 최소한의 노력으로, 세분화된 동시성 제어를 가능하게 한다. 
+물론, 이것이 모든 상황에 적합하지는 않다. 이 데이터 모델이 동작하려면,
+디렉토리 tree같은 액세스 경로(access path)의 일종을 가지고 있어야 한다.
 
 [NOTE]
 =====================================
 
-None of the three options--global, document, or tree locking--deals with
-the thorniest problem associated with locking: what happens if the process
-holding the lock dies?
+“잠금을 가진 프로세스가 죽었을 경우 어떤 일이 발생하는가” 라는 잠금과 관련된 골치 아픈 문제는 
+3가지 옵션(global, document, tree)중 어떤 것으로도 처리하지 못한다.
 
-The unexpected death of a process leaves us with two problems:
+예기치 않은 프로세스의 죽음은 2가지 문제를 남긴다.
 
-* How do we know that we can release the locks held by the dead process?
-* How do we clean up the change that the dead process did not manage to complete?
+* 죽은 프로세스가 가지고 있던 lock을 해제할 수 있는 방법이 있는가?
+* 죽은 프로세스가 완료하지 못한 변경 사항을 정리할 방법은 무엇인가?
 
-These topics are beyond the scope of this book, but you will need to give them
-some thought  if you decide to use locking.
+이런 주제는 이 책의 범위를 벗어난다. 그러나, 잠금을 사용하기로 결정했다면, 그것들에 대해 생각해야 한다.
 
 =====================================
 
-While denormalization is a good choice for many projects, the need for locking
-schemes can make for complicated implementations. Instead, Elasticsearch
-provides two models that help us deal with related entities:
-_nested objects_ and _parent-child relationships_.
+비정규화는 많은 프로젝트에서 좋은 선택이지만, 잠금 방식에 대한 필요성이 구현을 복잡하게 만들 수 있다.
+Elasticsearch는 관련된 entity를 다루기 위해서 2가지 모델(_nested objects_, _parent-child relationship_)을 제공한다.

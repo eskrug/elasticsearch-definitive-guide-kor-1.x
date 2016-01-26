@@ -1,9 +1,9 @@
 [[application-joins]]
-=== Application-side Joins
+=== 응용프로그램 측면의 조인
 
-We can (partly) emulate a relational((("relationships", "application-side joins")))((("application-side joins"))) database by implementing joins in our
-application. ((("joins", "application-side")))For instance, let's say we are indexing users and their
-blog posts.  In the relational world, we would do something like this:
+응용프로그램에서 조인을 구현하여, 관계형((("relationships", "application-side joins")))((("application-side joins"))) 데이터베이스를 
+(부분적으로) 따라 할 수 있다.((("joins", "application-side"))) 
+사용자와 그들의 블로그 포스트를 색인해 보자. 관계의 세계에서는, 다음과 같이 할 것이다.
 
 [source,json]
 --------------------------------
@@ -21,11 +21,10 @@ PUT /my_index/blogpost/2 <1>
   "user":     1 <2>
 }
 --------------------------------
-<1> The `index`, `type`, and `id` of each document together function as a primary key.
-<2> The `blogpost` links to the user by storing the user's `id`.  The `index`
-    and `type` aren't required as they are hardcoded in our application.
+<1> 각 document의 `index`, `type`, `id`는 primary key로서의 기능을 한다.
+<2> user의 `id`를 저장함으로써 `blogpost`가 user에게 연결된다. 응용프로그램에 하드코딩된 `index`와 `type`은 필요하지 않다.
 
-Finding blog posts by user with ID `1` is easy:
+사용자의 ID `1` 로 블로그 포스트를 찾는 것은 쉽다.
 
 [source,json]
 --------------------------------
@@ -41,9 +40,9 @@ GET /my_index/blogpost/_search
 }
 --------------------------------
 
-To find blogposts by a user called John, we would need to run two queries:
-the first would look up all users called John in order to find their IDs,
-and the second would pass those IDs in a query similar to the preceding one:
+John이라는 사용자의 블로그 포스트를 찾기 위해서, 2개의 query를 실행해야 한다.
+첫 번째는 사용자의 ID를 찾기 위해, “John”이라 불리는 모든 사용자를 찾아야 하고, 
+두 번째는 위와 비슷한 query에 해당 ID를 전달해야 한다.
 
 [source,json]
 --------------------------------
@@ -67,23 +66,16 @@ GET /my_index/blogpost/_search
   }
 }
 --------------------------------
-<1> The values in the `terms` filter would be populated with the results from
-    the first query.
+<1> `terms` filter 에 있는 값은 첫 번째 query의 결과로 채워진다.
 
-The main advantage of application-side joins is that the data is normalized.
-Changing the user's name has to happen in only one place: the `user` document.
-The disadvantage is that you have to run extra queries in order to join documents at search time.
+응용프로그램 측면의 조인의 주요 장점은 데이터가 정규화되어 있다는 것이다.
+사용자 이름의 변경은 `user` document 한 곳에서만 발생한다. 
+단점은 검색 시에 document를 조인하기 위하여, 추가 query를 실행해야 한다는 것이다.
 
-In this example, there was only one user who matched our first query, but in
-the real world we could easily have millions of users named John.
-Including all of their IDs in the second query would make for a very large
-query, and one that has to do millions of term lookups.
+이 예제에서, 첫 번째 query에 일치하는 user는 단 한 명이다. 그러나 현실 세계에서는, 
+John이라는 사용자는 쉽게 수백만 명이 된다. 두 번째 query에서 해당 ID 모두를 포함하면, 
+매우 큰 query가 될 것이고, 수백만의 단어를 조회해야 한다.
 
-This approach is suitable when the first entity (the `user` in this example)
-has a small number of documents and, preferably, they seldom change. This
-would allow the application to cache the results and avoid running the first
-query often.
-
-
-
-
+이런 방법은 첫 번째 entity(이 예제에서는 `user`)가 적은 수의 document를 가지고 있고, 
+가급적이면 거의 변하지 않는 경우에 적합하다. 이것은 응용프로그램이 결과를 cache할 수 있고, 
+첫 번째 query의 실행을 피할 수 있다.
