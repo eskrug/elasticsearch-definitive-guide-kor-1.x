@@ -30,7 +30,7 @@ PUT /my_index/blogpost/2
 --------------------------------
 <1> 사용자 데이터의 일부분이 `blogpost` document로 비정규화되었다.
 
-이제, 단일 query로 John이라는 사용자가 작성한 `relationships`에 대한 블로그 포스트를 찾을 수 있다.
+이제, 단일 query로 John이라는 사용자가 작성한 `relationships` 에 대한 블로그 포스트를 찾을 수 있다.
 
 [source,json]
 --------------------------------

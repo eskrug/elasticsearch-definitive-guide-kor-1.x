@@ -53,7 +53,7 @@ To support this, we need to index the path hierarchy:
 * `/clinton/projects`
 * `/clinton/projects/elasticsearch`
 
-이 계층은 ((("path_hierarchy tokenizer"))){ref}/analysis-pathhierarchy-tokenizer.html[`path_hierarchy` tokenizer]를 사용하여,
+이 계층은 ((("path_hierarchy tokenizer"))){ref}/analysis-pathhierarchy-tokenizer.html[ `path_hierarchy` tokenizer]를 사용하여,
 `path` field에서 자동으로 생성되게 할 수 있다.
 
 [source,json]
@@ -101,7 +101,7 @@ PUT /fs/_mapping/file
 <2> `path` field는 정확한(exact) 디렉토리 이름을 가진다. 반면에, `path.tree` field는 경로 계층을 포함하고 있다.
 
 한번 index가 설정되고, 파일이 색인되면, 아래와 같이 `/clinton/projects/elasticsearch` 디렉토리에서 
-`elasticsearch`를 포함하는 파일을 검색할 수 있다.
+`elasticsearch` 를 포함하는 파일을 검색할 수 있다.
 
 [source,json]
 --------------------------
