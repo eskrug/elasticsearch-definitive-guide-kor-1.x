@@ -22,7 +22,7 @@ PUT /my_index/blogpost/2 <1>
 }
 --------------------------------
 <1> 각 document의 `index`, `type`, `id` 는 primary key로서의 기능을 한다.
-<2> user의 `id`를 저장함으로써 `blogpost` 가 user에게 연결된다. 응용프로그램에 하드코딩된 `index`와 `type` 은 필요하지 않다.
+<2> user의 `id` 를 저장함으로써 `blogpost` 가 user에게 연결된다. 응용프로그램에 하드코딩된 `index` 와 `type` 은 필요하지 않다.
 
 사용자의 ID `1` 로 블로그 포스트를 찾는 것은 쉽다.
 

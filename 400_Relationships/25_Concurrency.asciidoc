@@ -47,7 +47,6 @@ PUT /fs/file/1
     grep -r "some text" /clinton
 
 이를 지원하기 위해, 경로 계층을 색인 해야 한다.
-To support this, we need to index the path hierarchy:
 
 * `/clinton`
 * `/clinton/projects`
