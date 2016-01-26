@@ -1,0 +1,1010 @@
+
+<!DOCTYPE HTML>
+<html lang="en-us">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>다중 값 bucket의 정렬</title><meta name="generator" content="DocBook XSL Stylesheets V1.78.1" /><link rel="home" href="index.html" title="Elasticsearch: The Definitive Guide" /><link rel="up" href="aggregations.html" title="Aggregations" /><link rel="prev" href="_query와_aggregation의_필터링.html" title="query와 aggregation의 필터링" /><link rel="next" href="_대략적인_집계.html" title="대략적인 집계" />
+  
+ 	<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+
+ 	<!-- RTP tag --> 
+	<script type='text/javascript' async>
+	(function(c,h,a,f,i,e){c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
+	 c[a].a=i;c[a].e=e;var g=h.createElement("script");g.async=true;g.type="text/javascript";
+	 g.src=f+'?aid='+i;var b=h.getElementsByTagName("script")[0];b.parentNode.insertBefore(g,b);
+	 })(window,document,"rtp","//sjrtp2-cdn.marketo.com/rtp-api/v1/rtp.js","elasticco");
+	 
+	rtp('send','view');
+	rtp('get', 'campaign',true);
+	</script>
+	<!-- End of RTP tag -->
+	
+	
+ 	<link rel="apple-touch-icon" sizes="57x57"  href="https://www.elastic.co/apple-icon-57x57.png?change=123">
+<link rel="apple-touch-icon" sizes="60x60"  href="https://www.elastic.co/apple-icon-60x60.png?change=123">
+<link rel="apple-touch-icon" sizes="72x72"  href="https://www.elastic.co/apple-icon-72x72.png?change=123">
+<link rel="apple-touch-icon" sizes="76x76"  href="https://www.elastic.co/apple-icon-76x76.png?change=123">
+<link rel="apple-touch-icon" sizes="114x114"  href="https://www.elastic.co/apple-icon-114x114.png?change=123">
+<link rel="apple-touch-icon" sizes="120x120"  href="https://www.elastic.co/apple-icon-120x120.png?change=123">
+<link rel="apple-touch-icon" sizes="144x144"  href="https://www.elastic.co/apple-icon-144x144.png?change=123">
+<link rel="apple-touch-icon" sizes="152x152"  href="https://www.elastic.co/apple-icon-152x152.png?change=123">
+<link rel="apple-touch-icon" sizes="180x180"  href="https://www.elastic.co/apple-icon-180x180.png?change=123">
+<link rel="icon" type="image/png" sizes="192x192"   href="https://www.elastic.co/android-icon-192x192.png?change=123">
+<link rel="icon" type="image/png" sizes="32x32"  href="https://www.elastic.co/favicon-32x32.png?change=123">
+<link rel="icon" type="image/png" sizes="96x96"  href="https://www.elastic.co/favicon-96x96.png?change=123">
+<link rel="icon" type="image/png" sizes="16x16"  href="https://www.elastic.co/favicon-16x16.png?change=123">
+<link rel="manifest"  href="https://www.elastic.co/manifest.json">
+<meta name="msapplication-TileColor" content="#ffffff">
+<meta name="msapplication-TileImage" content="/ms-icon-144x144.png">
+<meta name="theme-color" content="#ffffff">
+
+<!-- DC tags section -->
+<link rel="schema.DC" href="http://purl.org/dc/elements/1.1/" >
+<link rel="schema.DCTERMS" href="http://purl.org/dc/terms/" >
+<meta name="DC.title" content="Guide template" >
+
+<!-- end DC tags -->
+
+	<meta name="description" content="" />
+
+	<link rel="canonical" href="" />
+
+	<meta property="og:image" content="https://www.elastic.co/static/img/elastic-logo-200.png" />
+	
+
+
+	
+	<link type="text/css" rel="stylesheet" href="https://static-www.elastic.co/static/css/skel.css?q=100" />
+	<link type="text/css" rel="stylesheet" href="https://static-www.elastic.co/static/css/style.css?q=100" />	
+	<script src="https://static-www.elastic.co/static/js/skel.min.js?q=100"></script>
+	
+		<script type="text/javascript">form_name = "" ; cdn_url="https://static-www.elastic.co";cdn_slug = "100"</script>
+	
+	<script src="https://static-www.elastic.co/static/js/init.js?q=100"></script>
+	<script src="https://static-www.elastic.co/static/js/jquery.min.js?q=100"></script>
+	<script src="https://static-www.elastic.co/static/js/jquery.cookie.js?q=100"></script>
+	<!--<script type="text/javascript">
+	    (function() {
+	        var path = '//easy.myfonts.net/v2/js?sid=10336(font-family=Avenir+35+Light)&sid=10338(font-family=Avenir+55+Roman)&sid=10340(font-family=Avenir+85+Heavy)&sid=10344(font-family=Avenir+65+Medium)&key=nAD6PCOPrX',
+	            protocol = ('https:' == document.location.protocol ? 'https:' : 'http:'),
+	            trial = document.createElement('script');
+	        trial.type = 'text/javascript';
+	        trial.async = true;
+	        trial.src = protocol + path;
+	        var head = document.getElementsByTagName("head")[0];
+	        head.appendChild(trial);
+	    })();
+	</script>-->
+
+	
+	<link type="text/css" rel="stylesheet"  href="https://www.elastic.co/static/css/prettify.css" />
+	<script type="text/javascript"  src="https://www.elastic.co/static/js/prettify.js"></script>
+
+
+
+<link rel="stylesheet" type="text/css" href="styles.css" />
+
+</head>
+<body >
+	<!-- Google Tag Manager -->
+	<script>dataLayer = [];</script><noscript><iframe src="//www.googletagmanager.com/ns.html?id=GTM-58RLH5"
+													  height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+	<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+			new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+			j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+			'//www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+	})(window,document,'script','dataLayer','GTM-58RLH5');</script>
+	<!-- End Google Tag Manager -->
+	
+	<div class="header-cont">
+		<div id="header-wrapper">
+			
+
+
+	<script  src="https://www.elastic.co/static/js/jquery.tokeninput.js?change=123"></script>
+	<link rel="stylesheet" type="text/css"  href="https://www.elastic.co/static/css/token-input.css">
+
+<div class="shortcuts-wrapper">
+	<div class="container">
+		<!-- Shortcuts -->
+		<nav id="shortcuts">
+			<ul class="links">
+				
+					<li class="shortcut-1">
+						<a href="/downloads" id="header_downloads" >
+							<span class="txt">downloads</span>	
+						</a>
+					</li>
+				
+					<li class="shortcut-2">
+						<a href="/guide" id="header_guide" >
+							<span class="txt">docs</span>	
+						</a>
+					</li>
+				
+					<li class="shortcut-3">
+						<a href="/subscriptions" id="header_subscriptions" >
+							<span class="txt">support</span>	
+						</a>
+					</li>
+				
+					<li class="shortcut-4">
+						<a href="https://discuss.elastic.co" id="header_discuss" target="_blank">
+							<span class="txt">discuss</span>	
+						</a>
+					</li>
+				
+					<li class="shortcut-5">
+						<a href="/contact" id="header_contact" >
+							<span class="txt">contact</span>	
+						</a>
+					</li>
+				
+			</ul>
+		</nav>
+		<div class="languages-wrapper">
+			<div class="global-language">
+				<ul class="language">
+					<!-- <li class="active-language"><a class="active" href="#">EN</a></li> -->
+					
+						<li><a href="#">EN</a></li>
+					
+				</ul>
+				<ul class="all-languages">
+					
+						
+						<li><a href="/guide_template">English</a></li>
+					
+						
+						<li><a href="/fr/guide_template">French</a></li>
+					
+						
+						<li><a href="/de/guide_template">German</a></li>
+					
+						
+						<li><a href="/jp/guide_template">Japanese</a></li>
+					
+						
+						<li><a href="/kr/guide_template">Korean</a></li>
+					
+				</ul>
+			</div>
+		</div>
+	</div>
+</div>
+<div class="container w100">
+	<div class="row 0%">
+		<div class="12u">
+			
+
+<section class="first-container desktop-main-nav">
+	<div class="row 0%">
+		<div class="11u 6u(small) 6u(xsmall)">
+			<div id="elastic">
+				<h1>
+					<a href="/">
+						<div id="elastic-logo">
+						<svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+	 viewBox="0 0 400 130" preserveAspectRatio="xMinYMin meet" enable-background="new 0 0 400 130" xml:space="preserve">
+    <g>
+    	<g>
+    		<path fill="#FFFFFF" d="M122.5,67.8c0-10.3-6.4-19.2-15.9-22.7c0.4-2.2,0.6-4.3,0.6-6.6c0-19.1-15.5-34.6-34.6-34.6
+    			c-11.1,0-21.5,5.3-28,14.4c-3.2-2.5-7.1-3.8-11.2-3.8c-10.1,0-18.4,8.2-18.4,18.4c0,2.2,0.4,4.4,1.1,6.4C6.5,42.6,0,51.8,0,62
+    			c0,10.3,6.4,19.3,16,22.8c-0.4,2.1-0.6,4.3-0.6,6.6c0,19,15.5,34.5,34.5,34.5c11.2,0,21.5-5.4,28-14.4c3.2,2.5,7.2,3.9,11.3,3.9
+    			c10.1,0,18.4-8.2,18.4-18.4c0-2.2-0.4-4.4-1.1-6.4C115.9,87.2,122.5,78,122.5,67.8z"/>
+    		<g>
+    			<path fill="#F4BD19" d="M47.9,56.3l27.3,12.5l27.6-24.2c0.4-2,0.6-4,0.6-6.1c0-17-13.8-30.8-30.8-30.8c-10.2,0-19.7,5-25.4,13.4
+    				l-4.6,23.8L47.9,56.3z"/>
+    		</g>
+    		<g>
+    			<path fill="#3CBEB1" d="M19.6,85.2c-0.4,2-0.6,4.1-0.6,6.2c0,17,13.9,30.9,30.9,30.9c10.3,0,19.8-5.1,25.6-13.5L80,85l-6.1-11.6
+    				L46.5,60.9L19.6,85.2z"/>
+    		</g>
+    		<g>
+    			<path fill="#E9478C" d="M19.4,37.9l18.7,4.4L42.3,21c-2.6-2-5.7-3-9-3c-8.1,0-14.8,6.6-14.8,14.8C18.5,34.5,18.8,36.3,19.4,37.9z
+    				"/>
+    		</g>
+    		<g>
+    			<path fill="#2C458F" d="M17.8,42.4C9.4,45.1,3.6,53.2,3.6,62c0,8.6,5.3,16.3,13.3,19.3l26.3-23.8l-4.8-10.3L17.8,42.4z"/>
+    		</g>
+    		<g>
+    			<path fill="#95C63D" d="M80.3,108.7c2.6,2,5.7,3.1,8.9,3.1c8.1,0,14.8-6.6,14.8-14.8c0-1.8-0.3-3.5-0.9-5.1l-18.7-4.4L80.3,108.7
+    				z"/>
+    		</g>
+    		<g>
+    			<path fill="#176655" d="M84.1,82.6l20.6,4.8c8.4-2.8,14.2-10.8,14.2-19.6c0-8.6-5.3-16.2-13.3-19.3l-27,23.6L84.1,82.6z"/>
+    		</g>
+    	</g>
+    	<path d="M162.8,76.3c0,0.1,0,0.6,0.1,1.4c0.1,0.8,0.3,1.8,0.6,3c0.3,1.1,0.8,2.4,1.4,3.7c0.6,1.3,1.4,2.5,2.5,3.6
+    		c1,1.1,2.3,2,3.8,2.7c1.5,0.7,3.4,1.1,5.6,1.1c1.8,0,3.3-0.1,4.6-0.4c1.3-0.3,2.4-0.7,3.4-1.3c1-0.6,1.9-1.3,2.7-2.2
+    		c0.8-0.9,1.6-1.9,2.4-3.1c0.5-0.7,1-1.2,1.6-1.5c0.6-0.3,1.2-0.4,1.8-0.4c1,0,2,0.4,2.8,1.1c0.9,0.7,1.3,1.7,1.3,2.8
+    		c0,0.7-0.4,1.7-1.1,3.1c-0.7,1.4-1.9,2.8-3.6,4.1c-1.6,1.4-3.7,2.6-6.3,3.6c-2.6,1-5.7,1.5-9.5,1.5c-3.8,0-7.2-0.7-10.2-2.1
+    		c-3-1.4-5.5-3.2-7.5-5.6c-2-2.3-3.6-5-4.7-8.1c-1.1-3.1-1.6-6.3-1.6-9.7c0-3.5,0.5-6.8,1.6-9.9c1.1-3.1,2.7-5.8,4.7-8.1
+    		c2-2.3,4.5-4.1,7.4-5.5c2.9-1.3,6.1-2,9.6-2c3.3,0,6.3,0.5,9.2,1.5c2.8,1,5.3,2.4,7.4,4.3c2.1,1.9,3.7,4.1,5,6.8
+    		c1.2,2.7,1.8,5.8,1.8,9.2c0,2.1-0.5,3.7-1.6,4.8c-1,1.1-2.2,1.6-3.6,1.6H162.8z M170.9,56.4c-1.5,0.6-2.7,1.4-3.7,2.4
+    		c-1,0.9-1.8,2-2.4,3.1c-0.6,1.1-1,2.2-1.3,3.2c-0.3,1-0.5,1.8-0.5,2.5c-0.1,0.7-0.1,1.1-0.1,1.2h27.9c0-1.8-0.3-3.5-0.9-5.1
+    		c-0.6-1.6-1.5-3-2.6-4.3c-1.2-1.2-2.7-2.2-4.5-3c-1.8-0.7-4-1.1-6.5-1.1C174.2,55.5,172.4,55.8,170.9,56.4z"/>
+    	<path d="M214.3,94.6c0,1.3-0.4,2.3-1.3,3.2c-0.9,0.9-1.9,1.3-3.2,1.3c-1.3,0-2.3-0.4-3.2-1.3c-0.9-0.9-1.3-2-1.3-3.2V35.1
+    		c0-1.3,0.4-2.3,1.3-3.2c0.9-0.9,2-1.3,3.2-1.3c1.3,0,2.3,0.4,3.2,1.3c0.9,0.9,1.3,1.9,1.3,3.2V94.6z"/>
+    	<path d="M229.8,63.5c-0.6,0.3-1.2,0.5-1.9,0.5c-1.2,0-2.2-0.4-3.2-1.1c-1-0.7-1.5-1.8-1.5-3.1c0-0.5,0.1-1.1,0.4-1.9
+    		c0.5-1.2,1.2-2.4,2.1-3.6c0.9-1.2,2-2.2,3.5-3.1s3.3-1.7,5.4-2.2c2.2-0.5,4.8-0.8,7.9-0.8c5.9,0,10.5,1.2,14,3.5
+    		c3.5,2.3,5.2,5.8,5.2,10.3v32.8c0,1.3-0.4,2.3-1.3,3.2c-0.9,0.9-1.9,1.3-3.2,1.3c-1.3,0-2.3-0.4-3.2-1.3c-0.9-0.9-1.3-2-1.3-3.2v-2
+    		c-1.2,2-4.7,4.5-7.5,5.3c-2.8,0.8-5.7,1.2-8.8,1.2c-2,0-3.9-0.3-5.9-0.8c-2-0.5-3.8-1.4-5.3-2.5c-1.6-1.1-2.9-2.6-3.8-4.3
+    		c-1-1.7-1.5-3.8-1.5-6.2c0-2.8,0.5-5.7,1.6-7.5c1.1-1.9,2.6-3.4,4.4-4.6c1.8-1.2,3.9-2.1,6.3-2.8c2.4-0.6,4.9-1.1,7.5-1.4
+    		c3-0.3,5.4-0.7,7.2-1.2c1.7-0.4,3-0.9,3.9-1.5c0.9-0.6,1.4-1.2,1.6-2c0.2-0.7,0.3-1.6,0.3-2.5c0-1.1-0.3-2-0.9-2.8
+    		c-0.6-0.8-1.4-1.5-2.4-2c-1-0.5-2.1-0.9-3.3-1.2s-2.4-0.4-3.5-0.4c-2.1,0-3.7,0.2-5,0.5c-1.3,0.3-2.3,0.8-3.1,1.4
+    		c-0.8,0.6-1.5,1.3-1.9,2.1c-0.5,0.8-0.9,1.6-1.3,2.5C230.9,62.6,230.4,63.1,229.8,63.5z M250.6,74.4c-1.1,0.3-2.4,0.6-3.8,0.8
+    		c-1.5,0.2-3,0.4-4.6,0.6c-1.6,0.2-3.1,0.5-4.6,0.9c-1.5,0.3-2.8,0.8-4,1.5c-1.2,0.7-2.2,1.5-2.9,2.5c-0.7,1-1.1,3-1.1,4.6
+    		c0,1.3,0.3,2.3,0.8,3.1c0.5,0.8,1.2,1.5,2.1,2c0.9,0.5,1.8,0.8,2.9,1c1.1,0.2,2.2,0.3,3.3,0.3c1.7,0,3.3-0.2,5-0.6
+    		c1.7-0.4,3.2-1,4.5-1.9s2.4-2,3.3-3.5c0.8-1.4,1.2-3.8,1.2-5.9v-6.1L250.6,74.4z"/>
+    	<path d="M307.6,90.9c-1.1,2-2.7,3.6-4.6,4.8s-4.1,2.1-6.6,2.7c-2.5,0.5-5.2,0.8-7.9,0.8c-3.9,0-7.2-0.6-9.9-1.8
+    		c-2.7-1.2-4.9-2.6-6.5-4.1c-1.7-1.6-2.9-3.1-3.7-4.7c-0.7-1.6-1.1-2.7-1.1-3.5c0-1.3,0.5-2.4,1.4-3.2c0.9-0.8,2-1.2,3.1-1.2
+    		c0.7,0,1.3,0.2,2,0.6c0.6,0.4,1.1,1,1.5,1.9c1,2.5,2.5,4.5,4.7,6.2c2.2,1.7,5.2,2.5,9.3,2.5c1.8,0,3.4-0.2,4.7-0.6
+    		c1.3-0.4,2.4-1,3.2-1.7c0.8-0.7,1.4-1.5,1.9-2.4c0.4-0.9,0.6-1.8,0.6-2.8c0-2-0.8-3.4-2.3-4.4c-1.5-1-3.5-1.7-5.8-2.3
+    		c-2.3-0.6-4.8-1.1-7.5-1.6c-2.7-0.5-5.2-1.2-7.5-2.2c-2.3-0.9-4.2-2.3-5.8-4c-1.6-1.8-2.3-4.2-2.3-7.3c0-4.5,1.6-8,4.9-10.5
+    		c3.3-2.5,7.8-3.8,13.7-3.8c3.3,0,6,0.3,8.3,1c2.2,0.7,4.1,1.6,5.5,2.7c0.6,0.5,1.2,1,1.8,1.7c0.6,0.7,1.2,1.4,1.8,2.2
+    		c0.6,0.8,1,1.5,1.4,2.3c0.4,0.7,0.6,1.4,0.6,2c0,1.3-0.5,2.4-1.6,3.1c-1,0.8-2.2,1.2-3.4,1.2c-0.7,0-1.5-0.1-2.1-0.6
+    		c-0.6-0.6-1-1.3-1.3-1.8c-0.5-1.1-1.1-2-1.7-2.8c-0.5-0.8-1.2-1.5-2-2c-0.8-0.5-1.8-0.9-3-1.2c-1.2-0.3-2.7-0.4-4.4-0.4
+    		c-3.5,0-6,0.6-7.6,1.7c-1.6,1.1-2.4,2.5-2.4,4.2c0,1.3,0.5,2.3,1.4,3.1c0.9,0.8,2.1,1.4,3.7,2c1.5,0.5,3.3,1,5.2,1.4
+    		c2,0.4,3.9,0.8,5.9,1.3c2,0.5,4,1.1,5.9,1.7c1.9,0.7,3.7,1.6,5.2,2.7c1.5,1.1,2.7,2.5,3.7,4.1c0.9,1.6,1.4,3.6,1.4,6
+    		C309.4,86.4,308.8,88.9,307.6,90.9z"/>
+    	<path d="M327.4,48.8h4.7c1.1,0,2,0.4,2.8,1.2c0.8,0.8,1.2,1.7,1.2,2.8c0,1.1-0.4,2.1-1.2,2.8s-1.7,1.1-2.8,1.1h-4.7v37.9
+    		c0,1.3-0.4,2.3-1.3,3.2c-0.9,0.9-2,1.3-3.2,1.3c-1.3,0-2.3-0.4-3.2-1.3c-0.9-0.9-1.3-2-1.3-3.2V56.7h-4.6c-1.1,0-2-0.4-2.8-1.1
+    		c-0.8-0.7-1.2-1.7-1.2-2.8c0-1.1,0.4-2,1.2-2.8c0.8-0.8,1.7-1.2,2.8-1.2h4.6V39c0-1.3,0.4-2.3,1.3-3.2s1.9-1.3,3.2-1.3
+    		c1.3,0,2.3,0.4,3.2,1.3s1.3,1.9,1.3,3.2V48.8z"/>
+    	<path d="M341.5,32.1c1-1,2.2-1.5,3.7-1.5c1.4,0,2.6,0.5,3.6,1.5c1,1,1.5,2.2,1.5,3.6c0,1.4-0.5,2.6-1.5,3.6c-1,1-2.2,1.5-3.6,1.5
+    		c-1.4,0-2.7-0.5-3.7-1.5c-1-1-1.5-2.2-1.5-3.6C340,34.2,340.5,33,341.5,32.1z M349.6,94.6c0,1.3-0.4,2.3-1.3,3.2
+    		c-0.9,0.9-1.9,1.3-3.2,1.3c-1.3,0-2.3-0.4-3.2-1.3c-0.9-0.9-1.3-2-1.3-3.2V53.3c0-1.3,0.4-2.3,1.3-3.2c0.9-0.9,2-1.3,3.2-1.3
+    		c1.3,0,2.3,0.4,3.2,1.3c0.9,0.9,1.3,2,1.3,3.2V94.6z"/>
+    	<path d="M369.1,97.3c-2.9-1.2-5.4-3-7.5-5.2c-2.1-2.2-3.8-4.9-5-8.1c-1.2-3.1-1.8-6.6-1.8-10.4c0-3.8,0.6-7.3,1.8-10.5
+    		c1.2-3.1,2.9-5.8,5-8.1c2.1-2.2,4.6-4,7.5-5.2c2.9-1.2,6-1.9,9.4-1.9c3.4,0,6.4,0.5,9,1.5c2.5,1,4.6,2.2,6.2,3.6
+    		c1.6,1.4,3.2,2.9,4,4.4c0.5,0.9,0.9,1.5,0.9,2.6c0,1.3-0.5,2.3-1.4,3.1c-0.9,0.7-2,1.1-3.1,1.1c-0.8,0-1.6-0.2-2.2-0.6
+    		c-0.7-0.4-1.2-1.3-1.8-2.1c-1-1.4-0.5-0.6-1.1-1.5c-0.7-0.9-1.5-1.6-2.5-2.3c-1-0.7-2.2-1.2-3.5-1.6c-1.4-0.4-2.8-0.6-4.4-0.6
+    		c-1.8,0-3.5,0.3-5.3,1c-1.8,0.7-3.3,1.7-4.7,3.1c-1.4,1.4-2.5,3.3-3.4,5.6s-1.3,5.1-1.3,8.4c0,3.3,0.4,6.1,1.3,8.4s2,4.2,3.4,5.6
+    		c1.4,1.4,3,2.5,4.7,3.1c1.8,0.7,3.5,1,5.3,1c1.6,0,3.1-0.2,4.4-0.6c1.3-0.4,2.5-0.9,3.5-1.6c1-0.7,1.8-1.5,2.5-2.3
+    		c0.7-0.9,1.1-1.8,1.4-2.7c0.3-1,0.8-1.7,1.5-2.1c0.7-0.4,1.4-0.6,2.2-0.6c1.1,0,2.2,0.4,3.1,1.1c0.9,0.7,1.4,1.7,1.4,3
+    		c0,0.6-0.3,1.7-0.9,3.1c-0.6,1.5-1.6,2.9-3.1,4.4c-1.5,1.5-3.5,2.8-6.2,4c-2.6,1.1-6,1.7-10,1.7C375.1,99.2,372,98.5,369.1,97.3z"
+    		/>
+    </g>
+</svg>
+						</div>
+					</a>
+				</h1>
+			</div>
+			<nav id="nav">
+				<ul>
+					
+					<li>
+						
+							
+						
+						<a href="/products" id="nav_products"   >Products</a>
+						
+						<ul class="dropdown">
+							
+								<li><a href="/products/elasticsearch" id="nav_elasticsearch" >elasticsearch</a></li>								
+							
+								<li><a href="/found" id="nav_hosted-elasticsearch" >elasticsearch as a service</a></li>								
+							
+								<li><a href="/products/logstash" id="nav_logstash" >logstash</a></li>								
+							
+								<li><a href="/products/kibana" id="nav_kibana" >kibana</a></li>								
+							
+								<li><a href="/products/beats" id="nav_beats" >beats</a></li>								
+							
+								<li><a href="/products/watcher" id="nav_watcher" >watcher</a></li>								
+							
+								<li><a href="/products/shield" id="nav_shield" >shield</a></li>								
+							
+								<li><a href="/products/marvel" id="nav_marvel" >marvel</a></li>								
+							
+								<li><a href="/products/hadoop" id="nav_hadoop" >hadoop</a></li>								
+							
+								<li><a href="/downloads" id="nav_downloads" >downloads</a></li>								
+								
+						</ul>							
+					</li>
+					
+					<li>
+						
+							
+						
+						<a href="/subscriptions" id="nav_subscriptions"   >Subscriptions</a>
+						
+						<ul class="dropdown">
+								
+						</ul>							
+					</li>
+					
+					<li>
+						
+							
+						
+						<a href="/learn" id="nav_learn"   >Learn</a>
+						
+						<ul class="dropdown">
+							
+								<li><a href="/guide" id="nav_guide" >docs</a></li>								
+							
+								<li><a href="/videos" id="nav_videos" >videos</a></li>								
+							
+								<li><a href="/training" id="nav_training" >training</a></li>								
+							
+								<li><a href="/services" id="nav_services" >services</a></li>								
+							
+								<li><a href="/blog" id="nav_learn_blog" >blog</a></li>								
+							
+								<li><a href="/elasticon" id="nav_learn_elasticon" >elastic{ON}</a></li>								
+								
+						</ul>							
+					</li>
+					
+					<li>
+						
+							
+						
+						<a href="/community" id="nav_community"   >Community</a>
+						
+						<ul class="dropdown">
+							
+								<li><a href="/community/meetups" id="nav_meetups" >meetups</a></li>								
+							
+								<li><a href="https://discuss.elastic.co" id="nav_discuss" target="_blank">discuss</a></li>								
+							
+								<li><a href="/community/codeofconduct" id="nav_codeofconduct" >code of conduct</a></li>								
+								
+						</ul>							
+					</li>
+					
+					<li>
+						
+							
+						
+						<a href="/use-cases" id="nav_usecases"   >Use Cases</a>
+						
+						<ul class="dropdown">
+								
+						</ul>							
+					</li>
+					
+					<li>
+						
+							
+						
+						<a href="/blog" id="nav_blog"   >Blog</a>
+						
+						<ul class="dropdown">
+							
+								<li><a href="/blog/category/news" id="blog_news" >News</a></li>								
+							
+								<li><a href="/blog/category/engineering" id="blog_engineering" >Engineering</a></li>								
+							
+								<li><a href="/blog/category/user-stories" id="blog_user-stories" >User Stories</a></li>								
+							
+								<li><a href="/blog/category/releases" id="blog_releases" >Releases</a></li>								
+							
+								<li><a href="/blog/archive" id="blog_archive" >Archive</a></li>								
+								
+						</ul>							
+					</li>
+					
+					<li>
+						
+							
+						
+						<a href="/about" id="nav_about"   >About</a>
+						
+						<ul class="dropdown">
+							
+								<li><a href="/about/leadership" id="nav_leadership" >leadership</a></li>								
+							
+								<li><a href="/about/board" id="nav_board" >board of directors</a></li>								
+							
+								<li><a href="/about/careers" id="nav_careers" >careers</a></li>								
+							
+								<li><a href="/about/partners" id="nav_partners" >partners</a></li>								
+							
+								<li><a href="/about/press" id="nav_press" >press</a></li>								
+								
+						</ul>							
+					</li>
+					
+				</ul>
+			</nav>			
+			<!-- Searchbar Input box -->
+			 <!-- <form method="get" action="/search" name="searchForm" class="header-search-form" id="searchMobileFrm">
+			   <input type="text" id="search-header-autocomplete" name="q" class="form-control global-input" placeholder="elastic{search}">
+			</form>
+			<div class="mobile-auto-complete"></div> -->  
+		</div>
+		<div class="1u 6u(small) 6u(xsmall)">
+			<div id="searchbar">
+				<a href="#" class="button icon"></a>
+			</div>
+			<!-- <div class="nav-auto-complete"></div> -->
+		</div>
+	</div>
+</section>
+<div class="mobile-menu-wrapper">
+	<div class="row 0%">
+		<div class="8u 6u(small) 6u(xsmall)">
+			<div id="elastic">
+				<h1>
+					<a href="/">
+						<div id="elastic-logo">
+						<svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+	 viewBox="0 0 400 130" preserveAspectRatio="xMinYMin meet" enable-background="new 0 0 400 130" xml:space="preserve">
+    <g>
+    	<g>
+    		<path fill="#FFFFFF" d="M122.5,67.8c0-10.3-6.4-19.2-15.9-22.7c0.4-2.2,0.6-4.3,0.6-6.6c0-19.1-15.5-34.6-34.6-34.6
+    			c-11.1,0-21.5,5.3-28,14.4c-3.2-2.5-7.1-3.8-11.2-3.8c-10.1,0-18.4,8.2-18.4,18.4c0,2.2,0.4,4.4,1.1,6.4C6.5,42.6,0,51.8,0,62
+    			c0,10.3,6.4,19.3,16,22.8c-0.4,2.1-0.6,4.3-0.6,6.6c0,19,15.5,34.5,34.5,34.5c11.2,0,21.5-5.4,28-14.4c3.2,2.5,7.2,3.9,11.3,3.9
+    			c10.1,0,18.4-8.2,18.4-18.4c0-2.2-0.4-4.4-1.1-6.4C115.9,87.2,122.5,78,122.5,67.8z"/>
+    		<g>
+    			<path fill="#F4BD19" d="M47.9,56.3l27.3,12.5l27.6-24.2c0.4-2,0.6-4,0.6-6.1c0-17-13.8-30.8-30.8-30.8c-10.2,0-19.7,5-25.4,13.4
+    				l-4.6,23.8L47.9,56.3z"/>
+    		</g>
+    		<g>
+    			<path fill="#3CBEB1" d="M19.6,85.2c-0.4,2-0.6,4.1-0.6,6.2c0,17,13.9,30.9,30.9,30.9c10.3,0,19.8-5.1,25.6-13.5L80,85l-6.1-11.6
+    				L46.5,60.9L19.6,85.2z"/>
+    		</g>
+    		<g>
+    			<path fill="#E9478C" d="M19.4,37.9l18.7,4.4L42.3,21c-2.6-2-5.7-3-9-3c-8.1,0-14.8,6.6-14.8,14.8C18.5,34.5,18.8,36.3,19.4,37.9z
+    				"/>
+    		</g>
+    		<g>
+    			<path fill="#2C458F" d="M17.8,42.4C9.4,45.1,3.6,53.2,3.6,62c0,8.6,5.3,16.3,13.3,19.3l26.3-23.8l-4.8-10.3L17.8,42.4z"/>
+    		</g>
+    		<g>
+    			<path fill="#95C63D" d="M80.3,108.7c2.6,2,5.7,3.1,8.9,3.1c8.1,0,14.8-6.6,14.8-14.8c0-1.8-0.3-3.5-0.9-5.1l-18.7-4.4L80.3,108.7
+    				z"/>
+    		</g>
+    		<g>
+    			<path fill="#176655" d="M84.1,82.6l20.6,4.8c8.4-2.8,14.2-10.8,14.2-19.6c0-8.6-5.3-16.2-13.3-19.3l-27,23.6L84.1,82.6z"/>
+    		</g>
+    	</g>
+    	<path d="M162.8,76.3c0,0.1,0,0.6,0.1,1.4c0.1,0.8,0.3,1.8,0.6,3c0.3,1.1,0.8,2.4,1.4,3.7c0.6,1.3,1.4,2.5,2.5,3.6
+    		c1,1.1,2.3,2,3.8,2.7c1.5,0.7,3.4,1.1,5.6,1.1c1.8,0,3.3-0.1,4.6-0.4c1.3-0.3,2.4-0.7,3.4-1.3c1-0.6,1.9-1.3,2.7-2.2
+    		c0.8-0.9,1.6-1.9,2.4-3.1c0.5-0.7,1-1.2,1.6-1.5c0.6-0.3,1.2-0.4,1.8-0.4c1,0,2,0.4,2.8,1.1c0.9,0.7,1.3,1.7,1.3,2.8
+    		c0,0.7-0.4,1.7-1.1,3.1c-0.7,1.4-1.9,2.8-3.6,4.1c-1.6,1.4-3.7,2.6-6.3,3.6c-2.6,1-5.7,1.5-9.5,1.5c-3.8,0-7.2-0.7-10.2-2.1
+    		c-3-1.4-5.5-3.2-7.5-5.6c-2-2.3-3.6-5-4.7-8.1c-1.1-3.1-1.6-6.3-1.6-9.7c0-3.5,0.5-6.8,1.6-9.9c1.1-3.1,2.7-5.8,4.7-8.1
+    		c2-2.3,4.5-4.1,7.4-5.5c2.9-1.3,6.1-2,9.6-2c3.3,0,6.3,0.5,9.2,1.5c2.8,1,5.3,2.4,7.4,4.3c2.1,1.9,3.7,4.1,5,6.8
+    		c1.2,2.7,1.8,5.8,1.8,9.2c0,2.1-0.5,3.7-1.6,4.8c-1,1.1-2.2,1.6-3.6,1.6H162.8z M170.9,56.4c-1.5,0.6-2.7,1.4-3.7,2.4
+    		c-1,0.9-1.8,2-2.4,3.1c-0.6,1.1-1,2.2-1.3,3.2c-0.3,1-0.5,1.8-0.5,2.5c-0.1,0.7-0.1,1.1-0.1,1.2h27.9c0-1.8-0.3-3.5-0.9-5.1
+    		c-0.6-1.6-1.5-3-2.6-4.3c-1.2-1.2-2.7-2.2-4.5-3c-1.8-0.7-4-1.1-6.5-1.1C174.2,55.5,172.4,55.8,170.9,56.4z"/>
+    	<path d="M214.3,94.6c0,1.3-0.4,2.3-1.3,3.2c-0.9,0.9-1.9,1.3-3.2,1.3c-1.3,0-2.3-0.4-3.2-1.3c-0.9-0.9-1.3-2-1.3-3.2V35.1
+    		c0-1.3,0.4-2.3,1.3-3.2c0.9-0.9,2-1.3,3.2-1.3c1.3,0,2.3,0.4,3.2,1.3c0.9,0.9,1.3,1.9,1.3,3.2V94.6z"/>
+    	<path d="M229.8,63.5c-0.6,0.3-1.2,0.5-1.9,0.5c-1.2,0-2.2-0.4-3.2-1.1c-1-0.7-1.5-1.8-1.5-3.1c0-0.5,0.1-1.1,0.4-1.9
+    		c0.5-1.2,1.2-2.4,2.1-3.6c0.9-1.2,2-2.2,3.5-3.1s3.3-1.7,5.4-2.2c2.2-0.5,4.8-0.8,7.9-0.8c5.9,0,10.5,1.2,14,3.5
+    		c3.5,2.3,5.2,5.8,5.2,10.3v32.8c0,1.3-0.4,2.3-1.3,3.2c-0.9,0.9-1.9,1.3-3.2,1.3c-1.3,0-2.3-0.4-3.2-1.3c-0.9-0.9-1.3-2-1.3-3.2v-2
+    		c-1.2,2-4.7,4.5-7.5,5.3c-2.8,0.8-5.7,1.2-8.8,1.2c-2,0-3.9-0.3-5.9-0.8c-2-0.5-3.8-1.4-5.3-2.5c-1.6-1.1-2.9-2.6-3.8-4.3
+    		c-1-1.7-1.5-3.8-1.5-6.2c0-2.8,0.5-5.7,1.6-7.5c1.1-1.9,2.6-3.4,4.4-4.6c1.8-1.2,3.9-2.1,6.3-2.8c2.4-0.6,4.9-1.1,7.5-1.4
+    		c3-0.3,5.4-0.7,7.2-1.2c1.7-0.4,3-0.9,3.9-1.5c0.9-0.6,1.4-1.2,1.6-2c0.2-0.7,0.3-1.6,0.3-2.5c0-1.1-0.3-2-0.9-2.8
+    		c-0.6-0.8-1.4-1.5-2.4-2c-1-0.5-2.1-0.9-3.3-1.2s-2.4-0.4-3.5-0.4c-2.1,0-3.7,0.2-5,0.5c-1.3,0.3-2.3,0.8-3.1,1.4
+    		c-0.8,0.6-1.5,1.3-1.9,2.1c-0.5,0.8-0.9,1.6-1.3,2.5C230.9,62.6,230.4,63.1,229.8,63.5z M250.6,74.4c-1.1,0.3-2.4,0.6-3.8,0.8
+    		c-1.5,0.2-3,0.4-4.6,0.6c-1.6,0.2-3.1,0.5-4.6,0.9c-1.5,0.3-2.8,0.8-4,1.5c-1.2,0.7-2.2,1.5-2.9,2.5c-0.7,1-1.1,3-1.1,4.6
+    		c0,1.3,0.3,2.3,0.8,3.1c0.5,0.8,1.2,1.5,2.1,2c0.9,0.5,1.8,0.8,2.9,1c1.1,0.2,2.2,0.3,3.3,0.3c1.7,0,3.3-0.2,5-0.6
+    		c1.7-0.4,3.2-1,4.5-1.9s2.4-2,3.3-3.5c0.8-1.4,1.2-3.8,1.2-5.9v-6.1L250.6,74.4z"/>
+    	<path d="M307.6,90.9c-1.1,2-2.7,3.6-4.6,4.8s-4.1,2.1-6.6,2.7c-2.5,0.5-5.2,0.8-7.9,0.8c-3.9,0-7.2-0.6-9.9-1.8
+    		c-2.7-1.2-4.9-2.6-6.5-4.1c-1.7-1.6-2.9-3.1-3.7-4.7c-0.7-1.6-1.1-2.7-1.1-3.5c0-1.3,0.5-2.4,1.4-3.2c0.9-0.8,2-1.2,3.1-1.2
+    		c0.7,0,1.3,0.2,2,0.6c0.6,0.4,1.1,1,1.5,1.9c1,2.5,2.5,4.5,4.7,6.2c2.2,1.7,5.2,2.5,9.3,2.5c1.8,0,3.4-0.2,4.7-0.6
+    		c1.3-0.4,2.4-1,3.2-1.7c0.8-0.7,1.4-1.5,1.9-2.4c0.4-0.9,0.6-1.8,0.6-2.8c0-2-0.8-3.4-2.3-4.4c-1.5-1-3.5-1.7-5.8-2.3
+    		c-2.3-0.6-4.8-1.1-7.5-1.6c-2.7-0.5-5.2-1.2-7.5-2.2c-2.3-0.9-4.2-2.3-5.8-4c-1.6-1.8-2.3-4.2-2.3-7.3c0-4.5,1.6-8,4.9-10.5
+    		c3.3-2.5,7.8-3.8,13.7-3.8c3.3,0,6,0.3,8.3,1c2.2,0.7,4.1,1.6,5.5,2.7c0.6,0.5,1.2,1,1.8,1.7c0.6,0.7,1.2,1.4,1.8,2.2
+    		c0.6,0.8,1,1.5,1.4,2.3c0.4,0.7,0.6,1.4,0.6,2c0,1.3-0.5,2.4-1.6,3.1c-1,0.8-2.2,1.2-3.4,1.2c-0.7,0-1.5-0.1-2.1-0.6
+    		c-0.6-0.6-1-1.3-1.3-1.8c-0.5-1.1-1.1-2-1.7-2.8c-0.5-0.8-1.2-1.5-2-2c-0.8-0.5-1.8-0.9-3-1.2c-1.2-0.3-2.7-0.4-4.4-0.4
+    		c-3.5,0-6,0.6-7.6,1.7c-1.6,1.1-2.4,2.5-2.4,4.2c0,1.3,0.5,2.3,1.4,3.1c0.9,0.8,2.1,1.4,3.7,2c1.5,0.5,3.3,1,5.2,1.4
+    		c2,0.4,3.9,0.8,5.9,1.3c2,0.5,4,1.1,5.9,1.7c1.9,0.7,3.7,1.6,5.2,2.7c1.5,1.1,2.7,2.5,3.7,4.1c0.9,1.6,1.4,3.6,1.4,6
+    		C309.4,86.4,308.8,88.9,307.6,90.9z"/>
+    	<path d="M327.4,48.8h4.7c1.1,0,2,0.4,2.8,1.2c0.8,0.8,1.2,1.7,1.2,2.8c0,1.1-0.4,2.1-1.2,2.8s-1.7,1.1-2.8,1.1h-4.7v37.9
+    		c0,1.3-0.4,2.3-1.3,3.2c-0.9,0.9-2,1.3-3.2,1.3c-1.3,0-2.3-0.4-3.2-1.3c-0.9-0.9-1.3-2-1.3-3.2V56.7h-4.6c-1.1,0-2-0.4-2.8-1.1
+    		c-0.8-0.7-1.2-1.7-1.2-2.8c0-1.1,0.4-2,1.2-2.8c0.8-0.8,1.7-1.2,2.8-1.2h4.6V39c0-1.3,0.4-2.3,1.3-3.2s1.9-1.3,3.2-1.3
+    		c1.3,0,2.3,0.4,3.2,1.3s1.3,1.9,1.3,3.2V48.8z"/>
+    	<path d="M341.5,32.1c1-1,2.2-1.5,3.7-1.5c1.4,0,2.6,0.5,3.6,1.5c1,1,1.5,2.2,1.5,3.6c0,1.4-0.5,2.6-1.5,3.6c-1,1-2.2,1.5-3.6,1.5
+    		c-1.4,0-2.7-0.5-3.7-1.5c-1-1-1.5-2.2-1.5-3.6C340,34.2,340.5,33,341.5,32.1z M349.6,94.6c0,1.3-0.4,2.3-1.3,3.2
+    		c-0.9,0.9-1.9,1.3-3.2,1.3c-1.3,0-2.3-0.4-3.2-1.3c-0.9-0.9-1.3-2-1.3-3.2V53.3c0-1.3,0.4-2.3,1.3-3.2c0.9-0.9,2-1.3,3.2-1.3
+    		c1.3,0,2.3,0.4,3.2,1.3c0.9,0.9,1.3,2,1.3,3.2V94.6z"/>
+    	<path d="M369.1,97.3c-2.9-1.2-5.4-3-7.5-5.2c-2.1-2.2-3.8-4.9-5-8.1c-1.2-3.1-1.8-6.6-1.8-10.4c0-3.8,0.6-7.3,1.8-10.5
+    		c1.2-3.1,2.9-5.8,5-8.1c2.1-2.2,4.6-4,7.5-5.2c2.9-1.2,6-1.9,9.4-1.9c3.4,0,6.4,0.5,9,1.5c2.5,1,4.6,2.2,6.2,3.6
+    		c1.6,1.4,3.2,2.9,4,4.4c0.5,0.9,0.9,1.5,0.9,2.6c0,1.3-0.5,2.3-1.4,3.1c-0.9,0.7-2,1.1-3.1,1.1c-0.8,0-1.6-0.2-2.2-0.6
+    		c-0.7-0.4-1.2-1.3-1.8-2.1c-1-1.4-0.5-0.6-1.1-1.5c-0.7-0.9-1.5-1.6-2.5-2.3c-1-0.7-2.2-1.2-3.5-1.6c-1.4-0.4-2.8-0.6-4.4-0.6
+    		c-1.8,0-3.5,0.3-5.3,1c-1.8,0.7-3.3,1.7-4.7,3.1c-1.4,1.4-2.5,3.3-3.4,5.6s-1.3,5.1-1.3,8.4c0,3.3,0.4,6.1,1.3,8.4s2,4.2,3.4,5.6
+    		c1.4,1.4,3,2.5,4.7,3.1c1.8,0.7,3.5,1,5.3,1c1.6,0,3.1-0.2,4.4-0.6c1.3-0.4,2.5-0.9,3.5-1.6c1-0.7,1.8-1.5,2.5-2.3
+    		c0.7-0.9,1.1-1.8,1.4-2.7c0.3-1,0.8-1.7,1.5-2.1c0.7-0.4,1.4-0.6,2.2-0.6c1.1,0,2.2,0.4,3.1,1.1c0.9,0.7,1.4,1.7,1.4,3
+    		c0,0.6-0.3,1.7-0.9,3.1c-0.6,1.5-1.6,2.9-3.1,4.4c-1.5,1.5-3.5,2.8-6.2,4c-2.6,1.1-6,1.7-10,1.7C375.1,99.2,372,98.5,369.1,97.3z"
+    		/>
+    </g>
+</svg>
+						</div>
+					</a>
+				</h1>
+			</div>
+		</div>
+		<div class="4u 6u(small) 6u(xsmall) text-right">
+			<!-- <div class="mobile-menu-wrapper"> -->
+				<ul class="m-shortcuts">
+					
+					<li><a href="#" class="m-search" id="header-search"></a></li>
+					
+					<li><a href="/guide" class="m-docs" id="mobile-docs"></a></li>
+					
+					<li><a href="/contact" class="m-contact" id="mobile-contact"></a></li>
+					
+				</ul>	
+				<nav class="nav-menu">
+					<div class="menu-button">
+						<span></span>
+					</div>
+					<div class="nav-menu-list-wrap">
+						<div class="nav-menu-list">
+							
+								<h3><a href="/products" id="nav_products" >Products</a></h3>
+
+								
+								<ul>
+									
+									<li><a href="/products/elasticsearch" id="nav_elasticsearch" >elasticsearch</a></li>
+									
+									<li><a href="/found" id="nav_hosted-elasticsearch" >elasticsearch as a service</a></li>
+									
+									<li><a href="/products/logstash" id="nav_logstash" >logstash</a></li>
+									
+									<li><a href="/products/kibana" id="nav_kibana" >kibana</a></li>
+									
+									<li><a href="/products/beats" id="nav_beats" >beats</a></li>
+									
+									<li><a href="/products/watcher" id="nav_watcher" >watcher</a></li>
+									
+									<li><a href="/products/shield" id="nav_shield" >shield</a></li>
+									
+									<li><a href="/products/marvel" id="nav_marvel" >marvel</a></li>
+									
+									<li><a href="/products/hadoop" id="nav_hadoop" >hadoop</a></li>
+									
+									<li><a href="/downloads" id="nav_downloads" >downloads</a></li>
+									
+								</ul>
+								
+							
+								<h3><a href="/subscriptions" id="nav_subscriptions" >Subscriptions</a></h3>
+
+								
+							
+								<h3><a href="/learn" id="nav_learn" >Learn</a></h3>
+
+								
+								<ul>
+									
+									<li><a href="/guide" id="nav_guide" >docs</a></li>
+									
+									<li><a href="/videos" id="nav_videos" >videos</a></li>
+									
+									<li><a href="/training" id="nav_training" >training</a></li>
+									
+									<li><a href="/services" id="nav_services" >services</a></li>
+									
+									<li><a href="/blog" id="nav_learn_blog" >blog</a></li>
+									
+									<li><a href="/elasticon" id="nav_learn_elasticon" >elastic{ON}</a></li>
+									
+								</ul>
+								
+							
+								<h3><a href="/community" id="nav_community" >Community</a></h3>
+
+								
+								<ul>
+									
+									<li><a href="/community/meetups" id="nav_meetups" >meetups</a></li>
+									
+									<li><a href="/https:/discuss.elastic.co" id="nav_discuss" target="_blank">discuss</a></li>
+									
+									<li><a href="/community/codeofconduct" id="nav_codeofconduct" >code of conduct</a></li>
+									
+								</ul>
+								
+							
+								<h3><a href="/use-cases" id="nav_usecases" >Use Cases</a></h3>
+
+								
+							
+								<h3><a href="/blog" id="nav_blog" >Blog</a></h3>
+
+								
+								<ul>
+									
+									<li><a href="/blog/category/news" id="blog_news" >News</a></li>
+									
+									<li><a href="/blog/category/engineering" id="blog_engineering" >Engineering</a></li>
+									
+									<li><a href="/blog/category/user-stories" id="blog_user-stories" >User Stories</a></li>
+									
+									<li><a href="/blog/category/releases" id="blog_releases" >Releases</a></li>
+									
+									<li><a href="/blog/archive" id="blog_archive" >Archive</a></li>
+									
+								</ul>
+								
+							
+								<h3><a href="/about" id="nav_about" >About</a></h3>
+
+								
+								<ul>
+									
+									<li><a href="/about/leadership" id="nav_leadership" >leadership</a></li>
+									
+									<li><a href="/about/board" id="nav_board" >board of directors</a></li>
+									
+									<li><a href="/about/careers" id="nav_careers" >careers</a></li>
+									
+									<li><a href="/about/partners" id="nav_partners" >partners</a></li>
+									
+									<li><a href="/about/press" id="nav_press" >press</a></li>
+									
+								</ul>
+								
+							
+						</div>
+					</div>
+				</nav>
+			<!-- </div> -->
+		</div>
+	</div>
+</div>
+<!-- Mobile Menu -->
+
+
+		</div>
+	</div>
+</div>
+<div class="header-search-wrapper">	
+	<div class="container">
+		<div class="big-search">
+			<i class="big-search-icon"></i>
+			<form method="get" action="/search" autocomplete="on" name="searchForm" id="searchfrm">
+				<ul class="tags-wrapper">
+					<li class="search-field"><input type="text" class="form-control global-input" id="autocomplete" name="q"></li>
+				</ul>
+			</form>
+			<a href="#" class="header-search-cancel"></a>
+		</div>
+		<div class="nav-auto-complete"></div>
+	</div>
+</div>
+<style>	
+	
+	
+		.m-shortcuts li a.m-search {
+			background: url("https://static-www.elastic.co/assets/blt174b13be89ff803c/m-search-icon.png?q=100") no-repeat scroll center center rgba(0, 0, 0, 0);
+			background-size: contain;}
+	
+		.m-shortcuts li a.m-docs {
+			background: url("https://static-www.elastic.co/assets/blt5ba03f594a7d610a/m-guide-icon.png?q=100") no-repeat scroll center center rgba(0, 0, 0, 0);
+			background-size: contain;}
+	
+		.m-shortcuts li a.m-contact {
+			background: url("https://static-www.elastic.co/assets/blt38c3e853c4b1174d/m-contact-icon.png?q=100") no-repeat scroll center center rgba(0, 0, 0, 0);
+			background-size: contain;}
+		
+</style>
+		</div>
+	</div>
+  	<div id="content">
+  		
+  			
+            <div id="pageheader">
+    <div class="container">
+        <header>
+            <h1><a href="/learn" title="Learn">Learn</a> |</h1>
+            <h2><a href="/guide" title="Docs">Docs</a></h2>
+        </header>
+    </div>
+</div>
+<section id="guide">
+
+            <!-- start body -->
+<div class="breadcrumbs"><span class="breadcrumb-link"><a href="index.html">Elasticsearch: The Definitive Guide</a></span> » <span class="breadcrumb-link"><a href="aggregations.html">Aggregations </a></span> » <span class="breadcrumb-node">다중 값 bucket의 정렬</span></div><div class="navheader"><span class="prev"><a href="_query와_aggregation의_필터링.html">
+              « 
+              query와 aggregation의 필터링</a>
+           
+        </span><span class="next">
+           
+          <a href="_대략적인_집계.html">대략적인 집계
+               »
+            </a></span></div><div class="chapter"><div class="titlepage"><div><div><h2 class="title"><a id="_다중_값_bucket의_정렬"></a>다중 값 bucket의 정렬</h2></div></div></div><p>다중 값 bucket(<code class="literal">terms</code>, <code class="literal">histogram</code>, <code class="literal">date_histogram</code>) 은 동적으로 많은 bucket을 생성한다.<a id="id-1.7.9.2.4" class="indexterm"></a>
+<a id="id-1.7.9.2.5" class="indexterm"></a><a id="id-1.7.9.2.6" class="indexterm"></a>
+<a id="id-1.7.9.2.7" class="indexterm"></a><a id="id-1.7.9.2.8" class="indexterm"></a>
+<a id="id-1.7.9.2.9" class="indexterm"></a>
+Elasticsearch에서, 이런 bucket이 사용자에게 표시되는 순서를 Elasticsearch는 어떻게 결정할까?</p><p>기본적으로, bucket은 <code class="literal">doc_count</code> 를 기준으로, <a id="id-1.7.9.3.2" class="indexterm"></a>
+<a id="id-1.7.9.3.3" class="indexterm"></a>내림차순으로 정렬된다.
+어떤 기준(가격, 인구, 횟수 등)의 최대값을 가진 document를 찾으려 하기 때문에, 이것은 괜찮은 기본값이다.
+하지만, 가끔은 이 정렬 순서를 바꿔야 하는 경우가 있다. bucket에 따라 몇 가지 방법이 있다.</p><div class="section"><div class="titlepage"><div><div><h2 class="title"><a id="_기본_정렬"></a>기본 정렬</h2></div></div></div><p>이 정렬 방식은 bucket의 <span class="emphasis"><em>기본</em></span> 이다. <code class="literal">doc_count</code> 처럼, bucket이<a id="id-1.7.9.4.2.3" class="indexterm"></a>
+<a id="id-1.7.9.4.2.4" class="indexterm"></a>
+<a id="id-1.7.9.4.2.5" class="indexterm"></a> 생성한 데이터에 따라 동작한다.
+동일한 문법을 공유하지만, 사용된 bucket에 따라 약간 다르다.</p><p><code class="literal">terms</code> aggregation을 해보자. 그러나 <code class="literal">doc_count</code> 를 기준으로, 오름차순으로 정렬하자.</p><div class="pre_wrapper"><pre class="programlisting prettyprint lang-js">GET /cars/transactions/_search?search_type=count
+{
+    "aggs" : {
+        "colors" : {
+            "terms" : {
+              "field" : "color",
+              "order": {
+                "_count" : "asc" <a id="CO201-1"></a><span><img src="images/icons/callouts/1.png" alt="" /></span>
+              }
+            }
+        }
+    }
+}</pre></div><div class="sense_widget" data-snippet="snippets/300_Aggregations/50_sorting_ordering.json"></div><div class="calloutlist"><table border="0" summary="Callout list"><tr><td width="5%" valign="top" align="left"><p><a href="#CO201-1"><span><img src="images/icons/callouts/1.png" alt="" /></span></a> </p></td><td valign="top" align="left"><p>
+<code class="literal">_count</code> keyword를 사용하여, <code class="literal">doc_count</code> 기준으로, 오름차순으로 정렬할 수 있다.
+</p></td></tr></table></div><p>aggregation에서 <code class="literal">order</code> 오브젝트를<a id="id-1.7.9.4.7.2" class="indexterm"></a> 소개한다. 이것을 이용하여, 아래의 여러 가지 값 중 하나를 기준으로, 정렬할 수 있다.</p><div class="variablelist"><dl class="variablelist"><dt><span class="term">
+<code class="literal">_count</code>
+</span></dt><dd>
+document 수로 장렬. <code class="literal">terms</code>, <code class="literal">histogram</code>, <code class="literal">date_histogram</code> 과 함께 동작
+</dd><dt><span class="term">
+<code class="literal">_term</code>
+</span></dt><dd>
+단어의 문자열 값을 알파벳 순으로 정렬. <code class="literal">terms</code> 의 경우에만 동작
+</dd><dt><span class="term">
+<code class="literal">_key</code>
+</span></dt><dd>
+각 bucket의 key(개념적으로 <code class="literal">_term</code> 과 유사)의 숫자 값으로 정렬.
+<code class="literal">histogram</code>, <code class="literal">date_histogram</code> 의 경우에만 동작
+</dd></dl></div></div><div class="section"><div class="titlepage"><div><div><h2 class="title"><a id="_metric에_의한_정렬"></a>metric에 의한 정렬</h2></div></div></div><p>종종 metric의 계산된 값을 기준으로 정렬해야 하는 경우가 있다.<a id="id-1.7.9.5.2.1" class="indexterm"></a>
+<a id="id-1.7.9.5.2.2" class="indexterm"></a>
+<a id="id-1.7.9.5.2.3" class="indexterm"></a><a id="id-1.7.9.5.2.4" class="indexterm"></a>
+<a id="id-1.7.9.5.2.5" class="indexterm"></a><a id="id-1.7.9.5.2.6" class="indexterm"></a>
+<a id="id-1.7.9.5.2.7" class="indexterm"></a>
+<a id="id-1.7.9.5.2.8" class="indexterm"></a>
+자동차 판매 분석 대시보드에서, 자동차 색상으로, 판매 막대 그래프를 만든다고 가정해 보자. 그런데, 막대 그래프의 순서는 평균가의 오름차순이다.</p><p>bucket에 metric을 추가하고, 해당 metric이 <code class="literal">order</code> 매개변수를 참조하면 가능하다.</p><div class="pre_wrapper"><pre class="programlisting prettyprint lang-js">GET /cars/transactions/_search?search_type=count
+{
+    "aggs" : {
+        "colors" : {
+            "terms" : {
+              "field" : "color",
+              "order": {
+                "avg_price" : "asc" <a id="CO202-1"></a><span><img src="images/icons/callouts/1.png" alt="" /></span>
+              }
+            },
+            "aggs": {
+                "avg_price": {
+                    "avg": {"field": "price"} <a id="CO202-2"></a><span><img src="images/icons/callouts/2.png" alt="" /></span>
+                }
+            }
+        }
+    }
+}</pre></div><div class="sense_widget" data-snippet="snippets/300_Aggregations/50_sorting_ordering.json"></div><div class="calloutlist"><table border="0" summary="Callout list"><tr><td width="5%" valign="top" align="left"><p><a href="#CO202-2"><span><img src="images/icons/callouts/2.png" alt="" /></span></a> </p></td><td valign="top" align="left"><p>
+평균 가격은 각 bucket별로 계산된다.
+</p></td></tr><tr><td width="5%" valign="top" align="left"><p><a href="#CO202-1"><span><img src="images/icons/callouts/1.png" alt="" /></span></a> </p></td><td valign="top" align="left"><p>
+그리고, bucket은 계산된 평균 가격을 기준으로, 오름차순으로 정렬된다.
+</p></td></tr></table></div><p>이것은 단순히 metric의 이름을 참조함으로써, 다른 metric의 정렬 순서보다 우선시된다. 그러나, 일부 metric은 다중 값을 출력한다.
+<code class="literal">extended_stats</code> metric이 좋은 예이다. 그것은 6개 정도의 개별 metric을 제공한다.</p><p>다중 값 metric을 정렬해야 한다면,<a id="id-1.7.9.5.8.1" class="indexterm"></a>
+<a id="id-1.7.9.5.8.2" class="indexterm"></a>
+<a id="id-1.7.9.5.8.3" class="indexterm"></a> 관심 있는 metric의 점 경로(dot-path)를 사용해야 한다:</p><div class="pre_wrapper"><pre class="programlisting prettyprint lang-js">GET /cars/transactions/_search?search_type=count
+{
+    "aggs" : {
+        "colors" : {
+            "terms" : {
+              "field" : "color",
+              "order": {
+                "stats.variance" : "asc" <a id="CO203-1"></a><span><img src="images/icons/callouts/1.png" alt="" /></span>
+              }
+            },
+            "aggs": {
+                "stats": {
+                    "extended_stats": {"field": "price"}
+                }
+            }
+        }
+    }
+}</pre></div><div class="sense_widget" data-snippet="snippets/300_Aggregations/50_sorting_ordering.json"></div><div class="calloutlist"><table border="0" summary="Callout list"><tr><td width="5%" valign="top" align="left"><p><a href="#CO203-1"><span><img src="images/icons/callouts/1.png" alt="" /></span></a> </p></td><td valign="top" align="left"><p>
+점 표기법을 사용하여, 관심 있는 metric을 기준으로, 정렬할 수 있다.
+</p></td></tr></table></div><p>이 예제에서는, 각 bucket의 분산(variance)으로 정렬하고 있다. 가격의 분산이 최소인 색상이, 분산이 더 많은 색상보다, 먼저 나타날 것이다.</p></div><div class="section"><div class="titlepage"><div><div><h2 class="title"><a id="_깊은_deep_metric을_기준으로_한_정렬"></a>"깊은(deep)" metric을 기준으로 한 정렬</h2></div></div></div><p>이전의 예제에서, metric은 bucket의 직접적인 자식이었다. 평균 가격은 각 단어에 대해 계산한 것이었다.<a id="id-1.7.9.6.2.1" class="indexterm"></a>
+<a id="id-1.7.9.6.2.2" class="indexterm"></a>
+<a id="id-1.7.9.6.2.3" class="indexterm"></a><a id="id-1.7.9.6.2.4" class="indexterm"></a>
+<a id="id-1.7.9.6.2.5" class="indexterm"></a>
+<a id="id-1.7.9.6.2.6" class="indexterm"></a>  “더 깊은(deeper)” metric으로 정렬하는 것이 가능하다.
+약간의 제한이 있지만, bucket의 손자, 증손자도 가능하다.</p><p>아래처럼, <code class="literal">&gt;</code> (angle brackets)을 사용하여, 더 깊은 nested metric으로, 경로(path)를 지정할 수 있다:</p><p><code class="literal">my_bucket&gt;another_bucket&gt;metric</code></p><p>주의할 점은, 경로에 있는 각각의 중첩된 bucket은 반드시 <span class="emphasis"><em>단일 값</em></span> bucket이어야 한다. <code class="literal">filter</code> bucket은 단일 bucket(필터링 기준에 일치하는 모든 document)을 생성한다.<a id="id-1.7.9.6.5.3" class="indexterm"></a>
+다중 값 bucket(<code class="literal">terms</code> 같은)은 많은 동적인 bucket을 생성한다. 따라서 확정적인 경로를 지정할 수 없다.</p><p>현재로서는, 3개의 단일-값 bucket(<code class="literal">filter</code>, <code class="literal">global</code> <a id="id-1.7.9.6.6.3" class="indexterm"></a>, <code class="literal">reverse_nested</code> )이 있다. 간단한 예로,
+자동차 판매 가격의 histogram을 구축하자. 단, bucket의 순서는, 각 가격 범위에서 빨강과 녹색(파랑이 아닌) 자동차의 가격 분산으로 한다:<a id="id-1.7.9.6.6.5" class="indexterm"></a>
+<a id="id-1.7.9.6.6.6" class="indexterm"></a></p><div class="pre_wrapper"><pre class="programlisting prettyprint lang-js">GET /cars/transactions/_search?search_type=count
+{
+    "aggs" : {
+        "colors" : {
+            "histogram" : {
+              "field" : "price",
+              "interval": 20000,
+              "order": {
+                "red_green_cars&gt;stats.variance" : "asc" <a id="CO204-1"></a><span><img src="images/icons/callouts/1.png" alt="" /></span>
+              }
+            },
+            "aggs": {
+                "red_green_cars": {
+                    "filter": { "terms": {"color": ["red", "green"]}}, <a id="CO204-2"></a><span><img src="images/icons/callouts/2.png" alt="" /></span>
+                    "aggs": {
+                        "stats": {"extended_stats": {"field" : "price"}} <a id="CO204-3"></a><span><img src="images/icons/callouts/3.png" alt="" /></span>
+                    }
+                }
+            }
+        }
+    }
+}</pre></div><div class="sense_widget" data-snippet="snippets/300_Aggregations/50_sorting_ordering.json"></div><div class="calloutlist"><table border="0" summary="Callout list"><tr><td width="5%" valign="top" align="left"><p><a href="#CO204-1"><span><img src="images/icons/callouts/1.png" alt="" /></span></a> </p></td><td valign="top" align="left"><p>
+histogram에 의해 생성한 bucket을, nested metric의 variance에 따라, 정렬
+</p></td></tr><tr><td width="5%" valign="top" align="left"><p><a href="#CO204-2"><span><img src="images/icons/callouts/2.png" alt="" /></span></a> </p></td><td valign="top" align="left"><p>
+단일-값인 <code class="literal">filter</code> 를 사용했기 때문에, 중첩된 정렬을 사용할 수 있다.
+</p></td></tr><tr><td width="5%" valign="top" align="left"><p><a href="#CO204-3"><span><img src="images/icons/callouts/3.png" alt="" /></span></a> </p></td><td valign="top" align="left"><p>
+metric으로 생성한 stats로 정렬
+</p></td></tr></table></div><p>이 예제에서, nested metric에 접근하는 것을 볼 수 있었다. <code class="literal">stats</code> metric은 <code class="literal">red_green_car</code> 의 자식이다.
+그리고 차례대로 <code class="literal">colors</code> 의 자식이다. metric으로 정렬하기 위해, 경로를 <code class="literal">red_green_cars&gt;stats.variance</code> 로 정의하였다.
+이것은 <code class="literal">filter</code> bucket이 단일-값 bucket이기 때문에 가능하다.</p></div></div><div class="navfooter"><span class="prev"><a href="_query와_aggregation의_필터링.html">
+              « 
+              query와 aggregation의 필터링</a>
+           
+        </span><span class="next">
+           
+          <a href="_대략적인_집계.html">대략적인 집계
+               »
+            </a></span></div>
+<!-- end body -->
+
+            </section>
+
+            <div id="rtpcontainer"
+        >
+	<h3>Top Videos</h3>
+	<ul class="lists">
+		<li><a href="https://www.elastic.co/webinars/get-started-with-elasticsearch/?baymax=default&elektra=docs&storm=top-video">Getting Started</a></li>
+		<li><a href="http://www.elastic.co/webinars/elasticsearch-performance-optimization-tale-two-tickets/?elektra=docs">Scaling</a></li>
+		<li><a href="http://www.elastic.co/webinars/shield-securing-your-data-in-elasticsearch/?elektra=docs">Security</a></li>
+	</ul>
+</div>
+
+
+	  	
+
+
+
+
+<script src="//app-lon02.marketo.com/js/forms2/js/forms2.min.js"></script>
+	<!-- subscribe-newsletter -->
+	<div id="subscribe-newsletter">
+		<div class="container">
+			<div class="row">
+				<div class="12u">
+					<div class="subscribe-wrapper" id="rtp-newsletter">
+						<header>
+							<h3>Subscribe to our newsletter</h3>
+						</header>
+						<div class="subscribe-form">
+							<form id="mktoForm_1398" class="container"></form>
+							<div class="form_thanks hide">
+								
+									<p>Thanks for subscribing! We'll keep you updated with new releases.</p>
+								
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+  	<!-- Footer -->
+	<div id="footer-wrapper">
+		<section id="footer" class="container">
+			<div class="row">
+				<div class="12u">
+					<!-- Copyright -->
+					<div id="copyright">
+	<p>
+		© 2016. All Rights Reserved - Elasticsearch
+	</p>
+	<ul class="links">
+		<li>Elasticsearch is a trademark of Elasticsearch BV, registered in the U.S. and in other countries</li>
+		<li><a href="/legal/trademarks" id="footer_trademarks">Trademarks</a></li>
+		<li><a href="/legal/terms-of-use" id="footer_terms">Terms</a></li>
+		<li><a href="/legal/privacy-policy" id="footer_privacy">Privacy</a></li>
+	</ul>
+	<p>
+		Apache, Apache Lucene, Apache Hadoop, Hadoop, HDFS and the yellow elephant logo are trademarks of the <a href="http://www.apache.org/" target="_blank">Apache Software Foundation</a> in the United States and/or other&nbsp;countries.
+	</p>
+</div><!--<div class="row">
+{replace4}
+</div>-->
+				</div>
+			</div>					
+		</section>
+	</div>
+			
+	<!-- Social Media -->
+	<div id="socialmedia-wrapper">
+		<section id="socialmedia" class="container">
+			<!-- social icons -->
+			<div id="social">
+				<ul class="links">
+					
+						<li class="facebook grayscale"><a href="http://www.facebook.com/elastic.co" target="_blank" id="footer_facebook"></a></li>
+					
+						<li class="twitter grayscale"><a href="https://www.twitter.com/elastic" target="_blank" id="footer_twitter"></a></li>
+					
+						<li class="linkedin grayscale"><a href="https://www.linkedin.com/company/elastic-co" target="_blank" id="footer_linkedin"></a></li>
+					
+						<li class="xing grayscale"><a href="https://www.xing.com/companies/elastic.co" target="_blank" id="footer_xing"></a></li>
+					
+						<li class="youtube grayscale"><a href="https://www.youtube.com/user/elasticsearch" target="_blank" id="footer_youtube"></a></li>
+					
+				</ul>
+			</div>
+		</section>
+	</div>
+
+
+<style type="text/css">
+	
+		.facebook{background:url("https://static-www.elastic.co/assets/bltda40eebd7c7cae9a/facebook.svg?q=100") no-repeat;}		
+	
+		.twitter{background:url("https://static-www.elastic.co/assets/bltfd3b1511512f4632/twitter.svg?q=100") no-repeat;}		
+	
+		.linkedin{background:url("https://static-www.elastic.co/assets/blt6b4f6f8d6b96f814/linkedin.svg?q=100") no-repeat;}		
+	
+		.xing{background:url("https://static-www.elastic.co/assets/blta76b2ae2b2f10a98/xing.svg?q=100") no-repeat;}		
+	
+		.youtube{background:url("https://static-www.elastic.co/assets/blt5761648c9581fb53/youtube.svg?q=100") no-repeat;}		
+	
+</style>
+
+<script>
+MktoForms2.loadForm("//app-lon02.marketo.com", "813-MAM-392", 1398,function(form){
+	form.onSuccess(function(form){
+		$('#mktoForm_1398').css('display','none');
+		$('#subscribe-newsletter header').hide();
+		$('#mktoForm_1398').siblings('.form_thanks').removeClass('hide')
+		dataLayer.push({'event': 'mktoFormSubmit'});
+	    return false;
+  	});
+});
+</script>	
+
+  	</div>
+  	<!-- <div class="preloader">
+    	<div class="status"></div>
+	</div> -->
+  	<style></style>
+   	<script type="text/javascript">
+	var suggestionsUrl = "https://search.elastic.co/suggest";	
+</script>
+<script src="https://static-www.elastic.co/static/js/jquery.autocomplete.js?q=100"></script>
+<script src="https://static-www.elastic.co/static/js/script.js?q=100"></script>
+
+
+   	
+   	
+   	
+   	<script type="application/ld+json">
+	
+		
+	
+	{
+	  	"@context": "http://schema.org",
+	  	"@type": "Organization",
+	  	"name" : "Elastic",
+	  	"url": "https://www.elastic.co/",
+	  	"logo": "https://www.elastic.co/static/img/elastic-logo-200.png",
+		"sameAs" : [ "https://www.facebook.com/elastic.co",
+			"https://twitter.com/elastic",
+			"https://plus.google.com/105178019064686397293",
+			"https://www.youtube.com/user/elasticsearch",
+			"https://www.linkedin.com/company/elasticsearch"
+		],
+	  	"potentialAction": {
+	    	"@type": "SearchAction",
+	    	"target": "https://www.elastic.co/search?q={query_string}",
+	    	"query-input": "required name=query_string"
+	  	}
+	}
+</script>	
+
+            <script type="text/javascript" src="docs.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.1/jquery.cookie.min.js"></script>
+<script type='text/javascript' src='https://google-code-prettify.googlecode.com/svn/loader/run_prettify.js'></script>
+
+            </body>
+        
+

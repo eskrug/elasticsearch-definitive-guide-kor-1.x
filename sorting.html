@@ -1,0 +1,1078 @@
+
+<!DOCTYPE HTML>
+<html lang="en-us">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>정렬과 Relevance</title><meta name="generator" content="DocBook XSL Stylesheets V1.78.1" /><link rel="home" href="index.html" title="Elasticsearch: The Definitive Guide" /><link rel="up" href="getting-started.html" title="Getting Started" /><link rel="prev" href="full-body-search.html" title="Full-Body Search" /><link rel="next" href="distributed-search.html" title="Distributed Search Execution" />
+  
+ 	<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+
+ 	<!-- RTP tag --> 
+	<script type='text/javascript' async>
+	(function(c,h,a,f,i,e){c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
+	 c[a].a=i;c[a].e=e;var g=h.createElement("script");g.async=true;g.type="text/javascript";
+	 g.src=f+'?aid='+i;var b=h.getElementsByTagName("script")[0];b.parentNode.insertBefore(g,b);
+	 })(window,document,"rtp","//sjrtp2-cdn.marketo.com/rtp-api/v1/rtp.js","elasticco");
+	 
+	rtp('send','view');
+	rtp('get', 'campaign',true);
+	</script>
+	<!-- End of RTP tag -->
+	
+	
+ 	<link rel="apple-touch-icon" sizes="57x57"  href="https://www.elastic.co/apple-icon-57x57.png?change=123">
+<link rel="apple-touch-icon" sizes="60x60"  href="https://www.elastic.co/apple-icon-60x60.png?change=123">
+<link rel="apple-touch-icon" sizes="72x72"  href="https://www.elastic.co/apple-icon-72x72.png?change=123">
+<link rel="apple-touch-icon" sizes="76x76"  href="https://www.elastic.co/apple-icon-76x76.png?change=123">
+<link rel="apple-touch-icon" sizes="114x114"  href="https://www.elastic.co/apple-icon-114x114.png?change=123">
+<link rel="apple-touch-icon" sizes="120x120"  href="https://www.elastic.co/apple-icon-120x120.png?change=123">
+<link rel="apple-touch-icon" sizes="144x144"  href="https://www.elastic.co/apple-icon-144x144.png?change=123">
+<link rel="apple-touch-icon" sizes="152x152"  href="https://www.elastic.co/apple-icon-152x152.png?change=123">
+<link rel="apple-touch-icon" sizes="180x180"  href="https://www.elastic.co/apple-icon-180x180.png?change=123">
+<link rel="icon" type="image/png" sizes="192x192"   href="https://www.elastic.co/android-icon-192x192.png?change=123">
+<link rel="icon" type="image/png" sizes="32x32"  href="https://www.elastic.co/favicon-32x32.png?change=123">
+<link rel="icon" type="image/png" sizes="96x96"  href="https://www.elastic.co/favicon-96x96.png?change=123">
+<link rel="icon" type="image/png" sizes="16x16"  href="https://www.elastic.co/favicon-16x16.png?change=123">
+<link rel="manifest"  href="https://www.elastic.co/manifest.json">
+<meta name="msapplication-TileColor" content="#ffffff">
+<meta name="msapplication-TileImage" content="/ms-icon-144x144.png">
+<meta name="theme-color" content="#ffffff">
+
+<!-- DC tags section -->
+<link rel="schema.DC" href="http://purl.org/dc/elements/1.1/" >
+<link rel="schema.DCTERMS" href="http://purl.org/dc/terms/" >
+<meta name="DC.title" content="Guide template" >
+
+<!-- end DC tags -->
+
+	<meta name="description" content="" />
+
+	<link rel="canonical" href="" />
+
+	<meta property="og:image" content="https://www.elastic.co/static/img/elastic-logo-200.png" />
+	
+
+
+	
+	<link type="text/css" rel="stylesheet" href="https://static-www.elastic.co/static/css/skel.css?q=100" />
+	<link type="text/css" rel="stylesheet" href="https://static-www.elastic.co/static/css/style.css?q=100" />	
+	<script src="https://static-www.elastic.co/static/js/skel.min.js?q=100"></script>
+	
+		<script type="text/javascript">form_name = "" ; cdn_url="https://static-www.elastic.co";cdn_slug = "100"</script>
+	
+	<script src="https://static-www.elastic.co/static/js/init.js?q=100"></script>
+	<script src="https://static-www.elastic.co/static/js/jquery.min.js?q=100"></script>
+	<script src="https://static-www.elastic.co/static/js/jquery.cookie.js?q=100"></script>
+	<!--<script type="text/javascript">
+	    (function() {
+	        var path = '//easy.myfonts.net/v2/js?sid=10336(font-family=Avenir+35+Light)&sid=10338(font-family=Avenir+55+Roman)&sid=10340(font-family=Avenir+85+Heavy)&sid=10344(font-family=Avenir+65+Medium)&key=nAD6PCOPrX',
+	            protocol = ('https:' == document.location.protocol ? 'https:' : 'http:'),
+	            trial = document.createElement('script');
+	        trial.type = 'text/javascript';
+	        trial.async = true;
+	        trial.src = protocol + path;
+	        var head = document.getElementsByTagName("head")[0];
+	        head.appendChild(trial);
+	    })();
+	</script>-->
+
+	
+	<link type="text/css" rel="stylesheet"  href="https://www.elastic.co/static/css/prettify.css" />
+	<script type="text/javascript"  src="https://www.elastic.co/static/js/prettify.js"></script>
+
+
+
+<link rel="stylesheet" type="text/css" href="styles.css" />
+
+</head>
+<body >
+	<!-- Google Tag Manager -->
+	<script>dataLayer = [];</script><noscript><iframe src="//www.googletagmanager.com/ns.html?id=GTM-58RLH5"
+													  height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+	<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+			new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+			j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+			'//www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+	})(window,document,'script','dataLayer','GTM-58RLH5');</script>
+	<!-- End Google Tag Manager -->
+	
+	<div class="header-cont">
+		<div id="header-wrapper">
+			
+
+
+	<script  src="https://www.elastic.co/static/js/jquery.tokeninput.js?change=123"></script>
+	<link rel="stylesheet" type="text/css"  href="https://www.elastic.co/static/css/token-input.css">
+
+<div class="shortcuts-wrapper">
+	<div class="container">
+		<!-- Shortcuts -->
+		<nav id="shortcuts">
+			<ul class="links">
+				
+					<li class="shortcut-1">
+						<a href="/downloads" id="header_downloads" >
+							<span class="txt">downloads</span>	
+						</a>
+					</li>
+				
+					<li class="shortcut-2">
+						<a href="/guide" id="header_guide" >
+							<span class="txt">docs</span>	
+						</a>
+					</li>
+				
+					<li class="shortcut-3">
+						<a href="/subscriptions" id="header_subscriptions" >
+							<span class="txt">support</span>	
+						</a>
+					</li>
+				
+					<li class="shortcut-4">
+						<a href="https://discuss.elastic.co" id="header_discuss" target="_blank">
+							<span class="txt">discuss</span>	
+						</a>
+					</li>
+				
+					<li class="shortcut-5">
+						<a href="/contact" id="header_contact" >
+							<span class="txt">contact</span>	
+						</a>
+					</li>
+				
+			</ul>
+		</nav>
+		<div class="languages-wrapper">
+			<div class="global-language">
+				<ul class="language">
+					<!-- <li class="active-language"><a class="active" href="#">EN</a></li> -->
+					
+						<li><a href="#">EN</a></li>
+					
+				</ul>
+				<ul class="all-languages">
+					
+						
+						<li><a href="/guide_template">English</a></li>
+					
+						
+						<li><a href="/fr/guide_template">French</a></li>
+					
+						
+						<li><a href="/de/guide_template">German</a></li>
+					
+						
+						<li><a href="/jp/guide_template">Japanese</a></li>
+					
+						
+						<li><a href="/kr/guide_template">Korean</a></li>
+					
+				</ul>
+			</div>
+		</div>
+	</div>
+</div>
+<div class="container w100">
+	<div class="row 0%">
+		<div class="12u">
+			
+
+<section class="first-container desktop-main-nav">
+	<div class="row 0%">
+		<div class="11u 6u(small) 6u(xsmall)">
+			<div id="elastic">
+				<h1>
+					<a href="/">
+						<div id="elastic-logo">
+						<svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+	 viewBox="0 0 400 130" preserveAspectRatio="xMinYMin meet" enable-background="new 0 0 400 130" xml:space="preserve">
+    <g>
+    	<g>
+    		<path fill="#FFFFFF" d="M122.5,67.8c0-10.3-6.4-19.2-15.9-22.7c0.4-2.2,0.6-4.3,0.6-6.6c0-19.1-15.5-34.6-34.6-34.6
+    			c-11.1,0-21.5,5.3-28,14.4c-3.2-2.5-7.1-3.8-11.2-3.8c-10.1,0-18.4,8.2-18.4,18.4c0,2.2,0.4,4.4,1.1,6.4C6.5,42.6,0,51.8,0,62
+    			c0,10.3,6.4,19.3,16,22.8c-0.4,2.1-0.6,4.3-0.6,6.6c0,19,15.5,34.5,34.5,34.5c11.2,0,21.5-5.4,28-14.4c3.2,2.5,7.2,3.9,11.3,3.9
+    			c10.1,0,18.4-8.2,18.4-18.4c0-2.2-0.4-4.4-1.1-6.4C115.9,87.2,122.5,78,122.5,67.8z"/>
+    		<g>
+    			<path fill="#F4BD19" d="M47.9,56.3l27.3,12.5l27.6-24.2c0.4-2,0.6-4,0.6-6.1c0-17-13.8-30.8-30.8-30.8c-10.2,0-19.7,5-25.4,13.4
+    				l-4.6,23.8L47.9,56.3z"/>
+    		</g>
+    		<g>
+    			<path fill="#3CBEB1" d="M19.6,85.2c-0.4,2-0.6,4.1-0.6,6.2c0,17,13.9,30.9,30.9,30.9c10.3,0,19.8-5.1,25.6-13.5L80,85l-6.1-11.6
+    				L46.5,60.9L19.6,85.2z"/>
+    		</g>
+    		<g>
+    			<path fill="#E9478C" d="M19.4,37.9l18.7,4.4L42.3,21c-2.6-2-5.7-3-9-3c-8.1,0-14.8,6.6-14.8,14.8C18.5,34.5,18.8,36.3,19.4,37.9z
+    				"/>
+    		</g>
+    		<g>
+    			<path fill="#2C458F" d="M17.8,42.4C9.4,45.1,3.6,53.2,3.6,62c0,8.6,5.3,16.3,13.3,19.3l26.3-23.8l-4.8-10.3L17.8,42.4z"/>
+    		</g>
+    		<g>
+    			<path fill="#95C63D" d="M80.3,108.7c2.6,2,5.7,3.1,8.9,3.1c8.1,0,14.8-6.6,14.8-14.8c0-1.8-0.3-3.5-0.9-5.1l-18.7-4.4L80.3,108.7
+    				z"/>
+    		</g>
+    		<g>
+    			<path fill="#176655" d="M84.1,82.6l20.6,4.8c8.4-2.8,14.2-10.8,14.2-19.6c0-8.6-5.3-16.2-13.3-19.3l-27,23.6L84.1,82.6z"/>
+    		</g>
+    	</g>
+    	<path d="M162.8,76.3c0,0.1,0,0.6,0.1,1.4c0.1,0.8,0.3,1.8,0.6,3c0.3,1.1,0.8,2.4,1.4,3.7c0.6,1.3,1.4,2.5,2.5,3.6
+    		c1,1.1,2.3,2,3.8,2.7c1.5,0.7,3.4,1.1,5.6,1.1c1.8,0,3.3-0.1,4.6-0.4c1.3-0.3,2.4-0.7,3.4-1.3c1-0.6,1.9-1.3,2.7-2.2
+    		c0.8-0.9,1.6-1.9,2.4-3.1c0.5-0.7,1-1.2,1.6-1.5c0.6-0.3,1.2-0.4,1.8-0.4c1,0,2,0.4,2.8,1.1c0.9,0.7,1.3,1.7,1.3,2.8
+    		c0,0.7-0.4,1.7-1.1,3.1c-0.7,1.4-1.9,2.8-3.6,4.1c-1.6,1.4-3.7,2.6-6.3,3.6c-2.6,1-5.7,1.5-9.5,1.5c-3.8,0-7.2-0.7-10.2-2.1
+    		c-3-1.4-5.5-3.2-7.5-5.6c-2-2.3-3.6-5-4.7-8.1c-1.1-3.1-1.6-6.3-1.6-9.7c0-3.5,0.5-6.8,1.6-9.9c1.1-3.1,2.7-5.8,4.7-8.1
+    		c2-2.3,4.5-4.1,7.4-5.5c2.9-1.3,6.1-2,9.6-2c3.3,0,6.3,0.5,9.2,1.5c2.8,1,5.3,2.4,7.4,4.3c2.1,1.9,3.7,4.1,5,6.8
+    		c1.2,2.7,1.8,5.8,1.8,9.2c0,2.1-0.5,3.7-1.6,4.8c-1,1.1-2.2,1.6-3.6,1.6H162.8z M170.9,56.4c-1.5,0.6-2.7,1.4-3.7,2.4
+    		c-1,0.9-1.8,2-2.4,3.1c-0.6,1.1-1,2.2-1.3,3.2c-0.3,1-0.5,1.8-0.5,2.5c-0.1,0.7-0.1,1.1-0.1,1.2h27.9c0-1.8-0.3-3.5-0.9-5.1
+    		c-0.6-1.6-1.5-3-2.6-4.3c-1.2-1.2-2.7-2.2-4.5-3c-1.8-0.7-4-1.1-6.5-1.1C174.2,55.5,172.4,55.8,170.9,56.4z"/>
+    	<path d="M214.3,94.6c0,1.3-0.4,2.3-1.3,3.2c-0.9,0.9-1.9,1.3-3.2,1.3c-1.3,0-2.3-0.4-3.2-1.3c-0.9-0.9-1.3-2-1.3-3.2V35.1
+    		c0-1.3,0.4-2.3,1.3-3.2c0.9-0.9,2-1.3,3.2-1.3c1.3,0,2.3,0.4,3.2,1.3c0.9,0.9,1.3,1.9,1.3,3.2V94.6z"/>
+    	<path d="M229.8,63.5c-0.6,0.3-1.2,0.5-1.9,0.5c-1.2,0-2.2-0.4-3.2-1.1c-1-0.7-1.5-1.8-1.5-3.1c0-0.5,0.1-1.1,0.4-1.9
+    		c0.5-1.2,1.2-2.4,2.1-3.6c0.9-1.2,2-2.2,3.5-3.1s3.3-1.7,5.4-2.2c2.2-0.5,4.8-0.8,7.9-0.8c5.9,0,10.5,1.2,14,3.5
+    		c3.5,2.3,5.2,5.8,5.2,10.3v32.8c0,1.3-0.4,2.3-1.3,3.2c-0.9,0.9-1.9,1.3-3.2,1.3c-1.3,0-2.3-0.4-3.2-1.3c-0.9-0.9-1.3-2-1.3-3.2v-2
+    		c-1.2,2-4.7,4.5-7.5,5.3c-2.8,0.8-5.7,1.2-8.8,1.2c-2,0-3.9-0.3-5.9-0.8c-2-0.5-3.8-1.4-5.3-2.5c-1.6-1.1-2.9-2.6-3.8-4.3
+    		c-1-1.7-1.5-3.8-1.5-6.2c0-2.8,0.5-5.7,1.6-7.5c1.1-1.9,2.6-3.4,4.4-4.6c1.8-1.2,3.9-2.1,6.3-2.8c2.4-0.6,4.9-1.1,7.5-1.4
+    		c3-0.3,5.4-0.7,7.2-1.2c1.7-0.4,3-0.9,3.9-1.5c0.9-0.6,1.4-1.2,1.6-2c0.2-0.7,0.3-1.6,0.3-2.5c0-1.1-0.3-2-0.9-2.8
+    		c-0.6-0.8-1.4-1.5-2.4-2c-1-0.5-2.1-0.9-3.3-1.2s-2.4-0.4-3.5-0.4c-2.1,0-3.7,0.2-5,0.5c-1.3,0.3-2.3,0.8-3.1,1.4
+    		c-0.8,0.6-1.5,1.3-1.9,2.1c-0.5,0.8-0.9,1.6-1.3,2.5C230.9,62.6,230.4,63.1,229.8,63.5z M250.6,74.4c-1.1,0.3-2.4,0.6-3.8,0.8
+    		c-1.5,0.2-3,0.4-4.6,0.6c-1.6,0.2-3.1,0.5-4.6,0.9c-1.5,0.3-2.8,0.8-4,1.5c-1.2,0.7-2.2,1.5-2.9,2.5c-0.7,1-1.1,3-1.1,4.6
+    		c0,1.3,0.3,2.3,0.8,3.1c0.5,0.8,1.2,1.5,2.1,2c0.9,0.5,1.8,0.8,2.9,1c1.1,0.2,2.2,0.3,3.3,0.3c1.7,0,3.3-0.2,5-0.6
+    		c1.7-0.4,3.2-1,4.5-1.9s2.4-2,3.3-3.5c0.8-1.4,1.2-3.8,1.2-5.9v-6.1L250.6,74.4z"/>
+    	<path d="M307.6,90.9c-1.1,2-2.7,3.6-4.6,4.8s-4.1,2.1-6.6,2.7c-2.5,0.5-5.2,0.8-7.9,0.8c-3.9,0-7.2-0.6-9.9-1.8
+    		c-2.7-1.2-4.9-2.6-6.5-4.1c-1.7-1.6-2.9-3.1-3.7-4.7c-0.7-1.6-1.1-2.7-1.1-3.5c0-1.3,0.5-2.4,1.4-3.2c0.9-0.8,2-1.2,3.1-1.2
+    		c0.7,0,1.3,0.2,2,0.6c0.6,0.4,1.1,1,1.5,1.9c1,2.5,2.5,4.5,4.7,6.2c2.2,1.7,5.2,2.5,9.3,2.5c1.8,0,3.4-0.2,4.7-0.6
+    		c1.3-0.4,2.4-1,3.2-1.7c0.8-0.7,1.4-1.5,1.9-2.4c0.4-0.9,0.6-1.8,0.6-2.8c0-2-0.8-3.4-2.3-4.4c-1.5-1-3.5-1.7-5.8-2.3
+    		c-2.3-0.6-4.8-1.1-7.5-1.6c-2.7-0.5-5.2-1.2-7.5-2.2c-2.3-0.9-4.2-2.3-5.8-4c-1.6-1.8-2.3-4.2-2.3-7.3c0-4.5,1.6-8,4.9-10.5
+    		c3.3-2.5,7.8-3.8,13.7-3.8c3.3,0,6,0.3,8.3,1c2.2,0.7,4.1,1.6,5.5,2.7c0.6,0.5,1.2,1,1.8,1.7c0.6,0.7,1.2,1.4,1.8,2.2
+    		c0.6,0.8,1,1.5,1.4,2.3c0.4,0.7,0.6,1.4,0.6,2c0,1.3-0.5,2.4-1.6,3.1c-1,0.8-2.2,1.2-3.4,1.2c-0.7,0-1.5-0.1-2.1-0.6
+    		c-0.6-0.6-1-1.3-1.3-1.8c-0.5-1.1-1.1-2-1.7-2.8c-0.5-0.8-1.2-1.5-2-2c-0.8-0.5-1.8-0.9-3-1.2c-1.2-0.3-2.7-0.4-4.4-0.4
+    		c-3.5,0-6,0.6-7.6,1.7c-1.6,1.1-2.4,2.5-2.4,4.2c0,1.3,0.5,2.3,1.4,3.1c0.9,0.8,2.1,1.4,3.7,2c1.5,0.5,3.3,1,5.2,1.4
+    		c2,0.4,3.9,0.8,5.9,1.3c2,0.5,4,1.1,5.9,1.7c1.9,0.7,3.7,1.6,5.2,2.7c1.5,1.1,2.7,2.5,3.7,4.1c0.9,1.6,1.4,3.6,1.4,6
+    		C309.4,86.4,308.8,88.9,307.6,90.9z"/>
+    	<path d="M327.4,48.8h4.7c1.1,0,2,0.4,2.8,1.2c0.8,0.8,1.2,1.7,1.2,2.8c0,1.1-0.4,2.1-1.2,2.8s-1.7,1.1-2.8,1.1h-4.7v37.9
+    		c0,1.3-0.4,2.3-1.3,3.2c-0.9,0.9-2,1.3-3.2,1.3c-1.3,0-2.3-0.4-3.2-1.3c-0.9-0.9-1.3-2-1.3-3.2V56.7h-4.6c-1.1,0-2-0.4-2.8-1.1
+    		c-0.8-0.7-1.2-1.7-1.2-2.8c0-1.1,0.4-2,1.2-2.8c0.8-0.8,1.7-1.2,2.8-1.2h4.6V39c0-1.3,0.4-2.3,1.3-3.2s1.9-1.3,3.2-1.3
+    		c1.3,0,2.3,0.4,3.2,1.3s1.3,1.9,1.3,3.2V48.8z"/>
+    	<path d="M341.5,32.1c1-1,2.2-1.5,3.7-1.5c1.4,0,2.6,0.5,3.6,1.5c1,1,1.5,2.2,1.5,3.6c0,1.4-0.5,2.6-1.5,3.6c-1,1-2.2,1.5-3.6,1.5
+    		c-1.4,0-2.7-0.5-3.7-1.5c-1-1-1.5-2.2-1.5-3.6C340,34.2,340.5,33,341.5,32.1z M349.6,94.6c0,1.3-0.4,2.3-1.3,3.2
+    		c-0.9,0.9-1.9,1.3-3.2,1.3c-1.3,0-2.3-0.4-3.2-1.3c-0.9-0.9-1.3-2-1.3-3.2V53.3c0-1.3,0.4-2.3,1.3-3.2c0.9-0.9,2-1.3,3.2-1.3
+    		c1.3,0,2.3,0.4,3.2,1.3c0.9,0.9,1.3,2,1.3,3.2V94.6z"/>
+    	<path d="M369.1,97.3c-2.9-1.2-5.4-3-7.5-5.2c-2.1-2.2-3.8-4.9-5-8.1c-1.2-3.1-1.8-6.6-1.8-10.4c0-3.8,0.6-7.3,1.8-10.5
+    		c1.2-3.1,2.9-5.8,5-8.1c2.1-2.2,4.6-4,7.5-5.2c2.9-1.2,6-1.9,9.4-1.9c3.4,0,6.4,0.5,9,1.5c2.5,1,4.6,2.2,6.2,3.6
+    		c1.6,1.4,3.2,2.9,4,4.4c0.5,0.9,0.9,1.5,0.9,2.6c0,1.3-0.5,2.3-1.4,3.1c-0.9,0.7-2,1.1-3.1,1.1c-0.8,0-1.6-0.2-2.2-0.6
+    		c-0.7-0.4-1.2-1.3-1.8-2.1c-1-1.4-0.5-0.6-1.1-1.5c-0.7-0.9-1.5-1.6-2.5-2.3c-1-0.7-2.2-1.2-3.5-1.6c-1.4-0.4-2.8-0.6-4.4-0.6
+    		c-1.8,0-3.5,0.3-5.3,1c-1.8,0.7-3.3,1.7-4.7,3.1c-1.4,1.4-2.5,3.3-3.4,5.6s-1.3,5.1-1.3,8.4c0,3.3,0.4,6.1,1.3,8.4s2,4.2,3.4,5.6
+    		c1.4,1.4,3,2.5,4.7,3.1c1.8,0.7,3.5,1,5.3,1c1.6,0,3.1-0.2,4.4-0.6c1.3-0.4,2.5-0.9,3.5-1.6c1-0.7,1.8-1.5,2.5-2.3
+    		c0.7-0.9,1.1-1.8,1.4-2.7c0.3-1,0.8-1.7,1.5-2.1c0.7-0.4,1.4-0.6,2.2-0.6c1.1,0,2.2,0.4,3.1,1.1c0.9,0.7,1.4,1.7,1.4,3
+    		c0,0.6-0.3,1.7-0.9,3.1c-0.6,1.5-1.6,2.9-3.1,4.4c-1.5,1.5-3.5,2.8-6.2,4c-2.6,1.1-6,1.7-10,1.7C375.1,99.2,372,98.5,369.1,97.3z"
+    		/>
+    </g>
+</svg>
+						</div>
+					</a>
+				</h1>
+			</div>
+			<nav id="nav">
+				<ul>
+					
+					<li>
+						
+							
+						
+						<a href="/products" id="nav_products"   >Products</a>
+						
+						<ul class="dropdown">
+							
+								<li><a href="/products/elasticsearch" id="nav_elasticsearch" >elasticsearch</a></li>								
+							
+								<li><a href="/found" id="nav_hosted-elasticsearch" >elasticsearch as a service</a></li>								
+							
+								<li><a href="/products/logstash" id="nav_logstash" >logstash</a></li>								
+							
+								<li><a href="/products/kibana" id="nav_kibana" >kibana</a></li>								
+							
+								<li><a href="/products/beats" id="nav_beats" >beats</a></li>								
+							
+								<li><a href="/products/watcher" id="nav_watcher" >watcher</a></li>								
+							
+								<li><a href="/products/shield" id="nav_shield" >shield</a></li>								
+							
+								<li><a href="/products/marvel" id="nav_marvel" >marvel</a></li>								
+							
+								<li><a href="/products/hadoop" id="nav_hadoop" >hadoop</a></li>								
+							
+								<li><a href="/downloads" id="nav_downloads" >downloads</a></li>								
+								
+						</ul>							
+					</li>
+					
+					<li>
+						
+							
+						
+						<a href="/subscriptions" id="nav_subscriptions"   >Subscriptions</a>
+						
+						<ul class="dropdown">
+								
+						</ul>							
+					</li>
+					
+					<li>
+						
+							
+						
+						<a href="/learn" id="nav_learn"   >Learn</a>
+						
+						<ul class="dropdown">
+							
+								<li><a href="/guide" id="nav_guide" >docs</a></li>								
+							
+								<li><a href="/videos" id="nav_videos" >videos</a></li>								
+							
+								<li><a href="/training" id="nav_training" >training</a></li>								
+							
+								<li><a href="/services" id="nav_services" >services</a></li>								
+							
+								<li><a href="/blog" id="nav_learn_blog" >blog</a></li>								
+							
+								<li><a href="/elasticon" id="nav_learn_elasticon" >elastic{ON}</a></li>								
+								
+						</ul>							
+					</li>
+					
+					<li>
+						
+							
+						
+						<a href="/community" id="nav_community"   >Community</a>
+						
+						<ul class="dropdown">
+							
+								<li><a href="/community/meetups" id="nav_meetups" >meetups</a></li>								
+							
+								<li><a href="https://discuss.elastic.co" id="nav_discuss" target="_blank">discuss</a></li>								
+							
+								<li><a href="/community/codeofconduct" id="nav_codeofconduct" >code of conduct</a></li>								
+								
+						</ul>							
+					</li>
+					
+					<li>
+						
+							
+						
+						<a href="/use-cases" id="nav_usecases"   >Use Cases</a>
+						
+						<ul class="dropdown">
+								
+						</ul>							
+					</li>
+					
+					<li>
+						
+							
+						
+						<a href="/blog" id="nav_blog"   >Blog</a>
+						
+						<ul class="dropdown">
+							
+								<li><a href="/blog/category/news" id="blog_news" >News</a></li>								
+							
+								<li><a href="/blog/category/engineering" id="blog_engineering" >Engineering</a></li>								
+							
+								<li><a href="/blog/category/user-stories" id="blog_user-stories" >User Stories</a></li>								
+							
+								<li><a href="/blog/category/releases" id="blog_releases" >Releases</a></li>								
+							
+								<li><a href="/blog/archive" id="blog_archive" >Archive</a></li>								
+								
+						</ul>							
+					</li>
+					
+					<li>
+						
+							
+						
+						<a href="/about" id="nav_about"   >About</a>
+						
+						<ul class="dropdown">
+							
+								<li><a href="/about/leadership" id="nav_leadership" >leadership</a></li>								
+							
+								<li><a href="/about/board" id="nav_board" >board of directors</a></li>								
+							
+								<li><a href="/about/careers" id="nav_careers" >careers</a></li>								
+							
+								<li><a href="/about/partners" id="nav_partners" >partners</a></li>								
+							
+								<li><a href="/about/press" id="nav_press" >press</a></li>								
+								
+						</ul>							
+					</li>
+					
+				</ul>
+			</nav>			
+			<!-- Searchbar Input box -->
+			 <!-- <form method="get" action="/search" name="searchForm" class="header-search-form" id="searchMobileFrm">
+			   <input type="text" id="search-header-autocomplete" name="q" class="form-control global-input" placeholder="elastic{search}">
+			</form>
+			<div class="mobile-auto-complete"></div> -->  
+		</div>
+		<div class="1u 6u(small) 6u(xsmall)">
+			<div id="searchbar">
+				<a href="#" class="button icon"></a>
+			</div>
+			<!-- <div class="nav-auto-complete"></div> -->
+		</div>
+	</div>
+</section>
+<div class="mobile-menu-wrapper">
+	<div class="row 0%">
+		<div class="8u 6u(small) 6u(xsmall)">
+			<div id="elastic">
+				<h1>
+					<a href="/">
+						<div id="elastic-logo">
+						<svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+	 viewBox="0 0 400 130" preserveAspectRatio="xMinYMin meet" enable-background="new 0 0 400 130" xml:space="preserve">
+    <g>
+    	<g>
+    		<path fill="#FFFFFF" d="M122.5,67.8c0-10.3-6.4-19.2-15.9-22.7c0.4-2.2,0.6-4.3,0.6-6.6c0-19.1-15.5-34.6-34.6-34.6
+    			c-11.1,0-21.5,5.3-28,14.4c-3.2-2.5-7.1-3.8-11.2-3.8c-10.1,0-18.4,8.2-18.4,18.4c0,2.2,0.4,4.4,1.1,6.4C6.5,42.6,0,51.8,0,62
+    			c0,10.3,6.4,19.3,16,22.8c-0.4,2.1-0.6,4.3-0.6,6.6c0,19,15.5,34.5,34.5,34.5c11.2,0,21.5-5.4,28-14.4c3.2,2.5,7.2,3.9,11.3,3.9
+    			c10.1,0,18.4-8.2,18.4-18.4c0-2.2-0.4-4.4-1.1-6.4C115.9,87.2,122.5,78,122.5,67.8z"/>
+    		<g>
+    			<path fill="#F4BD19" d="M47.9,56.3l27.3,12.5l27.6-24.2c0.4-2,0.6-4,0.6-6.1c0-17-13.8-30.8-30.8-30.8c-10.2,0-19.7,5-25.4,13.4
+    				l-4.6,23.8L47.9,56.3z"/>
+    		</g>
+    		<g>
+    			<path fill="#3CBEB1" d="M19.6,85.2c-0.4,2-0.6,4.1-0.6,6.2c0,17,13.9,30.9,30.9,30.9c10.3,0,19.8-5.1,25.6-13.5L80,85l-6.1-11.6
+    				L46.5,60.9L19.6,85.2z"/>
+    		</g>
+    		<g>
+    			<path fill="#E9478C" d="M19.4,37.9l18.7,4.4L42.3,21c-2.6-2-5.7-3-9-3c-8.1,0-14.8,6.6-14.8,14.8C18.5,34.5,18.8,36.3,19.4,37.9z
+    				"/>
+    		</g>
+    		<g>
+    			<path fill="#2C458F" d="M17.8,42.4C9.4,45.1,3.6,53.2,3.6,62c0,8.6,5.3,16.3,13.3,19.3l26.3-23.8l-4.8-10.3L17.8,42.4z"/>
+    		</g>
+    		<g>
+    			<path fill="#95C63D" d="M80.3,108.7c2.6,2,5.7,3.1,8.9,3.1c8.1,0,14.8-6.6,14.8-14.8c0-1.8-0.3-3.5-0.9-5.1l-18.7-4.4L80.3,108.7
+    				z"/>
+    		</g>
+    		<g>
+    			<path fill="#176655" d="M84.1,82.6l20.6,4.8c8.4-2.8,14.2-10.8,14.2-19.6c0-8.6-5.3-16.2-13.3-19.3l-27,23.6L84.1,82.6z"/>
+    		</g>
+    	</g>
+    	<path d="M162.8,76.3c0,0.1,0,0.6,0.1,1.4c0.1,0.8,0.3,1.8,0.6,3c0.3,1.1,0.8,2.4,1.4,3.7c0.6,1.3,1.4,2.5,2.5,3.6
+    		c1,1.1,2.3,2,3.8,2.7c1.5,0.7,3.4,1.1,5.6,1.1c1.8,0,3.3-0.1,4.6-0.4c1.3-0.3,2.4-0.7,3.4-1.3c1-0.6,1.9-1.3,2.7-2.2
+    		c0.8-0.9,1.6-1.9,2.4-3.1c0.5-0.7,1-1.2,1.6-1.5c0.6-0.3,1.2-0.4,1.8-0.4c1,0,2,0.4,2.8,1.1c0.9,0.7,1.3,1.7,1.3,2.8
+    		c0,0.7-0.4,1.7-1.1,3.1c-0.7,1.4-1.9,2.8-3.6,4.1c-1.6,1.4-3.7,2.6-6.3,3.6c-2.6,1-5.7,1.5-9.5,1.5c-3.8,0-7.2-0.7-10.2-2.1
+    		c-3-1.4-5.5-3.2-7.5-5.6c-2-2.3-3.6-5-4.7-8.1c-1.1-3.1-1.6-6.3-1.6-9.7c0-3.5,0.5-6.8,1.6-9.9c1.1-3.1,2.7-5.8,4.7-8.1
+    		c2-2.3,4.5-4.1,7.4-5.5c2.9-1.3,6.1-2,9.6-2c3.3,0,6.3,0.5,9.2,1.5c2.8,1,5.3,2.4,7.4,4.3c2.1,1.9,3.7,4.1,5,6.8
+    		c1.2,2.7,1.8,5.8,1.8,9.2c0,2.1-0.5,3.7-1.6,4.8c-1,1.1-2.2,1.6-3.6,1.6H162.8z M170.9,56.4c-1.5,0.6-2.7,1.4-3.7,2.4
+    		c-1,0.9-1.8,2-2.4,3.1c-0.6,1.1-1,2.2-1.3,3.2c-0.3,1-0.5,1.8-0.5,2.5c-0.1,0.7-0.1,1.1-0.1,1.2h27.9c0-1.8-0.3-3.5-0.9-5.1
+    		c-0.6-1.6-1.5-3-2.6-4.3c-1.2-1.2-2.7-2.2-4.5-3c-1.8-0.7-4-1.1-6.5-1.1C174.2,55.5,172.4,55.8,170.9,56.4z"/>
+    	<path d="M214.3,94.6c0,1.3-0.4,2.3-1.3,3.2c-0.9,0.9-1.9,1.3-3.2,1.3c-1.3,0-2.3-0.4-3.2-1.3c-0.9-0.9-1.3-2-1.3-3.2V35.1
+    		c0-1.3,0.4-2.3,1.3-3.2c0.9-0.9,2-1.3,3.2-1.3c1.3,0,2.3,0.4,3.2,1.3c0.9,0.9,1.3,1.9,1.3,3.2V94.6z"/>
+    	<path d="M229.8,63.5c-0.6,0.3-1.2,0.5-1.9,0.5c-1.2,0-2.2-0.4-3.2-1.1c-1-0.7-1.5-1.8-1.5-3.1c0-0.5,0.1-1.1,0.4-1.9
+    		c0.5-1.2,1.2-2.4,2.1-3.6c0.9-1.2,2-2.2,3.5-3.1s3.3-1.7,5.4-2.2c2.2-0.5,4.8-0.8,7.9-0.8c5.9,0,10.5,1.2,14,3.5
+    		c3.5,2.3,5.2,5.8,5.2,10.3v32.8c0,1.3-0.4,2.3-1.3,3.2c-0.9,0.9-1.9,1.3-3.2,1.3c-1.3,0-2.3-0.4-3.2-1.3c-0.9-0.9-1.3-2-1.3-3.2v-2
+    		c-1.2,2-4.7,4.5-7.5,5.3c-2.8,0.8-5.7,1.2-8.8,1.2c-2,0-3.9-0.3-5.9-0.8c-2-0.5-3.8-1.4-5.3-2.5c-1.6-1.1-2.9-2.6-3.8-4.3
+    		c-1-1.7-1.5-3.8-1.5-6.2c0-2.8,0.5-5.7,1.6-7.5c1.1-1.9,2.6-3.4,4.4-4.6c1.8-1.2,3.9-2.1,6.3-2.8c2.4-0.6,4.9-1.1,7.5-1.4
+    		c3-0.3,5.4-0.7,7.2-1.2c1.7-0.4,3-0.9,3.9-1.5c0.9-0.6,1.4-1.2,1.6-2c0.2-0.7,0.3-1.6,0.3-2.5c0-1.1-0.3-2-0.9-2.8
+    		c-0.6-0.8-1.4-1.5-2.4-2c-1-0.5-2.1-0.9-3.3-1.2s-2.4-0.4-3.5-0.4c-2.1,0-3.7,0.2-5,0.5c-1.3,0.3-2.3,0.8-3.1,1.4
+    		c-0.8,0.6-1.5,1.3-1.9,2.1c-0.5,0.8-0.9,1.6-1.3,2.5C230.9,62.6,230.4,63.1,229.8,63.5z M250.6,74.4c-1.1,0.3-2.4,0.6-3.8,0.8
+    		c-1.5,0.2-3,0.4-4.6,0.6c-1.6,0.2-3.1,0.5-4.6,0.9c-1.5,0.3-2.8,0.8-4,1.5c-1.2,0.7-2.2,1.5-2.9,2.5c-0.7,1-1.1,3-1.1,4.6
+    		c0,1.3,0.3,2.3,0.8,3.1c0.5,0.8,1.2,1.5,2.1,2c0.9,0.5,1.8,0.8,2.9,1c1.1,0.2,2.2,0.3,3.3,0.3c1.7,0,3.3-0.2,5-0.6
+    		c1.7-0.4,3.2-1,4.5-1.9s2.4-2,3.3-3.5c0.8-1.4,1.2-3.8,1.2-5.9v-6.1L250.6,74.4z"/>
+    	<path d="M307.6,90.9c-1.1,2-2.7,3.6-4.6,4.8s-4.1,2.1-6.6,2.7c-2.5,0.5-5.2,0.8-7.9,0.8c-3.9,0-7.2-0.6-9.9-1.8
+    		c-2.7-1.2-4.9-2.6-6.5-4.1c-1.7-1.6-2.9-3.1-3.7-4.7c-0.7-1.6-1.1-2.7-1.1-3.5c0-1.3,0.5-2.4,1.4-3.2c0.9-0.8,2-1.2,3.1-1.2
+    		c0.7,0,1.3,0.2,2,0.6c0.6,0.4,1.1,1,1.5,1.9c1,2.5,2.5,4.5,4.7,6.2c2.2,1.7,5.2,2.5,9.3,2.5c1.8,0,3.4-0.2,4.7-0.6
+    		c1.3-0.4,2.4-1,3.2-1.7c0.8-0.7,1.4-1.5,1.9-2.4c0.4-0.9,0.6-1.8,0.6-2.8c0-2-0.8-3.4-2.3-4.4c-1.5-1-3.5-1.7-5.8-2.3
+    		c-2.3-0.6-4.8-1.1-7.5-1.6c-2.7-0.5-5.2-1.2-7.5-2.2c-2.3-0.9-4.2-2.3-5.8-4c-1.6-1.8-2.3-4.2-2.3-7.3c0-4.5,1.6-8,4.9-10.5
+    		c3.3-2.5,7.8-3.8,13.7-3.8c3.3,0,6,0.3,8.3,1c2.2,0.7,4.1,1.6,5.5,2.7c0.6,0.5,1.2,1,1.8,1.7c0.6,0.7,1.2,1.4,1.8,2.2
+    		c0.6,0.8,1,1.5,1.4,2.3c0.4,0.7,0.6,1.4,0.6,2c0,1.3-0.5,2.4-1.6,3.1c-1,0.8-2.2,1.2-3.4,1.2c-0.7,0-1.5-0.1-2.1-0.6
+    		c-0.6-0.6-1-1.3-1.3-1.8c-0.5-1.1-1.1-2-1.7-2.8c-0.5-0.8-1.2-1.5-2-2c-0.8-0.5-1.8-0.9-3-1.2c-1.2-0.3-2.7-0.4-4.4-0.4
+    		c-3.5,0-6,0.6-7.6,1.7c-1.6,1.1-2.4,2.5-2.4,4.2c0,1.3,0.5,2.3,1.4,3.1c0.9,0.8,2.1,1.4,3.7,2c1.5,0.5,3.3,1,5.2,1.4
+    		c2,0.4,3.9,0.8,5.9,1.3c2,0.5,4,1.1,5.9,1.7c1.9,0.7,3.7,1.6,5.2,2.7c1.5,1.1,2.7,2.5,3.7,4.1c0.9,1.6,1.4,3.6,1.4,6
+    		C309.4,86.4,308.8,88.9,307.6,90.9z"/>
+    	<path d="M327.4,48.8h4.7c1.1,0,2,0.4,2.8,1.2c0.8,0.8,1.2,1.7,1.2,2.8c0,1.1-0.4,2.1-1.2,2.8s-1.7,1.1-2.8,1.1h-4.7v37.9
+    		c0,1.3-0.4,2.3-1.3,3.2c-0.9,0.9-2,1.3-3.2,1.3c-1.3,0-2.3-0.4-3.2-1.3c-0.9-0.9-1.3-2-1.3-3.2V56.7h-4.6c-1.1,0-2-0.4-2.8-1.1
+    		c-0.8-0.7-1.2-1.7-1.2-2.8c0-1.1,0.4-2,1.2-2.8c0.8-0.8,1.7-1.2,2.8-1.2h4.6V39c0-1.3,0.4-2.3,1.3-3.2s1.9-1.3,3.2-1.3
+    		c1.3,0,2.3,0.4,3.2,1.3s1.3,1.9,1.3,3.2V48.8z"/>
+    	<path d="M341.5,32.1c1-1,2.2-1.5,3.7-1.5c1.4,0,2.6,0.5,3.6,1.5c1,1,1.5,2.2,1.5,3.6c0,1.4-0.5,2.6-1.5,3.6c-1,1-2.2,1.5-3.6,1.5
+    		c-1.4,0-2.7-0.5-3.7-1.5c-1-1-1.5-2.2-1.5-3.6C340,34.2,340.5,33,341.5,32.1z M349.6,94.6c0,1.3-0.4,2.3-1.3,3.2
+    		c-0.9,0.9-1.9,1.3-3.2,1.3c-1.3,0-2.3-0.4-3.2-1.3c-0.9-0.9-1.3-2-1.3-3.2V53.3c0-1.3,0.4-2.3,1.3-3.2c0.9-0.9,2-1.3,3.2-1.3
+    		c1.3,0,2.3,0.4,3.2,1.3c0.9,0.9,1.3,2,1.3,3.2V94.6z"/>
+    	<path d="M369.1,97.3c-2.9-1.2-5.4-3-7.5-5.2c-2.1-2.2-3.8-4.9-5-8.1c-1.2-3.1-1.8-6.6-1.8-10.4c0-3.8,0.6-7.3,1.8-10.5
+    		c1.2-3.1,2.9-5.8,5-8.1c2.1-2.2,4.6-4,7.5-5.2c2.9-1.2,6-1.9,9.4-1.9c3.4,0,6.4,0.5,9,1.5c2.5,1,4.6,2.2,6.2,3.6
+    		c1.6,1.4,3.2,2.9,4,4.4c0.5,0.9,0.9,1.5,0.9,2.6c0,1.3-0.5,2.3-1.4,3.1c-0.9,0.7-2,1.1-3.1,1.1c-0.8,0-1.6-0.2-2.2-0.6
+    		c-0.7-0.4-1.2-1.3-1.8-2.1c-1-1.4-0.5-0.6-1.1-1.5c-0.7-0.9-1.5-1.6-2.5-2.3c-1-0.7-2.2-1.2-3.5-1.6c-1.4-0.4-2.8-0.6-4.4-0.6
+    		c-1.8,0-3.5,0.3-5.3,1c-1.8,0.7-3.3,1.7-4.7,3.1c-1.4,1.4-2.5,3.3-3.4,5.6s-1.3,5.1-1.3,8.4c0,3.3,0.4,6.1,1.3,8.4s2,4.2,3.4,5.6
+    		c1.4,1.4,3,2.5,4.7,3.1c1.8,0.7,3.5,1,5.3,1c1.6,0,3.1-0.2,4.4-0.6c1.3-0.4,2.5-0.9,3.5-1.6c1-0.7,1.8-1.5,2.5-2.3
+    		c0.7-0.9,1.1-1.8,1.4-2.7c0.3-1,0.8-1.7,1.5-2.1c0.7-0.4,1.4-0.6,2.2-0.6c1.1,0,2.2,0.4,3.1,1.1c0.9,0.7,1.4,1.7,1.4,3
+    		c0,0.6-0.3,1.7-0.9,3.1c-0.6,1.5-1.6,2.9-3.1,4.4c-1.5,1.5-3.5,2.8-6.2,4c-2.6,1.1-6,1.7-10,1.7C375.1,99.2,372,98.5,369.1,97.3z"
+    		/>
+    </g>
+</svg>
+						</div>
+					</a>
+				</h1>
+			</div>
+		</div>
+		<div class="4u 6u(small) 6u(xsmall) text-right">
+			<!-- <div class="mobile-menu-wrapper"> -->
+				<ul class="m-shortcuts">
+					
+					<li><a href="#" class="m-search" id="header-search"></a></li>
+					
+					<li><a href="/guide" class="m-docs" id="mobile-docs"></a></li>
+					
+					<li><a href="/contact" class="m-contact" id="mobile-contact"></a></li>
+					
+				</ul>	
+				<nav class="nav-menu">
+					<div class="menu-button">
+						<span></span>
+					</div>
+					<div class="nav-menu-list-wrap">
+						<div class="nav-menu-list">
+							
+								<h3><a href="/products" id="nav_products" >Products</a></h3>
+
+								
+								<ul>
+									
+									<li><a href="/products/elasticsearch" id="nav_elasticsearch" >elasticsearch</a></li>
+									
+									<li><a href="/found" id="nav_hosted-elasticsearch" >elasticsearch as a service</a></li>
+									
+									<li><a href="/products/logstash" id="nav_logstash" >logstash</a></li>
+									
+									<li><a href="/products/kibana" id="nav_kibana" >kibana</a></li>
+									
+									<li><a href="/products/beats" id="nav_beats" >beats</a></li>
+									
+									<li><a href="/products/watcher" id="nav_watcher" >watcher</a></li>
+									
+									<li><a href="/products/shield" id="nav_shield" >shield</a></li>
+									
+									<li><a href="/products/marvel" id="nav_marvel" >marvel</a></li>
+									
+									<li><a href="/products/hadoop" id="nav_hadoop" >hadoop</a></li>
+									
+									<li><a href="/downloads" id="nav_downloads" >downloads</a></li>
+									
+								</ul>
+								
+							
+								<h3><a href="/subscriptions" id="nav_subscriptions" >Subscriptions</a></h3>
+
+								
+							
+								<h3><a href="/learn" id="nav_learn" >Learn</a></h3>
+
+								
+								<ul>
+									
+									<li><a href="/guide" id="nav_guide" >docs</a></li>
+									
+									<li><a href="/videos" id="nav_videos" >videos</a></li>
+									
+									<li><a href="/training" id="nav_training" >training</a></li>
+									
+									<li><a href="/services" id="nav_services" >services</a></li>
+									
+									<li><a href="/blog" id="nav_learn_blog" >blog</a></li>
+									
+									<li><a href="/elasticon" id="nav_learn_elasticon" >elastic{ON}</a></li>
+									
+								</ul>
+								
+							
+								<h3><a href="/community" id="nav_community" >Community</a></h3>
+
+								
+								<ul>
+									
+									<li><a href="/community/meetups" id="nav_meetups" >meetups</a></li>
+									
+									<li><a href="/https:/discuss.elastic.co" id="nav_discuss" target="_blank">discuss</a></li>
+									
+									<li><a href="/community/codeofconduct" id="nav_codeofconduct" >code of conduct</a></li>
+									
+								</ul>
+								
+							
+								<h3><a href="/use-cases" id="nav_usecases" >Use Cases</a></h3>
+
+								
+							
+								<h3><a href="/blog" id="nav_blog" >Blog</a></h3>
+
+								
+								<ul>
+									
+									<li><a href="/blog/category/news" id="blog_news" >News</a></li>
+									
+									<li><a href="/blog/category/engineering" id="blog_engineering" >Engineering</a></li>
+									
+									<li><a href="/blog/category/user-stories" id="blog_user-stories" >User Stories</a></li>
+									
+									<li><a href="/blog/category/releases" id="blog_releases" >Releases</a></li>
+									
+									<li><a href="/blog/archive" id="blog_archive" >Archive</a></li>
+									
+								</ul>
+								
+							
+								<h3><a href="/about" id="nav_about" >About</a></h3>
+
+								
+								<ul>
+									
+									<li><a href="/about/leadership" id="nav_leadership" >leadership</a></li>
+									
+									<li><a href="/about/board" id="nav_board" >board of directors</a></li>
+									
+									<li><a href="/about/careers" id="nav_careers" >careers</a></li>
+									
+									<li><a href="/about/partners" id="nav_partners" >partners</a></li>
+									
+									<li><a href="/about/press" id="nav_press" >press</a></li>
+									
+								</ul>
+								
+							
+						</div>
+					</div>
+				</nav>
+			<!-- </div> -->
+		</div>
+	</div>
+</div>
+<!-- Mobile Menu -->
+
+
+		</div>
+	</div>
+</div>
+<div class="header-search-wrapper">	
+	<div class="container">
+		<div class="big-search">
+			<i class="big-search-icon"></i>
+			<form method="get" action="/search" autocomplete="on" name="searchForm" id="searchfrm">
+				<ul class="tags-wrapper">
+					<li class="search-field"><input type="text" class="form-control global-input" id="autocomplete" name="q"></li>
+				</ul>
+			</form>
+			<a href="#" class="header-search-cancel"></a>
+		</div>
+		<div class="nav-auto-complete"></div>
+	</div>
+</div>
+<style>	
+	
+	
+		.m-shortcuts li a.m-search {
+			background: url("https://static-www.elastic.co/assets/blt174b13be89ff803c/m-search-icon.png?q=100") no-repeat scroll center center rgba(0, 0, 0, 0);
+			background-size: contain;}
+	
+		.m-shortcuts li a.m-docs {
+			background: url("https://static-www.elastic.co/assets/blt5ba03f594a7d610a/m-guide-icon.png?q=100") no-repeat scroll center center rgba(0, 0, 0, 0);
+			background-size: contain;}
+	
+		.m-shortcuts li a.m-contact {
+			background: url("https://static-www.elastic.co/assets/blt38c3e853c4b1174d/m-contact-icon.png?q=100") no-repeat scroll center center rgba(0, 0, 0, 0);
+			background-size: contain;}
+		
+</style>
+		</div>
+	</div>
+  	<div id="content">
+  		
+  			
+            <div id="pageheader">
+    <div class="container">
+        <header>
+            <h1><a href="/learn" title="Learn">Learn</a> |</h1>
+            <h2><a href="/guide" title="Docs">Docs</a></h2>
+        </header>
+    </div>
+</div>
+<section id="guide">
+
+            <!-- start body -->
+<div class="breadcrumbs"><span class="breadcrumb-link"><a href="index.html">Elasticsearch: The Definitive Guide</a></span> » <span class="breadcrumb-link"><a href="getting-started.html">Getting Started </a></span> » <span class="breadcrumb-node">정렬과 Relevance</span></div><div class="navheader"><span class="prev"><a href="full-body-search.html">
+              « 
+              Full-Body Search</a>
+           
+        </span><span class="next">
+           
+          <a href="distributed-search.html">Distributed Search Execution
+               »
+            </a></span></div><div class="chapter"><div class="titlepage"><div><div><h2 class="title"><a id="sorting"></a>정렬과 Relevance</h2></div></div></div><p>기본적으로, 결과는 <span class="emphasis"><em>relevance</em></span> 에 의해서 정렬되어 가장 관련 있는 document가 먼저 나오도록 반환된다. 이 장의 후반부에서, <span class="emphasis"><em>relevance</em></span> 의 의미와 계산되는 방법에 대해 설명할 것이다. 먼저 <code class="literal">sort</code> 매개변수를 살펴보고, 사용하는 방법을 알아보자.</p><div class="section"><div class="titlepage"><div><div><h2 class="title"><a id="_정렬"></a>정렬</h2></div></div></div><p>relevance로 정렬하기 위해, relevance를 값으로 표시해야 한다. Elasticsearch에서 <span class="emphasis"><em>relevance score</em></span> 는 검색 결과에 <code class="literal">_score</code> 로 반환되는 부동 소수점 숫자로 표시된다. 기본 정렬 순서는 <code class="literal">_score</code> 의 내림차순이다.</p><p>그러나, 가끔 의미 있는 relevance score를 가지지 않을 수도 있다. 예를 들어, 아래 query는 <code class="literal">user_id</code> field의 값이 <code class="literal">1</code> 인 모든 tweet을 반환한다.</p><div class="pre_wrapper"><pre class="programlisting prettyprint lang-js">GET /_search
+{
+    "query" : {
+        "filtered" : {
+            "filter" : {
+                "term" : {
+                    "user_id" : 1
+                }
+            }
+        }
+    }
+}</pre></div><p>filter는 <code class="literal">_score</code> 와 아무 관련이 없으며, 묵시적 누락(missing-but-implied)인 <code class="literal">match_all</code> query는 모든 document의 <code class="literal">_score</code> 에 기본값 <code class="literal">1</code> 을 설정한다. 즉, 모든 document는 똑같이 관련 있다고 간주된다.</p><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="_field_값에_의한_정렬"></a>Field 값에 의한 정렬</h3></div></div></div><p>이 경우에는, 아마 가장 최근의 tweet이 우선하도록, 정렬하는 것이 의미가 있을 것이다. 이는 <code class="literal">sort</code> 매개변수로 가능하다.</p><div class="pre_wrapper"><pre class="programlisting prettyprint lang-js">GET /_search
+{
+    "query" : {
+        "filtered" : {
+            "filter" : { "term" : { "user_id" : 1 }}
+        }
+    },
+    "sort": { "date": { "order": "desc" }}
+}</pre></div><div class="sense_widget" data-snippet="snippets/056_Sorting/85_Sort_by_date.json"></div><p>결과에서 두 가지 차이점을 발견할 수 있다.</p><div class="pre_wrapper"><pre class="programlisting prettyprint lang-js">"hits" : {
+    "total" :           6,
+    "max_score" :       null, <a id="CO23-1"></a><span><img src="images/icons/callouts/1.png" alt="" /></span>
+    "hits" : [ {
+        "_index" :      "us",
+        "_type" :       "tweet",
+        "_id" :         "14",
+        "_score" :      null, <a id="CO23-2"></a><span><img src="images/icons/callouts/2.png" alt="" /></span>
+        "_source" :     {
+             "date":    "2014-09-24",
+             ...
+        },
+        "sort" :        [ 1411516800000 ] <a id="CO23-3"></a><span><img src="images/icons/callouts/3.png" alt="" /></span>
+    },
+    ...
+}</pre></div><div class="calloutlist"><table border="0" summary="Callout list"><tr><td width="5%" valign="top" align="left"><p><a href="#CO23-1"><span><img src="images/icons/callouts/1.png" alt="" /></span></a> <a href="#CO23-2"><span><img src="images/icons/callouts/2.png" alt="" /></span></a> </p></td><td valign="top" align="left"><p>
+정렬에 사용되지 않았기 때문에 <code class="literal">_score</code> 는 계산되지 않는다.
+</p></td></tr><tr><td width="5%" valign="top" align="left"><p><a href="#CO23-3"><span><img src="images/icons/callouts/3.png" alt="" /></span></a> </p></td><td valign="top" align="left"><p>
+<code class="literal">date</code> field의 값은 millisecond로 표시되어, <code class="literal">sort</code> 값으로 반환된다.
+</p></td></tr></table></div><p>각 결과에서 볼 수 있는 새로운 요소 중, 첫 번째는 정렬에 사용되는 값을 포함하고 있는 <code class="literal">sort</code> 이다. 이 경우에, 내부적으로 <span class="emphasis"><em>epoch 이후로 누적된 밀리초</em></span> 로 색인된 <code class="literal">date</code> 로 정렬하였다. long number <code class="literal">1411516800000</code> 는 date string <code class="literal">2014-09-24 00:00:00 UTC</code> 와 동일한 값이다.</p><p>두 번째는 <code class="literal">_score</code> 와 <code class="literal">max_score</code> 가 모두 <code class="literal">null</code> 이라는 점이다. <code class="literal">_score</code> 를 계산한다는 것은 꽤 비용이 발생하는 작업이고, 그것의 목적은 정렬이다. 지금은 relevance로 정렬하지 않았고, 따라서 <code class="literal">_score</code> 를 추적하는 것은 의미가 없다. 그럼에도 불구하고, <code class="literal">_score</code> 가 계산되기를 원한다면, <code class="literal">track_scores</code> 매개변수를 <code class="literal">true</code> 로 설정하면 된다.</p><div class="tip admon"><div class="icon"><img alt="Tip" src="images/icons/tip.png" /></div><div class="admon_content"><p>간략하게, 정렬할 field의 이름만 지정할 수 있다.</p><div class="pre_wrapper"><pre class="programlisting prettyprint lang-js">    "sort": "number_of_children"</pre></div><p>field는 기본적으로 오름차순으로 정렬된다. 그리고 <code class="literal">_score</code> 는 내림차순이다.</p></div></div></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="_다단계_정렬"></a>다단계 정렬</h3></div></div></div><p><code class="literal">date</code> 를 가진 query에 <code class="literal">_score</code> 를 조합하여, 모든 일치하는 결과를 date로 먼저 정렬하고 그 다음에 relevance로 정렬하기를 원할 수 있다.</p><div class="pre_wrapper"><pre class="programlisting prettyprint lang-js">GET /_search
+{
+    "query" : {
+        "filtered" : {
+            "query":   { "match": { "tweet": "manage text search" }},
+            "filter" : { "term" : { "user_id" : 2 }}
+        }
+    },
+    "sort": [
+        { "date":   { "order": "desc" }},
+        { "_score": { "order": "desc" }}
+    ]
+}</pre></div><div class="sense_widget" data-snippet="snippets/056_Sorting/85_Multilevel_sort.json"></div><p>순서가 중요하다. 결과는 첫 번째 기준에 의해 먼저 정렬되어야 한다. 첫 번째 <code class="literal">sort</code> 값이 동일하면, 결과는 두 번째 기준에 의해 정렬된다.</p><p>다단계 정렬이 <code class="literal">_score</code> 를 반드시 포함해야 하는 것은 아니다. 지리적 거리나 script에 의해 계산된 사용자 정의 값 등, 여러 가지 다른 field를 사용해 정렬할 수 있다.</p><div class="note admon"><div class="icon"><img alt="Note" src="images/icons/note.png" /></div><div class="admon_content"><p>Query-string 검색 또한, <code class="literal">sort</code> 매개변수를 사용하여 사용자 정의 정렬을 지원한다.</p><div class="pre_wrapper"><pre class="programlisting prettyprint lang-js">GET /_search?sort=date:desc&amp;sort=_score&amp;q=search</pre></div></div></div></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="_다중_값_field의_정렬"></a>다중 값 field의 정렬</h3></div></div></div><p>하나 이상의 값을 가진 field를 정렬하는 경우, 값들은 어떤 고유한 순서도 가지고 있지 않다는 점을 기억하자. 다중 값 field는 단지 값의 주머니일 뿐이다. 정렬하기 위해 어떤 것을 선택해야 할까?</p><p>number나 date의 경우, 다중 값 field를 <code class="literal">min</code>, <code class="literal">max</code>, <code class="literal">avg</code> 또는 <code class="literal">sum</code> <span class="emphasis"><em>sort mode</em></span> 를 사용하여 하나의 값으로 줄일 수 있다. 예를 들어, 각 <code class="literal">dates</code> field에 있는 가장 빠른 날짜로 정렬할 수 있다.</p><div class="pre_wrapper"><pre class="programlisting prettyprint lang-js">"sort": {
+    "dates": {
+        "order": "asc",
+        "mode":  "min"
+    }
+}</pre></div></div></div><div class="section"><div class="titlepage"><div><div><h2 class="title"><a id="multi-fields"></a>문자열 정렬과 다중 field</h2></div></div></div><p>분석된 string field 또한 다중 값 field이다. <a id="id-1.4.10.4.2.1" class="indexterm"></a>
+<a id="id-1.4.10.4.2.2" class="indexterm"></a><a id="id-1.4.10.4.2.3" class="indexterm"></a>
+<a id="id-1.4.10.4.2.4" class="indexterm"></a><a id="id-1.4.10.4.2.5" class="indexterm"></a>
+<a id="id-1.4.10.4.2.6" class="indexterm"></a> 그러나 그것들을 정렬해 보면, 거의 원하는 결과가 나오지 않는다. <code class="literal">fine old art</code> 를 분석해 보면, 3개의 단어가 나온다. 아마도 ABC순으로 첫 번째 단어로, 그 다음에 두 번째 단어로 정렬되기를 기대할 것이다. 그러나, Elasticsearch는 정렬 시에, 이런 처리에 대한 정보를 가지고 있지 않다.</p><p><code class="literal">min</code> (기본) 또는 <code class="literal">max</code> sort mode를 사용할 수 있으나, 의도했던 것이 아닌, <code class="literal">art</code> 나 <code class="literal">old</code> 로 정렬될 것이다.</p><p>string field를 정렬하기 위해서는, 그 field 전체가 <code class="literal">not_analyzed</code> string인, 단 하나의 단어만을 포함하고 있어야 한다.<a id="id-1.4.10.4.4.2" class="indexterm"></a>
+<a id="id-1.4.10.4.4.3" class="indexterm"></a> 그러나, 물론 full-text로 query할 수 있도록 하기 위해, 해당 field는 <code class="literal">analyzed</code> 이어야 한다.</p><p>두 가지 방법으로 동일한 string을 색인하는 단순한 접근은, document에 두 개의 분리된 field (검색을 위한 <code class="literal">analyzed</code> field, 정렬을 위한 <code class="literal">not_analyzed</code> field)를 포함하는 것이다.</p><p>그러나, 동일한 string을 <code class="literal">_source</code> field에 두 번 저장하는 것은 디스크 낭비이다. 가장 좋은 방법은 <span class="emphasis"><em>2개의 다른 방법으로 색인</em></span> 하지 않고, <span class="emphasis"><em>단일 field</em></span> 에 색인 하는 것이다. 모든 기본 field type(string, number, boolean, date)은 <code class="literal">fields</code> 매개변수를 통해, 단순한 mapping을 다중 field mapping으로 변경할 수 있다.</p><div class="pre_wrapper"><pre class="programlisting prettyprint lang-js">"tweet": {
+    "type":     "string",
+    "analyzer": "english"
+}</pre></div><div class="pre_wrapper"><pre class="programlisting prettyprint lang-js">"tweet": { <a id="CO24-1"></a><span><img src="images/icons/callouts/1.png" alt="" /></span>
+    "type":     "string",
+    "analyzer": "english",
+    "fields": {
+        "raw": { <a id="CO24-2"></a><span><img src="images/icons/callouts/2.png" alt="" /></span>
+            "type":  "string",
+            "index": "not_analyzed"
+        }
+    }
+}</pre></div><div class="sense_widget" data-snippet="snippets/056_Sorting/88_Multifield.json"></div><div class="calloutlist"><table border="0" summary="Callout list"><tr><td width="5%" valign="top" align="left"><p><a href="#CO24-1"><span><img src="images/icons/callouts/1.png" alt="" /></span></a> </p></td><td valign="top" align="left"><p>
+<code class="literal">tweet</code> field는 전과 같이 <code class="literal">analyzed</code> full-text field 이다.
+</p></td></tr><tr><td width="5%" valign="top" align="left"><p><a href="#CO24-2"><span><img src="images/icons/callouts/2.png" alt="" /></span></a> </p></td><td valign="top" align="left"><p>
+<code class="literal">tweet.raw</code> 라는 새로운 하위 field는 <code class="literal">not_analyzed</code> 이다.
+</p></td></tr></table></div><p>이제, 데이터를 다시 색인하면, 검색에는 <code class="literal">tweet</code> field를, 정렬에는 <code class="literal">tweet.raw</code> field를 사용할 수 있다.</p><div class="pre_wrapper"><pre class="programlisting prettyprint lang-js">GET /_search
+{
+    "query": {
+        "match": {
+            "tweet": "elasticsearch"
+        }
+    },
+    "sort": "tweet.raw"
+}</pre></div><div class="sense_widget" data-snippet="snippets/056_Sorting/88_Multifield.json"></div><div class="warning admon"><div class="icon"><img alt="Warning" src="images/icons/warning.png" /></div><div class="admon_content"><p>full-text <code class="literal">analyzed</code> field를 정렬하는 것은 많은 메모리가 필요하다. <a class="xref" href="sorting.html#fielddata-intro" title="Fielddata">Fielddata</a> 를 참조하자.</p></div></div></div><div class="section"><div class="titlepage"><div><div><h2 class="title"><a id="relevance-intro"></a>Relevance가 무엇인가?</h2></div></div></div><p>기본적으로 결과는 relevance를 기준으로, 내림차순으로 반환된다고 언급한 바 있다.<a id="id-1.4.10.5.2.1" class="indexterm"></a>
+<a id="id-1.4.10.5.2.2" class="indexterm"></a> 그런데, relevance가 무엇이고, 어떻게 계산되는가?</p><p>각 document의 relevance score는 <code class="literal">_score</code> 라고 하는, 양(+)의 부동 소수점 정수로 표현된다.<a id="id-1.4.10.5.3.2" class="indexterm"></a>
+<a id="id-1.4.10.5.3.3" class="indexterm"></a> <code class="literal">_score</code> 가 높을수록, 더 관련 있는 document이다.</p><p>query절은 각 document에 대해, <code class="literal">_score</code> 를 만들어낸다. score를 계산하는 방법은, query절의 유형에 달려 있다. 각각의 다른 query는 각기 다른 용도로 사용된다. <code class="literal">fuzzy</code> query는 찾아낸 단어의 철자가, 원래의 검색어에 얼마나 유사한 가를 계산해, <code class="literal">_score</code> 를 결정하고, <code class="literal">terms</code> query는 찾아낸 단어의 비율을 포함한다. 그러나, 일반적으로, <span class="emphasis"><em>relevance</em></span> 는 full text의 내용이 full text query string에 얼마나 유사한가를 계산하는 알고리즘을 의미한다.</p><p>Elasticsearch에 사용되는 표준 <span class="emphasis"><em>유사성 알고리즘</em></span> 은<a id="id-1.4.10.5.5.2" class="indexterm"></a><a id="id-1.4.10.5.5.3" class="indexterm"></a>
+<a id="id-1.4.10.5.5.4" class="indexterm"></a> <span class="emphasis"><em>Term Frequency(TF) / Inverse Document Frequency(IDF)</em></span> 이다. 이는 아래 요소를 따른다.</p><div class="variablelist"><dl class="variablelist"><dt><span class="term">
+Term frequency
+</span></dt><dd>
+  field에 나타나는 단어의 횟수. 많이 나타날수록 관련성이 높다. 어떤 field에 동일한 단어가 5회 언급되었다면, 단 1회 언급된 field보다 관련성이 더 높을 것이다.
+</dd><dt><span class="term">
+Inverse document frequency
+</span></dt><dd>
+  각 단어가 index에 나타난 횟수. 많이 나타날수록 <span class="emphasis"><em>관련성</em></span> 이 낮다. 많은 document에 나타난 단어는, 더 드물게 나타나는 단어보다 낮은 <span class="emphasis"><em>비중</em></span> 을 가진다.
+</dd><dt><span class="term">
+Field-length norm
+</span></dt><dd>
+  field의 길이. 길수록, field에 있는 단어는 관련성이 낮을 것이다. 짧은 <code class="literal">title</code> field에 나타난 어떤 단어는, 긴 <code class="literal">content</code> field에 나타난 동일한 단어보다 높은 비중을 가진다.
+</dd></dl></div><p>개별 <a id="id-1.4.10.5.7.1" class="indexterm"></a>query 는 phrase query의 단어 근접성(proximity)나 fuzzy query의 단어 유사성(similarity) 같은 다른 요소들과 함께, TF/IDF score를 조합한다.</p><p>relevance는 full text 검색에서만 사용되는 것이 아니다. yes/no 절에도 똑같이 적용될 수 있다. 일치하는 절이 더 많을수록, 더 높은 <code class="literal">_score</code> 를 가진다.</p><p>다중 query절이 <code class="literal">bool</code> query 같은 복합 query<a id="id-1.4.10.5.9.2" class="indexterm"></a>
+<a id="id-1.4.10.5.9.3" class="indexterm"></a> 를 사용하여 조합될 경우, 각 query절에서 나온 <code class="literal">_score</code> 는 document 전체 <code class="literal">_score</code> 를 계산하기 위해, 조합된다.</p><div class="tip admon"><div class="icon"><img alt="Tip" src="images/icons/tip.png" /></div><div class="admon_content"><p>relevance 계산과 relevance를 조정하는 방법은 &lt;controlling-relevance&gt; 를 참고하자.</p></div></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="explain"></a>Score를 이해하자</h3></div></div></div><p>복잡한 query를 debug하는 경우,<a id="id-1.4.10.5.11.2.1" class="indexterm"></a>
+<a id="id-1.4.10.5.11.2.2" class="indexterm"></a><a id="id-1.4.10.5.11.2.3" class="indexterm"></a>
+<a id="id-1.4.10.5.11.2.4" class="indexterm"></a> <code class="literal">_score</code> 가 계산되는 방법을 정확히 이해하기는 어려울 수 있다. Elasticsearch는 모든 검색 결과에 <span class="emphasis"><em>설명(explanation)</em></span> 을 추가할 수 있는 옵션을 가지고 있다. <code class="literal">explain</code> 매개변수를<a id="id-1.4.10.5.11.2.8" class="indexterm"></a> <code class="literal">true</code> 로 설정하면 된다.</p><div class="pre_wrapper"><pre class="programlisting prettyprint lang-js">GET /_search?explain <a id="CO25-1"></a><span><img src="images/icons/callouts/1.png" alt="" /></span>
+{
+   "query"   : { "match" : { "tweet" : "honeymoon" }}
+}</pre></div><div class="sense_widget" data-snippet="snippets/056_Sorting/90_Explain.json"></div><div class="calloutlist"><table border="0" summary="Callout list"><tr><td width="5%" valign="top" align="left"><p><a href="#CO25-1"><span><img src="images/icons/callouts/1.png" alt="" /></span></a> </p></td><td valign="top" align="left"><p>
+<code class="literal">explain</code> 매개변수는 모든 검색 결과에, <code class="literal">_score</code> 가 계산되는 방법에 대한 설명을 추가한다.
+</p></td></tr></table></div><div class="note admon"><div class="icon"><img alt="Note" src="images/icons/note.png" /></div><div class="admon_content"><p><code class="literal">explain</code> 을 추가하면, 모든 hit에 굉장히 많은<a id="id-1.4.10.5.11.6.1.2" class="indexterm"></a>
+<a id="id-1.4.10.5.11.6.1.3" class="indexterm"></a> 출력이 나온다. 그것이 무엇을 의미하는지 이해하기 위해, 시간을 투자할 가치가 있다. 바로 이해하지 못 할 수도 있지만, 필요할 때 참조할 수 있다. 하나의 <code class="literal">hit</code> 에 하나씩 출력을 만들어 낸다.</p></div></div><p>먼저, 일반적인 검색 요청으로 반환된 metadata를 볼 수 있다:</p><div class="pre_wrapper"><pre class="programlisting prettyprint lang-js">{
+    "_index" :      "us",
+    "_type" :       "tweet",
+    "_id" :         "12",
+    "_score" :      0.076713204,
+    "_source" :     { ... trimmed ... },</pre></div><p>여기에 document가 존재하는 node와 shard에 대한 정보가 추가된다. 이는 단어와 document 빈도를 index별이 아닌, shard별로 계산하기 때문에, 알고 있는 것이 유용하다:</p><div class="pre_wrapper"><pre class="programlisting prettyprint lang-js">    "_shard" :      1,
+    "_node" :       "mzIVYCsqSWCG_M_ZffSs9Q",</pre></div><p>그리고, <code class="literal">_explanation</code> 을 제공한다. 각 <a id="id-1.4.10.5.11.11.2" class="indexterm"></a><a id="id-1.4.10.5.11.11.3" class="indexterm"></a>
+<a id="id-1.4.10.5.11.11.4" class="indexterm"></a>항목은 수행된 계산의 유형을 알려주는 <code class="literal">description</code>, 계산의 결과를 알려주는 <code class="literal">value</code>, 그리고 요구되는 하위 계산을 알려주는 <code class="literal">details</code> 를 포함하고 있다.</p><div class="pre_wrapper"><pre class="programlisting prettyprint lang-js">"_explanation": { <a id="CO26-1"></a><span><img src="images/icons/callouts/1.png" alt="" /></span>
+   "description": "weight(tweet:honeymoon in 0)
+                  [PerFieldSimilarity], result of:",
+   "value":       0.076713204,
+   "details": [
+      {
+         "description": "fieldWeight in 0, product of:",
+         "value":       0.076713204,
+         "details": [
+            {  <a id="CO26-2"></a><span><img src="images/icons/callouts/2.png" alt="" /></span>
+               "description": "tf(freq=1.0), with freq of:",
+               "value":       1,
+               "details": [
+                  {
+                     "description": "termFreq=1.0",
+                     "value":       1
+                  }
+               ]
+            },
+            { <a id="CO26-3"></a><span><img src="images/icons/callouts/3.png" alt="" /></span>
+               "description": "idf(docFreq=1, maxDocs=1)",
+               "value":       0.30685282
+            },
+            { <a id="CO26-4"></a><span><img src="images/icons/callouts/4.png" alt="" /></span>
+               "description": "fieldNorm(doc=0)",
+               "value":        0.25,
+            }
+         ]
+      }
+   ]
+}</pre></div><div class="calloutlist"><table border="0" summary="Callout list"><tr><td width="5%" valign="top" align="left"><p><a href="#CO26-1"><span><img src="images/icons/callouts/1.png" alt="" /></span></a> </p></td><td valign="top" align="left"><p>
+<code class="literal">honeymoon</code> 을 위한 score 계산의 요약
+</p></td></tr><tr><td width="5%" valign="top" align="left"><p><a href="#CO26-2"><span><img src="images/icons/callouts/2.png" alt="" /></span></a> </p></td><td valign="top" align="left"><p>
+Term Frequency
+</p></td></tr><tr><td width="5%" valign="top" align="left"><p><a href="#CO26-3"><span><img src="images/icons/callouts/3.png" alt="" /></span></a> </p></td><td valign="top" align="left"><p>
+Inverse Document Frequency
+</p></td></tr><tr><td width="5%" valign="top" align="left"><p><a href="#CO26-4"><span><img src="images/icons/callouts/4.png" alt="" /></span></a> </p></td><td valign="top" align="left"><p>
+Field-Length Norm
+</p></td></tr></table></div><div class="warning admon"><div class="icon"><img alt="Warning" src="images/icons/warning.png" /></div><div class="admon_content"><p><code class="literal">explain</code> 을 출력하면 비용이 많이 발생한다.<a id="id-1.4.10.5.11.14.1.2" class="indexterm"></a>
+<a id="id-1.4.10.5.11.14.1.3" class="indexterm"></a> 단지 debug를 위한 tool이다. 제품에 사용되도록, 남겨두지 않길 바란다.</p></div></div><p>첫 번째 부분은 계산의 요약이다. document 0의 <code class="literal">tweet</code> field에서 단어 <code class="literal">honeymoon</code> 의 <span class="emphasis"><em>비중</em></span> <a id="id-1.4.10.5.11.15.4" class="indexterm"></a>
+<a id="id-1.4.10.5.11.15.5" class="indexterm"></a><a id="id-1.4.10.5.11.15.6" class="indexterm"></a>
+<a id="id-1.4.10.5.11.15.7" class="indexterm"></a> (TF/IDF)을 계산한 것을 나타낸다.</p><p>그 다음에, 비중이 계산되는 방법을 자세히<a id="id-1.4.10.5.11.16.1" class="indexterm"></a><a id="id-1.4.10.5.11.16.2" class="indexterm"></a> 알려준다.</p><div class="variablelist"><dl class="variablelist"><dt><span class="term">
+Term frequency
+</span></dt><dd>
+  이 document의 <code class="literal">tweet</code> field에서 <code class="literal">honeymoon</code> 이라는 단어가 나타나는 횟수.
+</dd><dt><span class="term">
+Inverse document frequency
+</span></dt><dd>
+  index에 있는 모든 document의 <code class="literal">tweet</code> field에서 <code class="literal">honeymoon</code> 이라는 단어가 나타난 횟수.
+</dd><dt><span class="term">
+Field-length norm
+</span></dt><dd>
+  이 document의 <code class="literal">tweet</code> field의 길이, field가 길수록 이 숫자는 더 작다.
+</dd></dl></div><p>더 복잡한 query에 대한 explanation은 매우 복잡해 보일 수 있으나, 위의 예제에서 보이는 것과 동일한 계산을 더 많이 포함하고 있을 뿐이다. 이 정보는 검색의 결과가 저런 순서로 나타나는 이유를 debug할 경우 유용하다.</p><div class="tip admon"><div class="icon"><img alt="Tip" src="images/icons/tip.png" /></div><div class="admon_content"><p><code class="literal">explain</code> 의 출력은 JSON으로 읽기가 어려울 수 있다. YAML 형식으로는 읽기가 더 쉽다.<a id="id-1.4.10.5.11.19.1.2" class="indexterm"></a>
+<a id="id-1.4.10.5.11.19.1.3" class="indexterm"></a><a id="id-1.4.10.5.11.19.1.4" class="indexterm"></a> <code class="literal">format=yaml</code> 을 query string에 추가하기만 하면 된다.</p></div></div></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="explain-api"></a>Document 가 일치하는 이유를 이해하자</h3></div></div></div><p><code class="literal">explain</code> 옵션이 모든 결과에 explanation을 추가하면, <code class="literal">explain</code> API는 특정 document가 일치하는 이유, 더 중요한 이유, 일치하지 <span class="emphasis"><em>않는</em></span> 이유를 이해하는데 이용할 수 있다.<a id="id-1.4.10.5.12.2.4" class="indexterm"></a>
+<a id="id-1.4.10.5.12.2.5" class="indexterm"></a><a id="id-1.4.10.5.12.2.6" class="indexterm"></a></p><p>요청의 path는 <code class="literal">/index/path/id/_explain</code> 이다.</p><div class="pre_wrapper"><pre class="programlisting prettyprint lang-js">GET /us/tweet/12/_explain
+{
+   "query" : {
+      "filtered" : {
+         "filter" : { "term" :  { "user_id" : 2           }},
+         "query" :  { "match" : { "tweet" :   "honeymoon" }}
+      }
+   }
+}</pre></div><div class="sense_widget" data-snippet="snippets/056_Sorting/90_Explain_API.json"></div><p>위에서 보았던, 전체 explanation<a id="id-1.4.10.5.12.6.1" class="indexterm"></a>
+<a id="id-1.4.10.5.12.6.2" class="indexterm"></a> 을 따라가 보면, <code class="literal">description</code> 을 볼 수 있다.</p><div class="pre_wrapper"><pre class="programlisting prettyprint lang-js">"failure to match filter: cache(user_id:[2 TO 2])"</pre></div><p>즉, <code class="literal">user_id</code> filter 절 때문에 document가 일치하지 않았다.</p></div></div><div class="section"><div class="titlepage"><div><div><h2 class="title"><a id="fielddata-intro"></a>Fielddata</h2></div></div></div><p>이 장의 마지막 주제는 Elasticsearch의 내부에 대한 것이다. 여기에서는 새로운 기술을 보여주지는 않지만, fielddata는 반복적으로 언급할 중요한 주제이며, 알아야 한다.<a id="id-1.4.10.6.2.1" class="indexterm"></a></p><p>field를 정렬할 때, Elasticsearch는 query에 일치하는 모든 document에 대해, 해당 field 값을 액세스해야 한다.<a id="id-1.4.10.6.3.1" class="indexterm"></a>
+<a id="id-1.4.10.6.3.2" class="indexterm"></a> 검색 시에 매우 잘 동작하는 inverted index는, field값으로 정렬하는 경우에는, 이상적인 구조가 아니다:</p><div class="itemizedlist"><ul class="itemizedlist" type="disc"><li class="listitem">
+검색 시에는 단어를 document의 목록에 mapping해야 한다.
+</li><li class="listitem">
+정렬 시에는 document를 단어에 mapping해야 한다. 즉, inverted index를 “uninvert” 해야 한다.
+</li></ul></div><p>효율적으로 정렬하기 위해, Elasticsearch는 정렬하려는 field의 값 모두를 메모리에 로드한다. 이것이 <code class="literal">fielddata</code> 이다.</p><div class="warning admon"><div class="icon"><img alt="Warning" src="images/icons/warning.png" /></div><div class="admon_content"><p>특정 query에 일치하는 document의 값만을 로드하는 것이 아니다. document <code class="literal">type</code> 에 관계없이, <span class="emphasis"><em>index에 있는 모든 document</em></span> 의 값을 로드한다.</p></div></div><p>메모리에 모든 값을 불러오는 이유는, 디스크에서 index를 uninvert하는 것은, 느리기 때문이다. 현재의 요청에는 소수의 document의 값들만 필요하다 할지라도, 아마도 다음 요청에는 다른 document의 값을 액세스해야 할 것이다. 그래서, 메모리에 모든 값을 한번에 불러와, 거기에 유지하는 것이 적절하다.</p><p>fielddata는 Elasticsearch의 여러 곳에서 사용된다:</p><div class="itemizedlist"><ul class="itemizedlist" type="disc"><li class="listitem">
+field 정렬
+</li><li class="listitem">
+field 집계
+</li><li class="listitem">
+특정 filter, 예를 들면, 위치정보 filter
+</li><li class="listitem">
+field가 참조하는 Script
+</li></ul></div><p>email 본문처럼, 특히 높은 cardinality string fields — 유일한 값을 많이 가지고 있는 string field — 는, 분명히 많은 메모리를 사용할 수 있다. 다행히도 메모리 부족은, cluster에 node를 더 추가하는, 수평확장으로 해결할 수 있는 문제이다.</p><p>지금까지 fielddata가 무엇이고, 메모리 부족이 나타날 수 있다는 것을 알게 되었다. 나중에 fielddata가 얼마나 많은 메모리를 사용하는지를 보는 방법, fielddata에 이용할 수 있는 메모리의 한계를 제한하는 방법, user experience를 향상시키기 위해 fielddata를 미리 불러오는 방법을 보여줄 것이다.</p></div></div><div class="navfooter"><span class="prev"><a href="full-body-search.html">
+              « 
+              Full-Body Search</a>
+           
+        </span><span class="next">
+           
+          <a href="distributed-search.html">Distributed Search Execution
+               »
+            </a></span></div>
+<!-- end body -->
+
+            </section>
+
+            <div id="rtpcontainer"
+        >
+	<h3>Top Videos</h3>
+	<ul class="lists">
+		<li><a href="https://www.elastic.co/webinars/get-started-with-elasticsearch/?baymax=default&elektra=docs&storm=top-video">Getting Started</a></li>
+		<li><a href="http://www.elastic.co/webinars/elasticsearch-performance-optimization-tale-two-tickets/?elektra=docs">Scaling</a></li>
+		<li><a href="http://www.elastic.co/webinars/shield-securing-your-data-in-elasticsearch/?elektra=docs">Security</a></li>
+	</ul>
+</div>
+
+
+	  	
+
+
+
+
+<script src="//app-lon02.marketo.com/js/forms2/js/forms2.min.js"></script>
+	<!-- subscribe-newsletter -->
+	<div id="subscribe-newsletter">
+		<div class="container">
+			<div class="row">
+				<div class="12u">
+					<div class="subscribe-wrapper" id="rtp-newsletter">
+						<header>
+							<h3>Subscribe to our newsletter</h3>
+						</header>
+						<div class="subscribe-form">
+							<form id="mktoForm_1398" class="container"></form>
+							<div class="form_thanks hide">
+								
+									<p>Thanks for subscribing! We'll keep you updated with new releases.</p>
+								
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+  	<!-- Footer -->
+	<div id="footer-wrapper">
+		<section id="footer" class="container">
+			<div class="row">
+				<div class="12u">
+					<!-- Copyright -->
+					<div id="copyright">
+	<p>
+		© 2016. All Rights Reserved - Elasticsearch
+	</p>
+	<ul class="links">
+		<li>Elasticsearch is a trademark of Elasticsearch BV, registered in the U.S. and in other countries</li>
+		<li><a href="/legal/trademarks" id="footer_trademarks">Trademarks</a></li>
+		<li><a href="/legal/terms-of-use" id="footer_terms">Terms</a></li>
+		<li><a href="/legal/privacy-policy" id="footer_privacy">Privacy</a></li>
+	</ul>
+	<p>
+		Apache, Apache Lucene, Apache Hadoop, Hadoop, HDFS and the yellow elephant logo are trademarks of the <a href="http://www.apache.org/" target="_blank">Apache Software Foundation</a> in the United States and/or other&nbsp;countries.
+	</p>
+</div><!--<div class="row">
+{replace4}
+</div>-->
+				</div>
+			</div>					
+		</section>
+	</div>
+			
+	<!-- Social Media -->
+	<div id="socialmedia-wrapper">
+		<section id="socialmedia" class="container">
+			<!-- social icons -->
+			<div id="social">
+				<ul class="links">
+					
+						<li class="facebook grayscale"><a href="http://www.facebook.com/elastic.co" target="_blank" id="footer_facebook"></a></li>
+					
+						<li class="twitter grayscale"><a href="https://www.twitter.com/elastic" target="_blank" id="footer_twitter"></a></li>
+					
+						<li class="linkedin grayscale"><a href="https://www.linkedin.com/company/elastic-co" target="_blank" id="footer_linkedin"></a></li>
+					
+						<li class="xing grayscale"><a href="https://www.xing.com/companies/elastic.co" target="_blank" id="footer_xing"></a></li>
+					
+						<li class="youtube grayscale"><a href="https://www.youtube.com/user/elasticsearch" target="_blank" id="footer_youtube"></a></li>
+					
+				</ul>
+			</div>
+		</section>
+	</div>
+
+
+<style type="text/css">
+	
+		.facebook{background:url("https://static-www.elastic.co/assets/bltda40eebd7c7cae9a/facebook.svg?q=100") no-repeat;}		
+	
+		.twitter{background:url("https://static-www.elastic.co/assets/bltfd3b1511512f4632/twitter.svg?q=100") no-repeat;}		
+	
+		.linkedin{background:url("https://static-www.elastic.co/assets/blt6b4f6f8d6b96f814/linkedin.svg?q=100") no-repeat;}		
+	
+		.xing{background:url("https://static-www.elastic.co/assets/blta76b2ae2b2f10a98/xing.svg?q=100") no-repeat;}		
+	
+		.youtube{background:url("https://static-www.elastic.co/assets/blt5761648c9581fb53/youtube.svg?q=100") no-repeat;}		
+	
+</style>
+
+<script>
+MktoForms2.loadForm("//app-lon02.marketo.com", "813-MAM-392", 1398,function(form){
+	form.onSuccess(function(form){
+		$('#mktoForm_1398').css('display','none');
+		$('#subscribe-newsletter header').hide();
+		$('#mktoForm_1398').siblings('.form_thanks').removeClass('hide')
+		dataLayer.push({'event': 'mktoFormSubmit'});
+	    return false;
+  	});
+});
+</script>	
+
+  	</div>
+  	<!-- <div class="preloader">
+    	<div class="status"></div>
+	</div> -->
+  	<style></style>
+   	<script type="text/javascript">
+	var suggestionsUrl = "https://search.elastic.co/suggest";	
+</script>
+<script src="https://static-www.elastic.co/static/js/jquery.autocomplete.js?q=100"></script>
+<script src="https://static-www.elastic.co/static/js/script.js?q=100"></script>
+
+
+   	
+   	
+   	
+   	<script type="application/ld+json">
+	
+		
+	
+	{
+	  	"@context": "http://schema.org",
+	  	"@type": "Organization",
+	  	"name" : "Elastic",
+	  	"url": "https://www.elastic.co/",
+	  	"logo": "https://www.elastic.co/static/img/elastic-logo-200.png",
+		"sameAs" : [ "https://www.facebook.com/elastic.co",
+			"https://twitter.com/elastic",
+			"https://plus.google.com/105178019064686397293",
+			"https://www.youtube.com/user/elasticsearch",
+			"https://www.linkedin.com/company/elasticsearch"
+		],
+	  	"potentialAction": {
+	    	"@type": "SearchAction",
+	    	"target": "https://www.elastic.co/search?q={query_string}",
+	    	"query-input": "required name=query_string"
+	  	}
+	}
+</script>	
+
+            <script type="text/javascript" src="docs.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.1/jquery.cookie.min.js"></script>
+<script type='text/javascript' src='https://google-code-prettify.googlecode.com/svn/loader/run_prettify.js'></script>
+
+            </body>
+        
+

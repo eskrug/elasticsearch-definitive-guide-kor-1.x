@@ -1,0 +1,1530 @@
+
+<!DOCTYPE HTML>
+<html lang="en-us">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>데이터 입출력</title><meta name="generator" content="DocBook XSL Stylesheets V1.78.1" /><link rel="home" href="index.html" title="Elasticsearch: The Definitive Guide" /><link rel="up" href="getting-started.html" title="Getting Started" /><link rel="prev" href="distributed-cluster.html" title="Cluster 내부 동작" /><link rel="next" href="distributed-docs.html" title="Distributed Document Store" />
+  
+ 	<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+
+ 	<!-- RTP tag --> 
+	<script type='text/javascript' async>
+	(function(c,h,a,f,i,e){c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
+	 c[a].a=i;c[a].e=e;var g=h.createElement("script");g.async=true;g.type="text/javascript";
+	 g.src=f+'?aid='+i;var b=h.getElementsByTagName("script")[0];b.parentNode.insertBefore(g,b);
+	 })(window,document,"rtp","//sjrtp2-cdn.marketo.com/rtp-api/v1/rtp.js","elasticco");
+	 
+	rtp('send','view');
+	rtp('get', 'campaign',true);
+	</script>
+	<!-- End of RTP tag -->
+	
+	
+ 	<link rel="apple-touch-icon" sizes="57x57"  href="https://www.elastic.co/apple-icon-57x57.png?change=123">
+<link rel="apple-touch-icon" sizes="60x60"  href="https://www.elastic.co/apple-icon-60x60.png?change=123">
+<link rel="apple-touch-icon" sizes="72x72"  href="https://www.elastic.co/apple-icon-72x72.png?change=123">
+<link rel="apple-touch-icon" sizes="76x76"  href="https://www.elastic.co/apple-icon-76x76.png?change=123">
+<link rel="apple-touch-icon" sizes="114x114"  href="https://www.elastic.co/apple-icon-114x114.png?change=123">
+<link rel="apple-touch-icon" sizes="120x120"  href="https://www.elastic.co/apple-icon-120x120.png?change=123">
+<link rel="apple-touch-icon" sizes="144x144"  href="https://www.elastic.co/apple-icon-144x144.png?change=123">
+<link rel="apple-touch-icon" sizes="152x152"  href="https://www.elastic.co/apple-icon-152x152.png?change=123">
+<link rel="apple-touch-icon" sizes="180x180"  href="https://www.elastic.co/apple-icon-180x180.png?change=123">
+<link rel="icon" type="image/png" sizes="192x192"   href="https://www.elastic.co/android-icon-192x192.png?change=123">
+<link rel="icon" type="image/png" sizes="32x32"  href="https://www.elastic.co/favicon-32x32.png?change=123">
+<link rel="icon" type="image/png" sizes="96x96"  href="https://www.elastic.co/favicon-96x96.png?change=123">
+<link rel="icon" type="image/png" sizes="16x16"  href="https://www.elastic.co/favicon-16x16.png?change=123">
+<link rel="manifest"  href="https://www.elastic.co/manifest.json">
+<meta name="msapplication-TileColor" content="#ffffff">
+<meta name="msapplication-TileImage" content="/ms-icon-144x144.png">
+<meta name="theme-color" content="#ffffff">
+
+<!-- DC tags section -->
+<link rel="schema.DC" href="http://purl.org/dc/elements/1.1/" >
+<link rel="schema.DCTERMS" href="http://purl.org/dc/terms/" >
+<meta name="DC.title" content="Guide template" >
+
+<!-- end DC tags -->
+
+	<meta name="description" content="" />
+
+	<link rel="canonical" href="" />
+
+	<meta property="og:image" content="https://www.elastic.co/static/img/elastic-logo-200.png" />
+	
+
+
+	
+	<link type="text/css" rel="stylesheet" href="https://static-www.elastic.co/static/css/skel.css?q=100" />
+	<link type="text/css" rel="stylesheet" href="https://static-www.elastic.co/static/css/style.css?q=100" />	
+	<script src="https://static-www.elastic.co/static/js/skel.min.js?q=100"></script>
+	
+		<script type="text/javascript">form_name = "" ; cdn_url="https://static-www.elastic.co";cdn_slug = "100"</script>
+	
+	<script src="https://static-www.elastic.co/static/js/init.js?q=100"></script>
+	<script src="https://static-www.elastic.co/static/js/jquery.min.js?q=100"></script>
+	<script src="https://static-www.elastic.co/static/js/jquery.cookie.js?q=100"></script>
+	<!--<script type="text/javascript">
+	    (function() {
+	        var path = '//easy.myfonts.net/v2/js?sid=10336(font-family=Avenir+35+Light)&sid=10338(font-family=Avenir+55+Roman)&sid=10340(font-family=Avenir+85+Heavy)&sid=10344(font-family=Avenir+65+Medium)&key=nAD6PCOPrX',
+	            protocol = ('https:' == document.location.protocol ? 'https:' : 'http:'),
+	            trial = document.createElement('script');
+	        trial.type = 'text/javascript';
+	        trial.async = true;
+	        trial.src = protocol + path;
+	        var head = document.getElementsByTagName("head")[0];
+	        head.appendChild(trial);
+	    })();
+	</script>-->
+
+	
+	<link type="text/css" rel="stylesheet"  href="https://www.elastic.co/static/css/prettify.css" />
+	<script type="text/javascript"  src="https://www.elastic.co/static/js/prettify.js"></script>
+
+
+
+<link rel="stylesheet" type="text/css" href="styles.css" />
+
+</head>
+<body >
+	<!-- Google Tag Manager -->
+	<script>dataLayer = [];</script><noscript><iframe src="//www.googletagmanager.com/ns.html?id=GTM-58RLH5"
+													  height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+	<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+			new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+			j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+			'//www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+	})(window,document,'script','dataLayer','GTM-58RLH5');</script>
+	<!-- End Google Tag Manager -->
+	
+	<div class="header-cont">
+		<div id="header-wrapper">
+			
+
+
+	<script  src="https://www.elastic.co/static/js/jquery.tokeninput.js?change=123"></script>
+	<link rel="stylesheet" type="text/css"  href="https://www.elastic.co/static/css/token-input.css">
+
+<div class="shortcuts-wrapper">
+	<div class="container">
+		<!-- Shortcuts -->
+		<nav id="shortcuts">
+			<ul class="links">
+				
+					<li class="shortcut-1">
+						<a href="/downloads" id="header_downloads" >
+							<span class="txt">downloads</span>	
+						</a>
+					</li>
+				
+					<li class="shortcut-2">
+						<a href="/guide" id="header_guide" >
+							<span class="txt">docs</span>	
+						</a>
+					</li>
+				
+					<li class="shortcut-3">
+						<a href="/subscriptions" id="header_subscriptions" >
+							<span class="txt">support</span>	
+						</a>
+					</li>
+				
+					<li class="shortcut-4">
+						<a href="https://discuss.elastic.co" id="header_discuss" target="_blank">
+							<span class="txt">discuss</span>	
+						</a>
+					</li>
+				
+					<li class="shortcut-5">
+						<a href="/contact" id="header_contact" >
+							<span class="txt">contact</span>	
+						</a>
+					</li>
+				
+			</ul>
+		</nav>
+		<div class="languages-wrapper">
+			<div class="global-language">
+				<ul class="language">
+					<!-- <li class="active-language"><a class="active" href="#">EN</a></li> -->
+					
+						<li><a href="#">EN</a></li>
+					
+				</ul>
+				<ul class="all-languages">
+					
+						
+						<li><a href="/guide_template">English</a></li>
+					
+						
+						<li><a href="/fr/guide_template">French</a></li>
+					
+						
+						<li><a href="/de/guide_template">German</a></li>
+					
+						
+						<li><a href="/jp/guide_template">Japanese</a></li>
+					
+						
+						<li><a href="/kr/guide_template">Korean</a></li>
+					
+				</ul>
+			</div>
+		</div>
+	</div>
+</div>
+<div class="container w100">
+	<div class="row 0%">
+		<div class="12u">
+			
+
+<section class="first-container desktop-main-nav">
+	<div class="row 0%">
+		<div class="11u 6u(small) 6u(xsmall)">
+			<div id="elastic">
+				<h1>
+					<a href="/">
+						<div id="elastic-logo">
+						<svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+	 viewBox="0 0 400 130" preserveAspectRatio="xMinYMin meet" enable-background="new 0 0 400 130" xml:space="preserve">
+    <g>
+    	<g>
+    		<path fill="#FFFFFF" d="M122.5,67.8c0-10.3-6.4-19.2-15.9-22.7c0.4-2.2,0.6-4.3,0.6-6.6c0-19.1-15.5-34.6-34.6-34.6
+    			c-11.1,0-21.5,5.3-28,14.4c-3.2-2.5-7.1-3.8-11.2-3.8c-10.1,0-18.4,8.2-18.4,18.4c0,2.2,0.4,4.4,1.1,6.4C6.5,42.6,0,51.8,0,62
+    			c0,10.3,6.4,19.3,16,22.8c-0.4,2.1-0.6,4.3-0.6,6.6c0,19,15.5,34.5,34.5,34.5c11.2,0,21.5-5.4,28-14.4c3.2,2.5,7.2,3.9,11.3,3.9
+    			c10.1,0,18.4-8.2,18.4-18.4c0-2.2-0.4-4.4-1.1-6.4C115.9,87.2,122.5,78,122.5,67.8z"/>
+    		<g>
+    			<path fill="#F4BD19" d="M47.9,56.3l27.3,12.5l27.6-24.2c0.4-2,0.6-4,0.6-6.1c0-17-13.8-30.8-30.8-30.8c-10.2,0-19.7,5-25.4,13.4
+    				l-4.6,23.8L47.9,56.3z"/>
+    		</g>
+    		<g>
+    			<path fill="#3CBEB1" d="M19.6,85.2c-0.4,2-0.6,4.1-0.6,6.2c0,17,13.9,30.9,30.9,30.9c10.3,0,19.8-5.1,25.6-13.5L80,85l-6.1-11.6
+    				L46.5,60.9L19.6,85.2z"/>
+    		</g>
+    		<g>
+    			<path fill="#E9478C" d="M19.4,37.9l18.7,4.4L42.3,21c-2.6-2-5.7-3-9-3c-8.1,0-14.8,6.6-14.8,14.8C18.5,34.5,18.8,36.3,19.4,37.9z
+    				"/>
+    		</g>
+    		<g>
+    			<path fill="#2C458F" d="M17.8,42.4C9.4,45.1,3.6,53.2,3.6,62c0,8.6,5.3,16.3,13.3,19.3l26.3-23.8l-4.8-10.3L17.8,42.4z"/>
+    		</g>
+    		<g>
+    			<path fill="#95C63D" d="M80.3,108.7c2.6,2,5.7,3.1,8.9,3.1c8.1,0,14.8-6.6,14.8-14.8c0-1.8-0.3-3.5-0.9-5.1l-18.7-4.4L80.3,108.7
+    				z"/>
+    		</g>
+    		<g>
+    			<path fill="#176655" d="M84.1,82.6l20.6,4.8c8.4-2.8,14.2-10.8,14.2-19.6c0-8.6-5.3-16.2-13.3-19.3l-27,23.6L84.1,82.6z"/>
+    		</g>
+    	</g>
+    	<path d="M162.8,76.3c0,0.1,0,0.6,0.1,1.4c0.1,0.8,0.3,1.8,0.6,3c0.3,1.1,0.8,2.4,1.4,3.7c0.6,1.3,1.4,2.5,2.5,3.6
+    		c1,1.1,2.3,2,3.8,2.7c1.5,0.7,3.4,1.1,5.6,1.1c1.8,0,3.3-0.1,4.6-0.4c1.3-0.3,2.4-0.7,3.4-1.3c1-0.6,1.9-1.3,2.7-2.2
+    		c0.8-0.9,1.6-1.9,2.4-3.1c0.5-0.7,1-1.2,1.6-1.5c0.6-0.3,1.2-0.4,1.8-0.4c1,0,2,0.4,2.8,1.1c0.9,0.7,1.3,1.7,1.3,2.8
+    		c0,0.7-0.4,1.7-1.1,3.1c-0.7,1.4-1.9,2.8-3.6,4.1c-1.6,1.4-3.7,2.6-6.3,3.6c-2.6,1-5.7,1.5-9.5,1.5c-3.8,0-7.2-0.7-10.2-2.1
+    		c-3-1.4-5.5-3.2-7.5-5.6c-2-2.3-3.6-5-4.7-8.1c-1.1-3.1-1.6-6.3-1.6-9.7c0-3.5,0.5-6.8,1.6-9.9c1.1-3.1,2.7-5.8,4.7-8.1
+    		c2-2.3,4.5-4.1,7.4-5.5c2.9-1.3,6.1-2,9.6-2c3.3,0,6.3,0.5,9.2,1.5c2.8,1,5.3,2.4,7.4,4.3c2.1,1.9,3.7,4.1,5,6.8
+    		c1.2,2.7,1.8,5.8,1.8,9.2c0,2.1-0.5,3.7-1.6,4.8c-1,1.1-2.2,1.6-3.6,1.6H162.8z M170.9,56.4c-1.5,0.6-2.7,1.4-3.7,2.4
+    		c-1,0.9-1.8,2-2.4,3.1c-0.6,1.1-1,2.2-1.3,3.2c-0.3,1-0.5,1.8-0.5,2.5c-0.1,0.7-0.1,1.1-0.1,1.2h27.9c0-1.8-0.3-3.5-0.9-5.1
+    		c-0.6-1.6-1.5-3-2.6-4.3c-1.2-1.2-2.7-2.2-4.5-3c-1.8-0.7-4-1.1-6.5-1.1C174.2,55.5,172.4,55.8,170.9,56.4z"/>
+    	<path d="M214.3,94.6c0,1.3-0.4,2.3-1.3,3.2c-0.9,0.9-1.9,1.3-3.2,1.3c-1.3,0-2.3-0.4-3.2-1.3c-0.9-0.9-1.3-2-1.3-3.2V35.1
+    		c0-1.3,0.4-2.3,1.3-3.2c0.9-0.9,2-1.3,3.2-1.3c1.3,0,2.3,0.4,3.2,1.3c0.9,0.9,1.3,1.9,1.3,3.2V94.6z"/>
+    	<path d="M229.8,63.5c-0.6,0.3-1.2,0.5-1.9,0.5c-1.2,0-2.2-0.4-3.2-1.1c-1-0.7-1.5-1.8-1.5-3.1c0-0.5,0.1-1.1,0.4-1.9
+    		c0.5-1.2,1.2-2.4,2.1-3.6c0.9-1.2,2-2.2,3.5-3.1s3.3-1.7,5.4-2.2c2.2-0.5,4.8-0.8,7.9-0.8c5.9,0,10.5,1.2,14,3.5
+    		c3.5,2.3,5.2,5.8,5.2,10.3v32.8c0,1.3-0.4,2.3-1.3,3.2c-0.9,0.9-1.9,1.3-3.2,1.3c-1.3,0-2.3-0.4-3.2-1.3c-0.9-0.9-1.3-2-1.3-3.2v-2
+    		c-1.2,2-4.7,4.5-7.5,5.3c-2.8,0.8-5.7,1.2-8.8,1.2c-2,0-3.9-0.3-5.9-0.8c-2-0.5-3.8-1.4-5.3-2.5c-1.6-1.1-2.9-2.6-3.8-4.3
+    		c-1-1.7-1.5-3.8-1.5-6.2c0-2.8,0.5-5.7,1.6-7.5c1.1-1.9,2.6-3.4,4.4-4.6c1.8-1.2,3.9-2.1,6.3-2.8c2.4-0.6,4.9-1.1,7.5-1.4
+    		c3-0.3,5.4-0.7,7.2-1.2c1.7-0.4,3-0.9,3.9-1.5c0.9-0.6,1.4-1.2,1.6-2c0.2-0.7,0.3-1.6,0.3-2.5c0-1.1-0.3-2-0.9-2.8
+    		c-0.6-0.8-1.4-1.5-2.4-2c-1-0.5-2.1-0.9-3.3-1.2s-2.4-0.4-3.5-0.4c-2.1,0-3.7,0.2-5,0.5c-1.3,0.3-2.3,0.8-3.1,1.4
+    		c-0.8,0.6-1.5,1.3-1.9,2.1c-0.5,0.8-0.9,1.6-1.3,2.5C230.9,62.6,230.4,63.1,229.8,63.5z M250.6,74.4c-1.1,0.3-2.4,0.6-3.8,0.8
+    		c-1.5,0.2-3,0.4-4.6,0.6c-1.6,0.2-3.1,0.5-4.6,0.9c-1.5,0.3-2.8,0.8-4,1.5c-1.2,0.7-2.2,1.5-2.9,2.5c-0.7,1-1.1,3-1.1,4.6
+    		c0,1.3,0.3,2.3,0.8,3.1c0.5,0.8,1.2,1.5,2.1,2c0.9,0.5,1.8,0.8,2.9,1c1.1,0.2,2.2,0.3,3.3,0.3c1.7,0,3.3-0.2,5-0.6
+    		c1.7-0.4,3.2-1,4.5-1.9s2.4-2,3.3-3.5c0.8-1.4,1.2-3.8,1.2-5.9v-6.1L250.6,74.4z"/>
+    	<path d="M307.6,90.9c-1.1,2-2.7,3.6-4.6,4.8s-4.1,2.1-6.6,2.7c-2.5,0.5-5.2,0.8-7.9,0.8c-3.9,0-7.2-0.6-9.9-1.8
+    		c-2.7-1.2-4.9-2.6-6.5-4.1c-1.7-1.6-2.9-3.1-3.7-4.7c-0.7-1.6-1.1-2.7-1.1-3.5c0-1.3,0.5-2.4,1.4-3.2c0.9-0.8,2-1.2,3.1-1.2
+    		c0.7,0,1.3,0.2,2,0.6c0.6,0.4,1.1,1,1.5,1.9c1,2.5,2.5,4.5,4.7,6.2c2.2,1.7,5.2,2.5,9.3,2.5c1.8,0,3.4-0.2,4.7-0.6
+    		c1.3-0.4,2.4-1,3.2-1.7c0.8-0.7,1.4-1.5,1.9-2.4c0.4-0.9,0.6-1.8,0.6-2.8c0-2-0.8-3.4-2.3-4.4c-1.5-1-3.5-1.7-5.8-2.3
+    		c-2.3-0.6-4.8-1.1-7.5-1.6c-2.7-0.5-5.2-1.2-7.5-2.2c-2.3-0.9-4.2-2.3-5.8-4c-1.6-1.8-2.3-4.2-2.3-7.3c0-4.5,1.6-8,4.9-10.5
+    		c3.3-2.5,7.8-3.8,13.7-3.8c3.3,0,6,0.3,8.3,1c2.2,0.7,4.1,1.6,5.5,2.7c0.6,0.5,1.2,1,1.8,1.7c0.6,0.7,1.2,1.4,1.8,2.2
+    		c0.6,0.8,1,1.5,1.4,2.3c0.4,0.7,0.6,1.4,0.6,2c0,1.3-0.5,2.4-1.6,3.1c-1,0.8-2.2,1.2-3.4,1.2c-0.7,0-1.5-0.1-2.1-0.6
+    		c-0.6-0.6-1-1.3-1.3-1.8c-0.5-1.1-1.1-2-1.7-2.8c-0.5-0.8-1.2-1.5-2-2c-0.8-0.5-1.8-0.9-3-1.2c-1.2-0.3-2.7-0.4-4.4-0.4
+    		c-3.5,0-6,0.6-7.6,1.7c-1.6,1.1-2.4,2.5-2.4,4.2c0,1.3,0.5,2.3,1.4,3.1c0.9,0.8,2.1,1.4,3.7,2c1.5,0.5,3.3,1,5.2,1.4
+    		c2,0.4,3.9,0.8,5.9,1.3c2,0.5,4,1.1,5.9,1.7c1.9,0.7,3.7,1.6,5.2,2.7c1.5,1.1,2.7,2.5,3.7,4.1c0.9,1.6,1.4,3.6,1.4,6
+    		C309.4,86.4,308.8,88.9,307.6,90.9z"/>
+    	<path d="M327.4,48.8h4.7c1.1,0,2,0.4,2.8,1.2c0.8,0.8,1.2,1.7,1.2,2.8c0,1.1-0.4,2.1-1.2,2.8s-1.7,1.1-2.8,1.1h-4.7v37.9
+    		c0,1.3-0.4,2.3-1.3,3.2c-0.9,0.9-2,1.3-3.2,1.3c-1.3,0-2.3-0.4-3.2-1.3c-0.9-0.9-1.3-2-1.3-3.2V56.7h-4.6c-1.1,0-2-0.4-2.8-1.1
+    		c-0.8-0.7-1.2-1.7-1.2-2.8c0-1.1,0.4-2,1.2-2.8c0.8-0.8,1.7-1.2,2.8-1.2h4.6V39c0-1.3,0.4-2.3,1.3-3.2s1.9-1.3,3.2-1.3
+    		c1.3,0,2.3,0.4,3.2,1.3s1.3,1.9,1.3,3.2V48.8z"/>
+    	<path d="M341.5,32.1c1-1,2.2-1.5,3.7-1.5c1.4,0,2.6,0.5,3.6,1.5c1,1,1.5,2.2,1.5,3.6c0,1.4-0.5,2.6-1.5,3.6c-1,1-2.2,1.5-3.6,1.5
+    		c-1.4,0-2.7-0.5-3.7-1.5c-1-1-1.5-2.2-1.5-3.6C340,34.2,340.5,33,341.5,32.1z M349.6,94.6c0,1.3-0.4,2.3-1.3,3.2
+    		c-0.9,0.9-1.9,1.3-3.2,1.3c-1.3,0-2.3-0.4-3.2-1.3c-0.9-0.9-1.3-2-1.3-3.2V53.3c0-1.3,0.4-2.3,1.3-3.2c0.9-0.9,2-1.3,3.2-1.3
+    		c1.3,0,2.3,0.4,3.2,1.3c0.9,0.9,1.3,2,1.3,3.2V94.6z"/>
+    	<path d="M369.1,97.3c-2.9-1.2-5.4-3-7.5-5.2c-2.1-2.2-3.8-4.9-5-8.1c-1.2-3.1-1.8-6.6-1.8-10.4c0-3.8,0.6-7.3,1.8-10.5
+    		c1.2-3.1,2.9-5.8,5-8.1c2.1-2.2,4.6-4,7.5-5.2c2.9-1.2,6-1.9,9.4-1.9c3.4,0,6.4,0.5,9,1.5c2.5,1,4.6,2.2,6.2,3.6
+    		c1.6,1.4,3.2,2.9,4,4.4c0.5,0.9,0.9,1.5,0.9,2.6c0,1.3-0.5,2.3-1.4,3.1c-0.9,0.7-2,1.1-3.1,1.1c-0.8,0-1.6-0.2-2.2-0.6
+    		c-0.7-0.4-1.2-1.3-1.8-2.1c-1-1.4-0.5-0.6-1.1-1.5c-0.7-0.9-1.5-1.6-2.5-2.3c-1-0.7-2.2-1.2-3.5-1.6c-1.4-0.4-2.8-0.6-4.4-0.6
+    		c-1.8,0-3.5,0.3-5.3,1c-1.8,0.7-3.3,1.7-4.7,3.1c-1.4,1.4-2.5,3.3-3.4,5.6s-1.3,5.1-1.3,8.4c0,3.3,0.4,6.1,1.3,8.4s2,4.2,3.4,5.6
+    		c1.4,1.4,3,2.5,4.7,3.1c1.8,0.7,3.5,1,5.3,1c1.6,0,3.1-0.2,4.4-0.6c1.3-0.4,2.5-0.9,3.5-1.6c1-0.7,1.8-1.5,2.5-2.3
+    		c0.7-0.9,1.1-1.8,1.4-2.7c0.3-1,0.8-1.7,1.5-2.1c0.7-0.4,1.4-0.6,2.2-0.6c1.1,0,2.2,0.4,3.1,1.1c0.9,0.7,1.4,1.7,1.4,3
+    		c0,0.6-0.3,1.7-0.9,3.1c-0.6,1.5-1.6,2.9-3.1,4.4c-1.5,1.5-3.5,2.8-6.2,4c-2.6,1.1-6,1.7-10,1.7C375.1,99.2,372,98.5,369.1,97.3z"
+    		/>
+    </g>
+</svg>
+						</div>
+					</a>
+				</h1>
+			</div>
+			<nav id="nav">
+				<ul>
+					
+					<li>
+						
+							
+						
+						<a href="/products" id="nav_products"   >Products</a>
+						
+						<ul class="dropdown">
+							
+								<li><a href="/products/elasticsearch" id="nav_elasticsearch" >elasticsearch</a></li>								
+							
+								<li><a href="/found" id="nav_hosted-elasticsearch" >elasticsearch as a service</a></li>								
+							
+								<li><a href="/products/logstash" id="nav_logstash" >logstash</a></li>								
+							
+								<li><a href="/products/kibana" id="nav_kibana" >kibana</a></li>								
+							
+								<li><a href="/products/beats" id="nav_beats" >beats</a></li>								
+							
+								<li><a href="/products/watcher" id="nav_watcher" >watcher</a></li>								
+							
+								<li><a href="/products/shield" id="nav_shield" >shield</a></li>								
+							
+								<li><a href="/products/marvel" id="nav_marvel" >marvel</a></li>								
+							
+								<li><a href="/products/hadoop" id="nav_hadoop" >hadoop</a></li>								
+							
+								<li><a href="/downloads" id="nav_downloads" >downloads</a></li>								
+								
+						</ul>							
+					</li>
+					
+					<li>
+						
+							
+						
+						<a href="/subscriptions" id="nav_subscriptions"   >Subscriptions</a>
+						
+						<ul class="dropdown">
+								
+						</ul>							
+					</li>
+					
+					<li>
+						
+							
+						
+						<a href="/learn" id="nav_learn"   >Learn</a>
+						
+						<ul class="dropdown">
+							
+								<li><a href="/guide" id="nav_guide" >docs</a></li>								
+							
+								<li><a href="/videos" id="nav_videos" >videos</a></li>								
+							
+								<li><a href="/training" id="nav_training" >training</a></li>								
+							
+								<li><a href="/services" id="nav_services" >services</a></li>								
+							
+								<li><a href="/blog" id="nav_learn_blog" >blog</a></li>								
+							
+								<li><a href="/elasticon" id="nav_learn_elasticon" >elastic{ON}</a></li>								
+								
+						</ul>							
+					</li>
+					
+					<li>
+						
+							
+						
+						<a href="/community" id="nav_community"   >Community</a>
+						
+						<ul class="dropdown">
+							
+								<li><a href="/community/meetups" id="nav_meetups" >meetups</a></li>								
+							
+								<li><a href="https://discuss.elastic.co" id="nav_discuss" target="_blank">discuss</a></li>								
+							
+								<li><a href="/community/codeofconduct" id="nav_codeofconduct" >code of conduct</a></li>								
+								
+						</ul>							
+					</li>
+					
+					<li>
+						
+							
+						
+						<a href="/use-cases" id="nav_usecases"   >Use Cases</a>
+						
+						<ul class="dropdown">
+								
+						</ul>							
+					</li>
+					
+					<li>
+						
+							
+						
+						<a href="/blog" id="nav_blog"   >Blog</a>
+						
+						<ul class="dropdown">
+							
+								<li><a href="/blog/category/news" id="blog_news" >News</a></li>								
+							
+								<li><a href="/blog/category/engineering" id="blog_engineering" >Engineering</a></li>								
+							
+								<li><a href="/blog/category/user-stories" id="blog_user-stories" >User Stories</a></li>								
+							
+								<li><a href="/blog/category/releases" id="blog_releases" >Releases</a></li>								
+							
+								<li><a href="/blog/archive" id="blog_archive" >Archive</a></li>								
+								
+						</ul>							
+					</li>
+					
+					<li>
+						
+							
+						
+						<a href="/about" id="nav_about"   >About</a>
+						
+						<ul class="dropdown">
+							
+								<li><a href="/about/leadership" id="nav_leadership" >leadership</a></li>								
+							
+								<li><a href="/about/board" id="nav_board" >board of directors</a></li>								
+							
+								<li><a href="/about/careers" id="nav_careers" >careers</a></li>								
+							
+								<li><a href="/about/partners" id="nav_partners" >partners</a></li>								
+							
+								<li><a href="/about/press" id="nav_press" >press</a></li>								
+								
+						</ul>							
+					</li>
+					
+				</ul>
+			</nav>			
+			<!-- Searchbar Input box -->
+			 <!-- <form method="get" action="/search" name="searchForm" class="header-search-form" id="searchMobileFrm">
+			   <input type="text" id="search-header-autocomplete" name="q" class="form-control global-input" placeholder="elastic{search}">
+			</form>
+			<div class="mobile-auto-complete"></div> -->  
+		</div>
+		<div class="1u 6u(small) 6u(xsmall)">
+			<div id="searchbar">
+				<a href="#" class="button icon"></a>
+			</div>
+			<!-- <div class="nav-auto-complete"></div> -->
+		</div>
+	</div>
+</section>
+<div class="mobile-menu-wrapper">
+	<div class="row 0%">
+		<div class="8u 6u(small) 6u(xsmall)">
+			<div id="elastic">
+				<h1>
+					<a href="/">
+						<div id="elastic-logo">
+						<svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+	 viewBox="0 0 400 130" preserveAspectRatio="xMinYMin meet" enable-background="new 0 0 400 130" xml:space="preserve">
+    <g>
+    	<g>
+    		<path fill="#FFFFFF" d="M122.5,67.8c0-10.3-6.4-19.2-15.9-22.7c0.4-2.2,0.6-4.3,0.6-6.6c0-19.1-15.5-34.6-34.6-34.6
+    			c-11.1,0-21.5,5.3-28,14.4c-3.2-2.5-7.1-3.8-11.2-3.8c-10.1,0-18.4,8.2-18.4,18.4c0,2.2,0.4,4.4,1.1,6.4C6.5,42.6,0,51.8,0,62
+    			c0,10.3,6.4,19.3,16,22.8c-0.4,2.1-0.6,4.3-0.6,6.6c0,19,15.5,34.5,34.5,34.5c11.2,0,21.5-5.4,28-14.4c3.2,2.5,7.2,3.9,11.3,3.9
+    			c10.1,0,18.4-8.2,18.4-18.4c0-2.2-0.4-4.4-1.1-6.4C115.9,87.2,122.5,78,122.5,67.8z"/>
+    		<g>
+    			<path fill="#F4BD19" d="M47.9,56.3l27.3,12.5l27.6-24.2c0.4-2,0.6-4,0.6-6.1c0-17-13.8-30.8-30.8-30.8c-10.2,0-19.7,5-25.4,13.4
+    				l-4.6,23.8L47.9,56.3z"/>
+    		</g>
+    		<g>
+    			<path fill="#3CBEB1" d="M19.6,85.2c-0.4,2-0.6,4.1-0.6,6.2c0,17,13.9,30.9,30.9,30.9c10.3,0,19.8-5.1,25.6-13.5L80,85l-6.1-11.6
+    				L46.5,60.9L19.6,85.2z"/>
+    		</g>
+    		<g>
+    			<path fill="#E9478C" d="M19.4,37.9l18.7,4.4L42.3,21c-2.6-2-5.7-3-9-3c-8.1,0-14.8,6.6-14.8,14.8C18.5,34.5,18.8,36.3,19.4,37.9z
+    				"/>
+    		</g>
+    		<g>
+    			<path fill="#2C458F" d="M17.8,42.4C9.4,45.1,3.6,53.2,3.6,62c0,8.6,5.3,16.3,13.3,19.3l26.3-23.8l-4.8-10.3L17.8,42.4z"/>
+    		</g>
+    		<g>
+    			<path fill="#95C63D" d="M80.3,108.7c2.6,2,5.7,3.1,8.9,3.1c8.1,0,14.8-6.6,14.8-14.8c0-1.8-0.3-3.5-0.9-5.1l-18.7-4.4L80.3,108.7
+    				z"/>
+    		</g>
+    		<g>
+    			<path fill="#176655" d="M84.1,82.6l20.6,4.8c8.4-2.8,14.2-10.8,14.2-19.6c0-8.6-5.3-16.2-13.3-19.3l-27,23.6L84.1,82.6z"/>
+    		</g>
+    	</g>
+    	<path d="M162.8,76.3c0,0.1,0,0.6,0.1,1.4c0.1,0.8,0.3,1.8,0.6,3c0.3,1.1,0.8,2.4,1.4,3.7c0.6,1.3,1.4,2.5,2.5,3.6
+    		c1,1.1,2.3,2,3.8,2.7c1.5,0.7,3.4,1.1,5.6,1.1c1.8,0,3.3-0.1,4.6-0.4c1.3-0.3,2.4-0.7,3.4-1.3c1-0.6,1.9-1.3,2.7-2.2
+    		c0.8-0.9,1.6-1.9,2.4-3.1c0.5-0.7,1-1.2,1.6-1.5c0.6-0.3,1.2-0.4,1.8-0.4c1,0,2,0.4,2.8,1.1c0.9,0.7,1.3,1.7,1.3,2.8
+    		c0,0.7-0.4,1.7-1.1,3.1c-0.7,1.4-1.9,2.8-3.6,4.1c-1.6,1.4-3.7,2.6-6.3,3.6c-2.6,1-5.7,1.5-9.5,1.5c-3.8,0-7.2-0.7-10.2-2.1
+    		c-3-1.4-5.5-3.2-7.5-5.6c-2-2.3-3.6-5-4.7-8.1c-1.1-3.1-1.6-6.3-1.6-9.7c0-3.5,0.5-6.8,1.6-9.9c1.1-3.1,2.7-5.8,4.7-8.1
+    		c2-2.3,4.5-4.1,7.4-5.5c2.9-1.3,6.1-2,9.6-2c3.3,0,6.3,0.5,9.2,1.5c2.8,1,5.3,2.4,7.4,4.3c2.1,1.9,3.7,4.1,5,6.8
+    		c1.2,2.7,1.8,5.8,1.8,9.2c0,2.1-0.5,3.7-1.6,4.8c-1,1.1-2.2,1.6-3.6,1.6H162.8z M170.9,56.4c-1.5,0.6-2.7,1.4-3.7,2.4
+    		c-1,0.9-1.8,2-2.4,3.1c-0.6,1.1-1,2.2-1.3,3.2c-0.3,1-0.5,1.8-0.5,2.5c-0.1,0.7-0.1,1.1-0.1,1.2h27.9c0-1.8-0.3-3.5-0.9-5.1
+    		c-0.6-1.6-1.5-3-2.6-4.3c-1.2-1.2-2.7-2.2-4.5-3c-1.8-0.7-4-1.1-6.5-1.1C174.2,55.5,172.4,55.8,170.9,56.4z"/>
+    	<path d="M214.3,94.6c0,1.3-0.4,2.3-1.3,3.2c-0.9,0.9-1.9,1.3-3.2,1.3c-1.3,0-2.3-0.4-3.2-1.3c-0.9-0.9-1.3-2-1.3-3.2V35.1
+    		c0-1.3,0.4-2.3,1.3-3.2c0.9-0.9,2-1.3,3.2-1.3c1.3,0,2.3,0.4,3.2,1.3c0.9,0.9,1.3,1.9,1.3,3.2V94.6z"/>
+    	<path d="M229.8,63.5c-0.6,0.3-1.2,0.5-1.9,0.5c-1.2,0-2.2-0.4-3.2-1.1c-1-0.7-1.5-1.8-1.5-3.1c0-0.5,0.1-1.1,0.4-1.9
+    		c0.5-1.2,1.2-2.4,2.1-3.6c0.9-1.2,2-2.2,3.5-3.1s3.3-1.7,5.4-2.2c2.2-0.5,4.8-0.8,7.9-0.8c5.9,0,10.5,1.2,14,3.5
+    		c3.5,2.3,5.2,5.8,5.2,10.3v32.8c0,1.3-0.4,2.3-1.3,3.2c-0.9,0.9-1.9,1.3-3.2,1.3c-1.3,0-2.3-0.4-3.2-1.3c-0.9-0.9-1.3-2-1.3-3.2v-2
+    		c-1.2,2-4.7,4.5-7.5,5.3c-2.8,0.8-5.7,1.2-8.8,1.2c-2,0-3.9-0.3-5.9-0.8c-2-0.5-3.8-1.4-5.3-2.5c-1.6-1.1-2.9-2.6-3.8-4.3
+    		c-1-1.7-1.5-3.8-1.5-6.2c0-2.8,0.5-5.7,1.6-7.5c1.1-1.9,2.6-3.4,4.4-4.6c1.8-1.2,3.9-2.1,6.3-2.8c2.4-0.6,4.9-1.1,7.5-1.4
+    		c3-0.3,5.4-0.7,7.2-1.2c1.7-0.4,3-0.9,3.9-1.5c0.9-0.6,1.4-1.2,1.6-2c0.2-0.7,0.3-1.6,0.3-2.5c0-1.1-0.3-2-0.9-2.8
+    		c-0.6-0.8-1.4-1.5-2.4-2c-1-0.5-2.1-0.9-3.3-1.2s-2.4-0.4-3.5-0.4c-2.1,0-3.7,0.2-5,0.5c-1.3,0.3-2.3,0.8-3.1,1.4
+    		c-0.8,0.6-1.5,1.3-1.9,2.1c-0.5,0.8-0.9,1.6-1.3,2.5C230.9,62.6,230.4,63.1,229.8,63.5z M250.6,74.4c-1.1,0.3-2.4,0.6-3.8,0.8
+    		c-1.5,0.2-3,0.4-4.6,0.6c-1.6,0.2-3.1,0.5-4.6,0.9c-1.5,0.3-2.8,0.8-4,1.5c-1.2,0.7-2.2,1.5-2.9,2.5c-0.7,1-1.1,3-1.1,4.6
+    		c0,1.3,0.3,2.3,0.8,3.1c0.5,0.8,1.2,1.5,2.1,2c0.9,0.5,1.8,0.8,2.9,1c1.1,0.2,2.2,0.3,3.3,0.3c1.7,0,3.3-0.2,5-0.6
+    		c1.7-0.4,3.2-1,4.5-1.9s2.4-2,3.3-3.5c0.8-1.4,1.2-3.8,1.2-5.9v-6.1L250.6,74.4z"/>
+    	<path d="M307.6,90.9c-1.1,2-2.7,3.6-4.6,4.8s-4.1,2.1-6.6,2.7c-2.5,0.5-5.2,0.8-7.9,0.8c-3.9,0-7.2-0.6-9.9-1.8
+    		c-2.7-1.2-4.9-2.6-6.5-4.1c-1.7-1.6-2.9-3.1-3.7-4.7c-0.7-1.6-1.1-2.7-1.1-3.5c0-1.3,0.5-2.4,1.4-3.2c0.9-0.8,2-1.2,3.1-1.2
+    		c0.7,0,1.3,0.2,2,0.6c0.6,0.4,1.1,1,1.5,1.9c1,2.5,2.5,4.5,4.7,6.2c2.2,1.7,5.2,2.5,9.3,2.5c1.8,0,3.4-0.2,4.7-0.6
+    		c1.3-0.4,2.4-1,3.2-1.7c0.8-0.7,1.4-1.5,1.9-2.4c0.4-0.9,0.6-1.8,0.6-2.8c0-2-0.8-3.4-2.3-4.4c-1.5-1-3.5-1.7-5.8-2.3
+    		c-2.3-0.6-4.8-1.1-7.5-1.6c-2.7-0.5-5.2-1.2-7.5-2.2c-2.3-0.9-4.2-2.3-5.8-4c-1.6-1.8-2.3-4.2-2.3-7.3c0-4.5,1.6-8,4.9-10.5
+    		c3.3-2.5,7.8-3.8,13.7-3.8c3.3,0,6,0.3,8.3,1c2.2,0.7,4.1,1.6,5.5,2.7c0.6,0.5,1.2,1,1.8,1.7c0.6,0.7,1.2,1.4,1.8,2.2
+    		c0.6,0.8,1,1.5,1.4,2.3c0.4,0.7,0.6,1.4,0.6,2c0,1.3-0.5,2.4-1.6,3.1c-1,0.8-2.2,1.2-3.4,1.2c-0.7,0-1.5-0.1-2.1-0.6
+    		c-0.6-0.6-1-1.3-1.3-1.8c-0.5-1.1-1.1-2-1.7-2.8c-0.5-0.8-1.2-1.5-2-2c-0.8-0.5-1.8-0.9-3-1.2c-1.2-0.3-2.7-0.4-4.4-0.4
+    		c-3.5,0-6,0.6-7.6,1.7c-1.6,1.1-2.4,2.5-2.4,4.2c0,1.3,0.5,2.3,1.4,3.1c0.9,0.8,2.1,1.4,3.7,2c1.5,0.5,3.3,1,5.2,1.4
+    		c2,0.4,3.9,0.8,5.9,1.3c2,0.5,4,1.1,5.9,1.7c1.9,0.7,3.7,1.6,5.2,2.7c1.5,1.1,2.7,2.5,3.7,4.1c0.9,1.6,1.4,3.6,1.4,6
+    		C309.4,86.4,308.8,88.9,307.6,90.9z"/>
+    	<path d="M327.4,48.8h4.7c1.1,0,2,0.4,2.8,1.2c0.8,0.8,1.2,1.7,1.2,2.8c0,1.1-0.4,2.1-1.2,2.8s-1.7,1.1-2.8,1.1h-4.7v37.9
+    		c0,1.3-0.4,2.3-1.3,3.2c-0.9,0.9-2,1.3-3.2,1.3c-1.3,0-2.3-0.4-3.2-1.3c-0.9-0.9-1.3-2-1.3-3.2V56.7h-4.6c-1.1,0-2-0.4-2.8-1.1
+    		c-0.8-0.7-1.2-1.7-1.2-2.8c0-1.1,0.4-2,1.2-2.8c0.8-0.8,1.7-1.2,2.8-1.2h4.6V39c0-1.3,0.4-2.3,1.3-3.2s1.9-1.3,3.2-1.3
+    		c1.3,0,2.3,0.4,3.2,1.3s1.3,1.9,1.3,3.2V48.8z"/>
+    	<path d="M341.5,32.1c1-1,2.2-1.5,3.7-1.5c1.4,0,2.6,0.5,3.6,1.5c1,1,1.5,2.2,1.5,3.6c0,1.4-0.5,2.6-1.5,3.6c-1,1-2.2,1.5-3.6,1.5
+    		c-1.4,0-2.7-0.5-3.7-1.5c-1-1-1.5-2.2-1.5-3.6C340,34.2,340.5,33,341.5,32.1z M349.6,94.6c0,1.3-0.4,2.3-1.3,3.2
+    		c-0.9,0.9-1.9,1.3-3.2,1.3c-1.3,0-2.3-0.4-3.2-1.3c-0.9-0.9-1.3-2-1.3-3.2V53.3c0-1.3,0.4-2.3,1.3-3.2c0.9-0.9,2-1.3,3.2-1.3
+    		c1.3,0,2.3,0.4,3.2,1.3c0.9,0.9,1.3,2,1.3,3.2V94.6z"/>
+    	<path d="M369.1,97.3c-2.9-1.2-5.4-3-7.5-5.2c-2.1-2.2-3.8-4.9-5-8.1c-1.2-3.1-1.8-6.6-1.8-10.4c0-3.8,0.6-7.3,1.8-10.5
+    		c1.2-3.1,2.9-5.8,5-8.1c2.1-2.2,4.6-4,7.5-5.2c2.9-1.2,6-1.9,9.4-1.9c3.4,0,6.4,0.5,9,1.5c2.5,1,4.6,2.2,6.2,3.6
+    		c1.6,1.4,3.2,2.9,4,4.4c0.5,0.9,0.9,1.5,0.9,2.6c0,1.3-0.5,2.3-1.4,3.1c-0.9,0.7-2,1.1-3.1,1.1c-0.8,0-1.6-0.2-2.2-0.6
+    		c-0.7-0.4-1.2-1.3-1.8-2.1c-1-1.4-0.5-0.6-1.1-1.5c-0.7-0.9-1.5-1.6-2.5-2.3c-1-0.7-2.2-1.2-3.5-1.6c-1.4-0.4-2.8-0.6-4.4-0.6
+    		c-1.8,0-3.5,0.3-5.3,1c-1.8,0.7-3.3,1.7-4.7,3.1c-1.4,1.4-2.5,3.3-3.4,5.6s-1.3,5.1-1.3,8.4c0,3.3,0.4,6.1,1.3,8.4s2,4.2,3.4,5.6
+    		c1.4,1.4,3,2.5,4.7,3.1c1.8,0.7,3.5,1,5.3,1c1.6,0,3.1-0.2,4.4-0.6c1.3-0.4,2.5-0.9,3.5-1.6c1-0.7,1.8-1.5,2.5-2.3
+    		c0.7-0.9,1.1-1.8,1.4-2.7c0.3-1,0.8-1.7,1.5-2.1c0.7-0.4,1.4-0.6,2.2-0.6c1.1,0,2.2,0.4,3.1,1.1c0.9,0.7,1.4,1.7,1.4,3
+    		c0,0.6-0.3,1.7-0.9,3.1c-0.6,1.5-1.6,2.9-3.1,4.4c-1.5,1.5-3.5,2.8-6.2,4c-2.6,1.1-6,1.7-10,1.7C375.1,99.2,372,98.5,369.1,97.3z"
+    		/>
+    </g>
+</svg>
+						</div>
+					</a>
+				</h1>
+			</div>
+		</div>
+		<div class="4u 6u(small) 6u(xsmall) text-right">
+			<!-- <div class="mobile-menu-wrapper"> -->
+				<ul class="m-shortcuts">
+					
+					<li><a href="#" class="m-search" id="header-search"></a></li>
+					
+					<li><a href="/guide" class="m-docs" id="mobile-docs"></a></li>
+					
+					<li><a href="/contact" class="m-contact" id="mobile-contact"></a></li>
+					
+				</ul>	
+				<nav class="nav-menu">
+					<div class="menu-button">
+						<span></span>
+					</div>
+					<div class="nav-menu-list-wrap">
+						<div class="nav-menu-list">
+							
+								<h3><a href="/products" id="nav_products" >Products</a></h3>
+
+								
+								<ul>
+									
+									<li><a href="/products/elasticsearch" id="nav_elasticsearch" >elasticsearch</a></li>
+									
+									<li><a href="/found" id="nav_hosted-elasticsearch" >elasticsearch as a service</a></li>
+									
+									<li><a href="/products/logstash" id="nav_logstash" >logstash</a></li>
+									
+									<li><a href="/products/kibana" id="nav_kibana" >kibana</a></li>
+									
+									<li><a href="/products/beats" id="nav_beats" >beats</a></li>
+									
+									<li><a href="/products/watcher" id="nav_watcher" >watcher</a></li>
+									
+									<li><a href="/products/shield" id="nav_shield" >shield</a></li>
+									
+									<li><a href="/products/marvel" id="nav_marvel" >marvel</a></li>
+									
+									<li><a href="/products/hadoop" id="nav_hadoop" >hadoop</a></li>
+									
+									<li><a href="/downloads" id="nav_downloads" >downloads</a></li>
+									
+								</ul>
+								
+							
+								<h3><a href="/subscriptions" id="nav_subscriptions" >Subscriptions</a></h3>
+
+								
+							
+								<h3><a href="/learn" id="nav_learn" >Learn</a></h3>
+
+								
+								<ul>
+									
+									<li><a href="/guide" id="nav_guide" >docs</a></li>
+									
+									<li><a href="/videos" id="nav_videos" >videos</a></li>
+									
+									<li><a href="/training" id="nav_training" >training</a></li>
+									
+									<li><a href="/services" id="nav_services" >services</a></li>
+									
+									<li><a href="/blog" id="nav_learn_blog" >blog</a></li>
+									
+									<li><a href="/elasticon" id="nav_learn_elasticon" >elastic{ON}</a></li>
+									
+								</ul>
+								
+							
+								<h3><a href="/community" id="nav_community" >Community</a></h3>
+
+								
+								<ul>
+									
+									<li><a href="/community/meetups" id="nav_meetups" >meetups</a></li>
+									
+									<li><a href="/https:/discuss.elastic.co" id="nav_discuss" target="_blank">discuss</a></li>
+									
+									<li><a href="/community/codeofconduct" id="nav_codeofconduct" >code of conduct</a></li>
+									
+								</ul>
+								
+							
+								<h3><a href="/use-cases" id="nav_usecases" >Use Cases</a></h3>
+
+								
+							
+								<h3><a href="/blog" id="nav_blog" >Blog</a></h3>
+
+								
+								<ul>
+									
+									<li><a href="/blog/category/news" id="blog_news" >News</a></li>
+									
+									<li><a href="/blog/category/engineering" id="blog_engineering" >Engineering</a></li>
+									
+									<li><a href="/blog/category/user-stories" id="blog_user-stories" >User Stories</a></li>
+									
+									<li><a href="/blog/category/releases" id="blog_releases" >Releases</a></li>
+									
+									<li><a href="/blog/archive" id="blog_archive" >Archive</a></li>
+									
+								</ul>
+								
+							
+								<h3><a href="/about" id="nav_about" >About</a></h3>
+
+								
+								<ul>
+									
+									<li><a href="/about/leadership" id="nav_leadership" >leadership</a></li>
+									
+									<li><a href="/about/board" id="nav_board" >board of directors</a></li>
+									
+									<li><a href="/about/careers" id="nav_careers" >careers</a></li>
+									
+									<li><a href="/about/partners" id="nav_partners" >partners</a></li>
+									
+									<li><a href="/about/press" id="nav_press" >press</a></li>
+									
+								</ul>
+								
+							
+						</div>
+					</div>
+				</nav>
+			<!-- </div> -->
+		</div>
+	</div>
+</div>
+<!-- Mobile Menu -->
+
+
+		</div>
+	</div>
+</div>
+<div class="header-search-wrapper">	
+	<div class="container">
+		<div class="big-search">
+			<i class="big-search-icon"></i>
+			<form method="get" action="/search" autocomplete="on" name="searchForm" id="searchfrm">
+				<ul class="tags-wrapper">
+					<li class="search-field"><input type="text" class="form-control global-input" id="autocomplete" name="q"></li>
+				</ul>
+			</form>
+			<a href="#" class="header-search-cancel"></a>
+		</div>
+		<div class="nav-auto-complete"></div>
+	</div>
+</div>
+<style>	
+	
+	
+		.m-shortcuts li a.m-search {
+			background: url("https://static-www.elastic.co/assets/blt174b13be89ff803c/m-search-icon.png?q=100") no-repeat scroll center center rgba(0, 0, 0, 0);
+			background-size: contain;}
+	
+		.m-shortcuts li a.m-docs {
+			background: url("https://static-www.elastic.co/assets/blt5ba03f594a7d610a/m-guide-icon.png?q=100") no-repeat scroll center center rgba(0, 0, 0, 0);
+			background-size: contain;}
+	
+		.m-shortcuts li a.m-contact {
+			background: url("https://static-www.elastic.co/assets/blt38c3e853c4b1174d/m-contact-icon.png?q=100") no-repeat scroll center center rgba(0, 0, 0, 0);
+			background-size: contain;}
+		
+</style>
+		</div>
+	</div>
+  	<div id="content">
+  		
+  			
+            <div id="pageheader">
+    <div class="container">
+        <header>
+            <h1><a href="/learn" title="Learn">Learn</a> |</h1>
+            <h2><a href="/guide" title="Docs">Docs</a></h2>
+        </header>
+    </div>
+</div>
+<section id="guide">
+
+            <!-- start body -->
+<div class="breadcrumbs"><span class="breadcrumb-link"><a href="index.html">Elasticsearch: The Definitive Guide</a></span> » <span class="breadcrumb-link"><a href="getting-started.html">Getting Started </a></span> » <span class="breadcrumb-node">데이터 입출력</span></div><div class="navheader"><span class="prev"><a href="distributed-cluster.html">
+              « 
+              Cluster 내부 동작</a>
+           
+        </span><span class="next">
+           
+          <a href="distributed-docs.html">Distributed Document Store
+               »
+            </a></span></div><div class="chapter"><div class="titlepage"><div><div><h2 class="title"><a id="data-in-data-out"></a>데이터 입출력</h2></div></div></div><p>어떤 program을 작성하더라도, 그 목표(목표에 알맞게 데이터를 조작하는 것)은 동일하다.
+그러나 데이터는 임의의 bits와 bytes로만 구성되지는 않는다. 실제 세계에 존재하는 요소나 <span class="emphasis"><em>물건</em></span> 을
+나타내기 위해, 데이터 요소 사이의 관계를 정립해야 한다. 이름이나 email이
+동일인의 것이라는 것을 알게 되면, 그것들은 더 많은 의미를 가지게 된다.</p><p>실제 세계에서, 같은 유형의 요소 모두가 똑같지는 않다. 어떤 이는 집 전화번호를 가지고 있으나,
+다른 이는 휴대폰 번호를 가지고, 또 다른 이는 둘 다를 가지고 있다.
+어떤 이는 세 개의 email 주소를 가지고 있으나, 어떤 이는 가지고 있지 않다. 스페인 사람들은
+두 개의 last name을 가지고 있으나, 영국인들은 아마도 하나만 가지고 있을 것이다.</p><p>OOP(Object Oriented Programming) 언어가 인기 있는 이유 중 하나는, 잠재적으로 복잡한
+데이터 구조를 가지고 있는, 실제 세계의 요소를 나타내고 다루는 것에, 오브젝트가 도움이 되기
+때문이다. 지금까지는 너무나 좋다.</p><p>이러한 요소들을 저장할 때에 문제가 나타난다. 전통적으로 우리는 데이터를 spreadsheet를
+사용하는 것과 유사하게, RDB의 column과 row에 저장해왔다. 오브젝트를 사용하면서 얻은 모든
+유연성을 저장 매체의 경직성으로 인해 잃어버리게 된다.</p><p>그러나, 우리가 오브젝트를 오브젝트로 저장할 수 있다면 어떻게 될까?<a id="id-1.4.5.6.1" class="indexterm"></a>
+<a id="id-1.4.5.6.2" class="indexterm"></a> spreadsheet의 한계에 맞춰
+응용프로그램을 설계하는 대신에, 실제로 데이터를 <span class="emphasis"><em>사용하는데</em></span>  집중할 수 있다. 오브젝트의 유연성은 돌아오게 된다.</p><p>오브젝트는 언어 지향적이고, 메모리에 있는 데이터 구조이다.<a id="id-1.4.5.7.1" class="indexterm"></a>
+<a id="id-1.4.5.7.2" class="indexterm"></a> 오브젝트를 네트워크를 통해, 보내거나 저장하려면, 어떤 표준화된 형식으로 표현할 필요가 있다.
+<a class="ulink" href="http://en.wikipedia.org/wiki/Json" target="_top">JSON</a>은 사람이 읽을 수 있는 텍스트로, 오브젝트를 표현하는 방식이다. <a id="id-1.4.5.7.4" class="indexterm"></a>
+<a id="id-1.4.5.7.5" class="indexterm"></a><a id="id-1.4.5.7.6" class="indexterm"></a>
+<a id="id-1.4.5.7.7" class="indexterm"></a><a id="id-1.4.5.7.8" class="indexterm"></a>
+NoSQL의 세계에서 데이터 교환을 위한, 사실상의 표준이 되었다. 오브젝트가 JSON으로 표시되었을 때 이를 <span class="emphasis"><em>JSON document</em></span> 라 한다.<a id="id-1.4.5.7.10" class="indexterm"></a></p><p>Elasticsearch는 분산 <span class="emphasis"><em>document</em></span> 저장소이다.<a id="id-1.4.5.8.2" class="indexterm"></a> 복잡한 데이터 구조(JSON document로 표시된)를 <span class="emphasis"><em>실시간으로</em></span> 저장하거나 검색할 수 있다.
+즉, document가 Elasticsearch에 저장되자마자, cluster의 어떤 node에서도 검색할 수 있다.</p><p>물론, 저장만 하는 것이 아니다. 한꺼번에 빠르게 검색도 해야 한다. 오브젝트를 document로 저장할 수 있는
+다수의 NoSQL solution이 존재하지만, 여전히 데이터를 검색하는 방법과, 데이터 검색을 빠르게 하기 위해,
+index에 어떤 field가 필요한지를 생각해야 한다.</p><p>Elasticsearch에서 <span class="emphasis"><em>모든 field에 있는 모든 데이터는 기본적으로 색인된다</em></span>.<a id="id-1.4.5.10.2" class="indexterm"></a>
+<a id="id-1.4.5.10.3" class="indexterm"></a>
+다시 말해서, 모든 field는 빠른 검색을 위한 전용 역 색인을 가지고 있다. 그리고 대부분의 다른 데이터베이스와 달리,
+<span class="emphasis"><em>동일한 query에서</em></span>  놀랄만한 속도로 결과를 돌려주기 위해, 이러한 역 색인들 모두를 사용할 수 있다.</p><p>이 장에서 document를 생성, 검색, 업데이트, 삭제하는 API에 대해 이야기할 것이다.
+지금은 document 내부의 데이터나, 데이터를 검색하는 방법에 대해 관심을 갖지는 말자.
+어떻게 document를 Elasticsearch에 안전하게 저장할 것인지 그리고 그것을 다시 가지고 오는 방법에 대해 집중하자.</p><div class="section"><div class="titlepage"><div><div><h2 class="title"><a id="document"></a>Document 란 무엇인가?</h2></div></div></div><p>대부분의 응용프로그램에서 대부분의 요소나 오브젝트는 key 와 value를 통한 JSON 오브젝트로 나타낼 수 있다. <a id="id-1.4.5.12.2.1" class="indexterm"></a><a id="id-1.4.5.12.2.2" class="indexterm"></a>
+<a id="id-1.4.5.12.2.3" class="indexterm"></a><a id="id-1.4.5.12.2.4" class="indexterm"></a>
+<span class="emphasis"><em>key</em></span> 는 field나 property의 이름이다. <span class="emphasis"><em>value</em></span> 는<a id="id-1.4.5.12.2.7" class="indexterm"></a> 문자열, 숫자, boolean, 다른 오브젝트, 배열, 날짜를 나타내는 문자열이나
+위치 정보를 나타내는 오브젝트 같은 특별한 형태가 될 수 있다.</p><div class="pre_wrapper"><pre class="programlisting prettyprint lang-js">{
+    "name":         "John Smith",
+    "age":          42,
+    "confirmed":    true,
+    "join_date":    "2014-06-01",
+    "home": {
+        "lat":      51.5,
+        "lon":      0.1
+    },
+    "accounts": [
+        {
+            "type": "facebook",
+            "id":   "johnsmith"
+        },
+        {
+            "type": "twitter",
+            "id":   "johnsmith"
+        }
+    ]
+}</pre></div><p>흔히, <span class="emphasis"><em>오브젝트</em></span> 와 <span class="emphasis"><em>document</em></span> 라는 단어를 동일한 의미로 사용한다. 그러나 차이가 있다. <a id="id-1.4.5.12.4.3" class="indexterm"></a>
+<a id="id-1.4.5.12.4.4" class="indexterm"></a><a id="id-1.4.5.12.4.5" class="indexterm"></a>
+<a id="id-1.4.5.12.4.6" class="indexterm"></a>
+오브젝트는 단지 hash, hashmap, dictionary, associative 배열로 알려진 것과 유사한, JSON 오브젝트다. 오브젝트는 다른 오브젝트를 포함할 수 있다.
+Elasticsearch에서 <span class="emphasis"><em>document</em></span> 라는 단어는 특별한 의미를 가지고 있다. 이것은 JSON으로 직렬화되거나 고유한 ID로 Elasticsearch에 저장된 최상위 단계나, root 오브젝트를<a id="id-1.4.5.12.4.8" class="indexterm"></a> 나타낸다.</p></div><div class="section"><div class="titlepage"><div><div><h2 class="title"><a id="_document_metadata"></a>Document Metadata</h2></div></div></div><p>document가 데이터만으로 구성되어 있지는 않다.<a id="id-1.4.5.13.2.1" class="indexterm"></a>
+<a id="id-1.4.5.13.2.2" class="indexterm"></a> document에 <span class="emphasis"><em>대한</em></span> 정보인 <span class="emphasis"><em>metadata</em></span>—도 가지고 있다.<a id="id-1.4.5.13.2.5" class="indexterm"></a>
+3개의 필수 metadata는 아래와 같다.</p><div class="variablelist"><dl class="variablelist"><dt><span class="term">
+<code class="literal">_index</code>
+</span></dt><dd>
+   document가 존재하는 장소
+</dd><dt><span class="term">
+<code class="literal">_type</code>
+</span></dt><dd>
+   document를 대표하는 오브젝트 class
+</dd><dt><span class="term">
+<code class="literal">_id</code>
+</span></dt><dd>
+   document의 유일한 id
+</dd></dl></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="_index"></a>_index</h3></div></div></div><p><span class="emphasis"><em>index</em></span> 는 RDB에서 데이터베이스와 같다. 데이터를 저장하고 색인 하는 장소이다.<a id="id-1.4.5.13.4.2.2" class="indexterm"></a>
+<a id="id-1.4.5.13.4.2.3" class="indexterm"></a></p><div class="tip admon"><div class="icon"><img alt="Tip" src="images/icons/tip.png" /></div><div class="admon_content"><p>Elasticsearch에서 데이터는 실제로 <span class="emphasis"><em>shard</em></span> 에 저장되고 색인 된다. 반면에 index는 단지 하나 이상의 shard를 함께 모아 놓은, 논리적인 namespace이다.<a id="id-1.4.5.13.4.3.1.2" class="indexterm"></a>
+<a id="id-1.4.5.13.4.3.1.3" class="indexterm"></a>
+그러나 이것은 내부적인 세부 사항이다. 응용프로그램은 shard에 대해 전혀 경 쓰지 않아도 된다. 응용프로그램에 있어서 만큼은, document는 <span class="emphasis"><em>index</em></span> 에 있다.
+Elasticsearch가 그 세부 사항을 처리한다.</p></div></div><p>indices를 생성하고 관리하는 방법에 대해서는 <a class="link" href="index-management.html" title="Index Management">색인 관리</a>에서 이야기 할 것이다.
+그러니 지금 index를 생성해 보자. 먼저 해야 할 일은 index의 이름을 결정하는 것이다. 그 이름은 반드시 소문자여야 한다.
+‘_‘(underscore)로 시작하거나 ‘,‘(comma)를 포함할 수 없다. index 이름을 <code class="literal">website</code> 로 하자.</p></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="_type"></a>_type</h3></div></div></div><p>응용프로그램에서 사용자, 블로그 게시물, 댓글 또는 email 같은 <span class="emphasis"><em>무언가</em></span> 를 나타내기 위해 오브젝트를 사용한다.
+각 오브젝트는 property나 오브젝트에 관련된 데이터를 정의하는 <span class="emphasis"><em>class</em></span> 에 포함된다. <code class="literal">user</code> class의 오브젝트는 이름, 성별, 나이, email을 가지고 있을 것이다.</p><p>RDB에서는 일반적으로 동일한 class의 오브젝트를 동일한 table에 저장한다. 왜냐하면 그것들은 동일한 데이터 구조를 공유하기 때문이다.
+같은 이유로 Elasticsearch에서 동일한 class를 나타내는 <span class="emphasis"><em>무엇인가</em></span> 를 나타내는 <a id="id-1.4.5.13.5.3.2" class="indexterm"></a>
+<a id="id-1.4.5.13.5.3.3" class="indexterm"></a>
+<a id="id-1.4.5.13.5.3.4" class="indexterm"></a>document는 동일한
+<span class="emphasis"><em>type</em></span> 을 사용한다. 왜냐하면 그들은 동일한 데이터 구조를 공유하기 때문이다.</p><p>모든 type은 해당 type의 document에 대한 데이터 구조를 정의하는, 자신만의 <a class="link" href="index-management.html#mapping" title="Types and Mappings">mapping</a>이나 schema <a id="id-1.4.5.13.5.4.2" class="indexterm"></a><a id="id-1.4.5.13.5.4.3" class="indexterm"></a>구조를 가진다.
+database-table의 column과 매우 비슷하다. 모든 type의 document는 동일한 index에 저장된다. 그러나 type에 대한 <span class="emphasis"><em>mapping</em></span> 은 Elasticsearch에서 각 document가 데이터를 색인하는 방법을 결정한다.</p><p>우리는 <a class="xref" href="index-management.html#mapping" title="Types and Mappings">Types and Mappings</a>에서 mapping(들)을 지정하고 관리하는 방법에 대해 이야기 할 것이다. 하지만, 지금은 Elasticsearch가 document의 데이터 구조를 자동으로 감지하는 것을 이용할 것이다.</p><p><code class="literal">_type</code> 의 이름은 소문자나 대문자일 수 있다. 그러나 ‘_‘ (underscore)로 시작하거나 ‘,‘ (comma)를 포함할 수 없다.<a id="id-1.4.5.13.5.6.2" class="indexterm"></a>
+<a id="id-1.4.5.13.5.6.3" class="indexterm"></a> type의 이름을 <code class="literal">blog</code> 로 하자.</p></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="_id"></a>_id</h3></div></div></div><p><span class="emphasis"><em>ID</em></span> 는 Elasticsearch에서 <code class="literal">_index</code> , <code class="literal">_type</code> 과 <a id="id-1.4.5.13.6.2.4" class="indexterm"></a>
+<a id="id-1.4.5.13.6.2.5" class="indexterm"></a>함께 조합되어, document를 유일하게 식별할 수 있는 문자열이다.
+document를 생성할 때, 사용자가 <code class="literal">_id</code> 를 지정하거나, 지정하지 않으면 Elasticsearch에서 자동으로 생성해 준다.</p></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="_다른_metadata"></a>다른 Metadata</h3></div></div></div><p>여러 가지 다른 metadata가 있는데, 그것은 <a class="xref" href="index-management.html#mapping" title="Types and Mappings">Types and Mappings</a>에서 이야기 할 것이다. 위에서 언급한 요소들로,
+이미 Elasticsearch에 document를 저장할 수 있고, ID를 이용하여 검색할 수 있다. 즉, document 저장소로서 Elasticsearch를 사용할 수 있다는 것이다.</p></div></div><div class="section"><div class="titlepage"><div><div><h2 class="title"><a id="index-doc"></a>document 색인</h2></div></div></div><p>document는 <a id="id-1.4.5.14.2.1" class="indexterm"></a>
+<a id="id-1.4.5.14.2.2" class="indexterm"></a><a id="id-1.4.5.14.2.3" class="indexterm"></a>
+<a id="id-1.4.5.14.2.4" class="indexterm"></a>index API에 의해 <span class="emphasis"><em>색인—저장되고 검색 가능하도록 만들어진—된다</em></span>.
+그러나 먼저, document를 어디에 저장할지를 결정해야 한다.
+방금 이야기했듯이 document의 <code class="literal">_index</code>, <code class="literal">_type</code>, <code class="literal">_id</code> 는 document를 유일하게 식별할 수 있다.
+우리가 우리 고유의 <code class="literal">_id</code> 값을 지정하거나, 아니면 <code class="literal">index</code> API에서 자동으로 생성해 준다.</p><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="_고유한_id_사용"></a>고유한 ID 사용</h3></div></div></div><p>만약 당신의 document가 고유의 <a id="id-1.4.5.14.3.2.1" class="indexterm"></a>
+<a id="id-1.4.5.14.3.2.2" class="indexterm"></a>식별자(예: <code class="literal">user_account field</code> 나 document를 식별할 수 있는 어떤 다른 값)를 가지고 있다면,
+아래 형태의 <code class="literal">index</code> API로, 자기 자신만의 <code class="literal">_id</code> 를 제공할 수 있다:</p><div class="pre_wrapper"><pre class="programlisting prettyprint lang-js">PUT /{index}/{type}/{id}
+{
+  "field": "value",
+  ...
+}</pre></div><p>예를 들자면, <code class="literal">website</code> 라는 index에 <code class="literal">blog</code> 라는 type에 <code class="literal">123</code> 이라는 ID라면, index 요청은 아래와 같다:</p><div class="pre_wrapper"><pre class="programlisting prettyprint lang-js">PUT /website/blog/123
+{
+  "title": "My first blog entry",
+  "text":  "Just trying this out...",
+  "date":  "2014/01/01"
+}</pre></div><div class="sense_widget" data-snippet="snippets/030_Data/10_Create_doc_123.json"></div><p>Elasticsearch의 응답은 아래와 같다:</p><div class="pre_wrapper"><pre class="programlisting prettyprint lang-js">{
+   "_index":    "website",
+   "_type":     "blog",
+   "_id":       "123",
+   "_version":  1,
+   "created":   true
+}</pre></div><p>응답은 색인 하려는 요청이 성공적으로 생성되었다는 것을 보여주고, <code class="literal">_index</code>, <code class="literal">_type</code>, <code class="literal">_id</code> metadata와 새로운 요소 <code class="literal">_version</code> 을 포함한다.<a id="id-1.4.5.14.3.9.5" class="indexterm"></a></p><p>Elasticsearch에 있는 모든 document는 버전을 가지고 있다. document에 변화(삭제 포함)가 있을 때 마다, <code class="literal">_version</code> 넘버는 증가한다.
+ <a class="link" href="data-in-data-out.html#version-control" title="충돌 취급">버전 관리</a>에서, 응용프로그램의 어떤 부분이, 다른 부분에 의해 만들어진 변화를 덮어쓰지 않는다 것을 보장하기 위해, <code class="literal">_version</code> 를 어떻게 사용하는지에 대해 이야기할 것이다.</p></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="_자동으로_생성되는_id"></a>자동으로 생성되는 ID</h3></div></div></div><p>데이터에 고유의 식별자가 없다면, Elasticsearch가 자동으로 식별자를 생성하도록 할 수 있다.  <a id="id-1.4.5.14.4.2.1" class="indexterm"></a>
+<a id="id-1.4.5.14.4.2.2" class="indexterm"></a>요청 구조에 변화가 있다.
+<a id="id-1.4.5.14.4.2.3" class="indexterm"></a>
+<a id="id-1.4.5.14.4.2.4" class="indexterm"></a><a id="id-1.4.5.14.4.2.5" class="indexterm"></a><code class="literal">PUT</code>(“해당 URL에 이 document를 저장해라” )이 아닌, <code class="literal">POST</code>(“해당 URL <span class="emphasis"><em>아래</em></span> 에 이 document를 저장해라” )를 사용한다.</p><p>URL은 이제 <code class="literal">_index</code> 와 <code class="literal">_type</code> 만을 가지고 있다:</p><div class="pre_wrapper"><pre class="programlisting prettyprint lang-js">POST /website/blog/
+{
+  "title": "My second blog entry",
+  "text":  "Still trying this out...",
+  "date":  "2014/01/01"
+}</pre></div><div class="sense_widget" data-snippet="snippets/030_Data/10_Create_doc_auto_ID.json"></div><p>응답은 <code class="literal">_id</code> field가 생성되었다는 점을 제외하면, 좀 전에 보았던 것과 유사하다:</p><div class="pre_wrapper"><pre class="programlisting prettyprint lang-js">{
+   "_index":    "website",
+   "_type":     "blog",
+   "_id":       "wM0OSFhDQXGZAWDf0-drSA",
+   "_version":  1,
+   "created":   true
+}</pre></div><p>자동으로 생성되는 ID는 URL-safe한 Base64로 인코딩된 문자열 (<span class="emphasis"><em>범용 고유 식별자</em></span>) 또는
+<a id="id-1.4.5.14.4.8.2" class="indexterm"></a> <a class="ulink" href="http://en.wikipedia.org/wiki/Uuid" target="_top">UUIDs</a>로 된 22자리 길이의 문자이다.</p></div></div><div class="section"><div class="titlepage"><div><div><h2 class="title"><a id="get-doc"></a>document 검색</h2></div></div></div><p>Elasticsearch에서 document를<a id="id-1.4.5.15.2.1" class="indexterm"></a>
+<a id="id-1.4.5.15.2.2" class="indexterm"></a> 가져오기 위해서는,
+같은 <code class="literal">_index</code>, <code class="literal">_type</code>, <code class="literal">_id</code> 을 사용해야 한다. 그러나 HTTP method는 <a id="id-1.4.5.15.2.6" class="indexterm"></a>
+<a id="id-1.4.5.15.2.7" class="indexterm"></a> <code class="literal">GET</code> 으로 바꾸어야 한다.</p><div class="pre_wrapper"><pre class="programlisting prettyprint lang-sh">GET /website/blog/123?pretty</pre></div><div class="sense_widget" data-snippet="snippets/030_Data/15_Get_document.json"></div><p>응답은 이제는 익숙한 metadata 요소에, 추가로 <a id="id-1.4.5.15.5.1" class="indexterm"></a><code class="literal">_source</code> field를 포함하고 있다. _source field는
+색인 시에 Elasticsearch에 전송했던, 원본 JSON document를 포함하고 있다:</p><div class="pre_wrapper"><pre class="programlisting prettyprint lang-js">{
+  "_index" :   "website",
+  "_type" :    "blog",
+  "_id" :      "123",
+  "_version" : 1,
+  "found" :    true,
+  "_source" :  {
+      "title": "My first blog entry",
+      "text":  "Just trying this out...",
+      "date":  "2014/01/01"
+  }
+}</pre></div><div class="note admon"><div class="icon"><img alt="Note" src="images/icons/note.png" /></div><div class="admon_content"><p>위의 예처럼, 어떤 요청이든 query string 매개변수에 <code class="literal">pretty</code> 를 더하면,<a id="id-1.4.5.15.7.1.2" class="indexterm"></a>
+<a id="id-1.4.5.15.7.1.3" class="indexterm"></a> Elasticsearch는 JSON 응답을 좀 더 읽기 쉽게 만들어,
+<span class="emphasis"><em>보기 좋게 출력</em></span> <a id="id-1.4.5.15.7.1.5" class="indexterm"></a> 한다. 그러나 <code class="literal">_source</code> field는 보기 좋게 출력되지 않는다.
+대신에 입력한 JSON 문자열을 정확히 똑같이 돌려준다.</p></div></div><p><code class="literal">GET</code> 요청에 대한 응답은 <code class="literal">{"found": true}</code> 를 포함하고 있다. 이것은 document가 발견되었다는 것을 확인해 준다.
+<a id="id-1.4.5.15.8.3" class="indexterm"></a>
+<a id="id-1.4.5.15.8.4" class="indexterm"></a>만약 존재하지 않는 document를 요청하면, <code class="literal">found</code> 가 false로 설정된 JSON 응답이 나올 것이다.</p><p>또한 HTTP 응답 code는 <code class="literal">200 OK</code> 가 아닌, <code class="literal">404 Not Found</code> 가 될 것이다. curl에 <code class="literal">–i</code>  매개변수를<a id="id-1.4.5.15.9.4" class="indexterm"></a>
+<a id="id-1.4.5.15.9.5" class="indexterm"></a> 전달하면, 응답 header를 볼 수 있다:</p><div class="pre_wrapper"><pre class="programlisting prettyprint lang-sh">curl -i -XGET http://localhost:9200/website/blog/124?pretty</pre></div><div class="sense_widget" data-snippet="snippets/030_Data/15_Get_document.json"></div><p>응답은 아래와 같다:</p><div class="pre_wrapper"><pre class="programlisting prettyprint lang-js">HTTP/1.1 404 Not Found
+Content-Type: application/json; charset=UTF-8
+Content-Length: 83
+
+{
+  "_index" : "website",
+  "_type" :  "blog",
+  "_id" :    "124",
+  "found" :  false
+}</pre></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="_document의_일부만_검색"></a>document의 일부만 검색</h3></div></div></div><p>기본적으로, <code class="literal">GET</code> 요청은<a id="id-1.4.5.15.14.2.2" class="indexterm"></a>
+<a id="id-1.4.5.15.14.2.3" class="indexterm"></a> <code class="literal">_source</code> field에 저장되어 있는, 전체 document를 반환한다.
+그런데, <code class="literal">title</code> field에만 관심이 있다면, <code class="literal">_source</code> 매개변수를 사용하여, 개별 field를<a id="id-1.4.5.15.14.2.7" class="indexterm"></a>
+<a id="id-1.4.5.15.14.2.8" class="indexterm"></a><a id="id-1.4.5.15.14.2.9" class="indexterm"></a> 요청할 수 있다.
+다중 field는 ‘,’(comma)로 구분된 목록으로 지정할 수 있다:</p><div class="pre_wrapper"><pre class="programlisting prettyprint lang-sh">GET /website/blog/123?_source=title,text</pre></div><div class="sense_widget" data-snippet="snippets/030_Data/15_Get_document.json"></div><p>이제 <code class="literal">_source</code> field는 요청한 field만을 포함하고 <code class="literal">date</code> field는 걸러졌다:</p><div class="pre_wrapper"><pre class="programlisting prettyprint lang-js">{
+  "_index" :   "website",
+  "_type" :    "blog",
+  "_id" :      "123",
+  "_version" : 1,
+  "exists" :   true,
+  "_source" : {
+      "title": "My first blog entry" ,
+      "text":  "Just trying this out..."
+  }
+}</pre></div><p>metadata 없이 <code class="literal">_source</code> field만 원한다면, 마지막에 <code class="literal">_source</code> 만을 쓰면 된다:</p><div class="pre_wrapper"><pre class="programlisting prettyprint lang-sh">GET /website/blog/123/_source</pre></div><div class="sense_widget" data-snippet="snippets/030_Data/15_Get_document.json"></div><p>아래와 같이 반환한다:</p><div class="pre_wrapper"><pre class="programlisting prettyprint lang-js">{
+   "title": "My first blog entry",
+   "text":  "Just trying this out...",
+   "date":  "2014/01/01"
+}</pre></div></div></div><div class="section"><div class="titlepage"><div><div><h2 class="title"><a id="doc-exists"></a>document 존재 여부 확인</h2></div></div></div><p>document의 내용에는 전혀 관심이 없고, document가 존재하는지 여부만을 알고 싶다면<a id="id-1.4.5.16.2.1" class="indexterm"></a>
+<a id="id-1.4.5.16.2.2" class="indexterm"></a>,
+<code class="literal">GET</code> 대신에 <a id="id-1.4.5.16.2.4" class="indexterm"></a><a id="id-1.4.5.16.2.5" class="indexterm"></a>
+<a id="id-1.4.5.16.2.6" class="indexterm"></a><code class="literal">HEAD</code> method를 사용한다. <code class="literal">HEAD</code> 요청은 body를 반환하지 않고, HTTP header만을 반환한다:</p><div class="pre_wrapper"><pre class="programlisting prettyprint lang-js">curl -i -XHEAD http://localhost:9200/website/blog/123</pre></div><p>Elasticsearch는 document가 존재하면, <code class="literal">200 OK</code> 라는 상태 코드를 반환한다:</p><div class="pre_wrapper"><pre class="programlisting prettyprint lang-js">HTTP/1.1 200 OK
+Content-Type: text/plain; charset=UTF-8
+Content-Length: 0</pre></div><p>그리고, 존재하지 않으면, <code class="literal">Not Found 404</code> 를 반환한다:</p><div class="pre_wrapper"><pre class="programlisting prettyprint lang-js">curl -i -XHEAD http://localhost:9200/website/blog/124</pre></div><div class="pre_wrapper"><pre class="programlisting prettyprint lang-js">HTTP/1.1 404 Not Found
+Content-Type: text/plain; charset=UTF-8
+Content-Length: 0</pre></div><p>물론, 단지 그것을 확인할 때, document가 존재하지 않는다는 것이다. 다른 프로세스가 수 milliseconds 내에 document를 생성할 수도 있기 때문에 그 후에도 document가 존재하지 않는다는 것을 의미하지는 않는다.</p></div><div class="section"><div class="titlepage"><div><div><h2 class="title"><a id="update-doc"></a>전체 document 업데이트</h2></div></div></div><p>Elasticsearch에서 document는 <span class="emphasis"><em>불변이다</em></span>. document를 변경할 수 없다.<a id="id-1.4.5.17.2.2" class="indexterm"></a>
+<a id="id-1.4.5.17.2.3" class="indexterm"></a><a id="id-1.4.5.17.2.4" class="indexterm"></a>
+<a id="id-1.4.5.17.2.5" class="indexterm"></a>
+ 대신, 기존의 document를 업데이트하려면, <span class="emphasis"><em>재색인</em></span> 또는 대체해야<a id="id-1.4.5.17.2.7" class="indexterm"></a><a id="id-1.4.5.17.2.8" class="indexterm"></a> 한다.
+<a class="link" href="data-in-data-out.html#index-doc" title="document 색인">document 색인</a>에서 이미 이야기했던 것과 동일한 <code class="literal">index</code> API를 사용할 수 있다.</p><div class="pre_wrapper"><pre class="programlisting prettyprint lang-js">PUT /website/blog/123
+{
+  "title": "My first blog entry",
+  "text":  "I am starting to get the hang of this...",
+  "date":  "2014/01/02"
+}</pre></div><div class="sense_widget" data-snippet="snippets/030_Data/25_Reindex_doc.json"></div><p>응답에서, Elasticsearch가<a id="id-1.4.5.17.5.1" class="indexterm"></a>
+<a id="id-1.4.5.17.5.2" class="indexterm"></a> <code class="literal">_version</code> 을 증가시켰음을 알 수 있다:</p><div class="pre_wrapper"><pre class="programlisting prettyprint lang-js">{
+  "_index" :   "website",
+  "_type" :    "blog",
+  "_id" :      "123",
+  "_version" : 2,
+  "created":   false <a id="CO8-1"></a><span><img src="images/icons/callouts/1.png" alt="" /></span>
+}</pre></div><div class="calloutlist"><table border="0" summary="Callout list"><tr><td width="5%" valign="top" align="left"><p><a href="#CO8-1"><span><img src="images/icons/callouts/1.png" alt="" /></span></a> </p></td><td valign="top" align="left"><p>
+동일한 index, type, ID를 가지는 document가 이미 존재하기 때문에, <code class="literal">created</code>  flag는 <code class="literal">false</code> 로 설정되어 있다.
+</p></td></tr></table></div><p>내부적으로 Elasticsearch는 기존 document를 삭제된 것으로 표시하고, 완전히 새로운 document를 추가한다.<a id="id-1.4.5.17.8.1" class="indexterm"></a>
+기존 버전의 document는 비록 access할 수 없지만, 즉시 사라지지는 않는다. 더 많은 데이터의 색인을 계속하면, Elasticsearch는 background에서 삭제된 document를 정리한다.</p><p>이 장의 후반부에서, <a class="link" href="data-in-data-out.html#partial-updates" title="document의 부분적인 업데이트">document의 부분적인 업데이트</a>를 이용해 <code class="literal">update</code>  API에 대해 이야기할 것이다.
+이 API가 원래의 document를 변경하는 것처럼 <span class="emphasis"><em>보이지만</em></span>, 실제로 Elasticsearch는 위에서 언급한 것과 정확히 동일한 프로세스를 따른다:</p><div class="orderedlist"><ol class="orderedlist" type="1"><li class="listitem">
+기존 document에서 JSON을 가져온다,
+</li><li class="listitem">
+그것을 바꾼다.
+</li><li class="listitem">
+기존 document를 지운다.
+</li><li class="listitem">
+새로운 document를 색인 한다.
+</li></ol></div><p>유일한 차이점은 <code class="literal">update</code>  API는 별도의 <code class="literal">get</code>, <code class="literal">index</code>  요청을 요구하지 않고, 단일 클라이언트 요청을 통해 이를 처리한다는 것이다.</p></div><div class="section"><div class="titlepage"><div><div><h2 class="title"><a id="create-doc"></a>새로운 document 생성</h2></div></div></div><p>document를 색인할 때, 기존 document를 덮어쓰는 것이 아니라, <a id="id-1.4.5.18.2.1" class="indexterm"></a>
+<a id="id-1.4.5.18.2.2" class="indexterm"></a> 완전히 새로운 것을 생성한다는 것을 어떻게 보장할 수 있을까?</p><p><code class="literal">_index</code>, <code class="literal">_type</code>, <code class="literal">_id</code> 의 조합으로, document를 유일하게 식별할 수 있다는 것을 기억해 보자.
+따라서 document가 새로운 것이라는 보장하는 가장 가장 쉬운 방법은, index 요청에 <a id="id-1.4.5.18.3.4" class="indexterm"></a><a id="id-1.4.5.18.3.5" class="indexterm"></a>
+<a id="id-1.4.5.18.3.6" class="indexterm"></a>
+<code class="literal">POST</code> 를 사용하고 Elasticsearch가 새로운 유일한 <code class="literal">_id</code> 를 자동 생성하도록 하는 것이다:</p><div class="pre_wrapper"><pre class="programlisting prettyprint lang-js">POST /website/blog/
+{ ... }</pre></div><p>그러나, 이미 사용하려는 <code class="literal">_id</code> 를 가지고 있다면, 동일한 <code class="literal">_index</code>, <code class="literal">_type</code>, <code class="literal">_id</code> 를 가진 document가
+아직 존재하지 않는 경우에만, Elasticsearch가 index 요청을 받아들이도록 해야 한다. 두 가지 방법이 있는데,
+두 가지 모두 마찬가지이다. 편리한 방법을 사용하자.</p><p>첫 번째 방법은 <code class="literal">op_type</code> query<a id="id-1.4.5.18.6.2" class="indexterm"></a><a id="id-1.4.5.18.6.3" class="indexterm"></a>
+<a id="id-1.4.5.18.6.4" class="indexterm"></a><a id="id-1.4.5.18.6.5" class="indexterm"></a>
+<a id="id-1.4.5.18.6.6" class="indexterm"></a><a id="id-1.4.5.18.6.7" class="indexterm"></a>-string 매개변수를 사용하는 것이다.</p><div class="pre_wrapper"><pre class="programlisting prettyprint lang-js">PUT /website/blog/123?op_type=create
+{ ... }</pre></div><p>두 번째 방법은 URL의 마지막에 <code class="literal">/_create</code> 를 사용하는 것이다.</p><div class="pre_wrapper"><pre class="programlisting prettyprint lang-js">PUT /website/blog/123/_create
+{ ... }</pre></div><p>요청이 새로운 document를 생성하는데 성공하면, Elasticsearch는 일반적인 metadata와 HTTP 응답 code <code class="literal">201 Created</code> 를 반환할 것이다.</p><p>반면에, 동일한 <code class="literal">_index</code>, <code class="literal">_type</code>, <code class="literal">_id</code> 를 가진 document가 <a id="id-1.4.5.18.11.4" class="indexterm"></a> 이미 존재하면,
+Elasticsearch는 아래와 같이응답 code <code class="literal">409 Conflict</code> 와 error 메시지로 응답할 것이다.</p><div class="pre_wrapper"><pre class="programlisting prettyprint lang-js">{
+  "error" : "DocumentAlreadyExistsException[[website][4] [blog][123]:
+             document already exists]",
+  "status" : 409
+}</pre></div><div class="sense_widget" data-snippet="snippets/030_Data/30_Create_doc.json"></div></div><div class="section"><div class="titlepage"><div><div><h2 class="title"><a id="delete-doc"></a>document 삭제</h2></div></div></div><p>document를<a id="id-1.4.5.19.2.1" class="indexterm"></a>
+<a id="id-1.4.5.19.2.2" class="indexterm"></a> 삭제하는 문법은 우리가 이미 보았던 것과 동일한 형태를 가진다. 하지만,
+<a id="id-1.4.5.19.2.3" class="indexterm"></a>
+<a id="id-1.4.5.19.2.4" class="indexterm"></a><a id="id-1.4.5.19.2.5" class="indexterm"></a>
+<a id="id-1.4.5.19.2.6" class="indexterm"></a><code class="literal">DELETE</code> method를 사용한다:</p><div class="pre_wrapper"><pre class="programlisting prettyprint lang-js">DELETE /website/blog/123</pre></div><div class="sense_widget" data-snippet="snippets/030_Data/35_Delete_doc.json"></div><p>document가 발견되면, Elasticsearch는 HTTP 응답 code <code class="literal">200 OK</code> 와, 아래와 같은 응답 body를 반환할 것이다.
+<code class="literal">_version</code> 넘버가 증가했다는 점을 눈 여겨 보자.</p><div class="pre_wrapper"><pre class="programlisting prettyprint lang-js">{
+  "found" :    true,
+  "_index" :   "website",
+  "_type" :    "blog",
+  "_id" :      "123",
+  "_version" : 3
+}</pre></div><p>document가 발견되지 않으면<a id="id-1.4.5.19.7.1" class="indexterm"></a>
+<a id="id-1.4.5.19.7.2" class="indexterm"></a> <code class="literal">404 Not Found</code> respond code를 얻고, body는 아래와 같다.</p><div class="pre_wrapper"><pre class="programlisting prettyprint lang-js">{
+  "found" :    false,
+  "_index" :   "website",
+  "_type" :    "blog",
+  "_id" :      "123",
+  "_version" : 4
+}</pre></div><p>비록 document가 존재하지 않더라도(<code class="literal">found</code> 가 <code class="literal">false</code>), <code class="literal">_version</code> 넘버는 여전히 증가한다.
+이것은 변화가 다수의 node에 올바른 순서로 적용되도록 보장하는, 내부적인 부가기록의 일부이다.</p><div class="note admon"><div class="icon"><img alt="Note" src="images/icons/note.png" /></div><div class="admon_content"><p><a class="link" href="data-in-data-out.html#update-doc" title="전체 document 업데이트">document 업데이트</a>에서 이미 언급했듯이, document를 삭제한다고 해서,
+디스크에서 document가 즉시 제거되는 것은 아니다. 단순히 지워진 것으로 표시하는 것이다. Elasticsearch는
+더 많은 데이터를 색인 하는 것을 계속하면, background에서 지워진 document를 정리한다.</p></div></div></div><div class="section"><div class="titlepage"><div><div><h2 class="title"><a id="version-control"></a>충돌 취급</h2></div></div></div><p><a id="id-1.4.5.20.2.1" class="indexterm"></a>
+<a id="id-1.4.5.20.2.2" class="indexterm"></a><code class="literal">index</code> API를 사용하여 document를 업데이트할 경우, 원래의 document를 읽고,
+변경을 하고, 한번에 <span class="emphasis"><em>전체 document</em></span> 를 재색인 한다. 가장 최근의 색인 요청이 저장된다. 마지막으로 색인된 document가 Elasticsearch에 한번 저장된다.
+누군가 그 사이에 document를 변경했다면, 그 변경 사항은 사라진다.</p><p>많은 경우, 이런 상황은 문제가 되지 않는다. 아마 주 데이터의 저장소는 RDB이고, Elasticsearch에 검색 가능하도록 그 데이터를 복사할 뿐이다.
+아마도 두 사람이 동일한 document를, 동시에 변경하는 경우는 거의 없을 것이다. 경우에 따라, 변경 사항이 사라지는 경우가 있겠지만, 크게 문제가 되지 않는다.</p><p>그러나 때때로 변경 사항을 잃어 버린 것이, <span class="emphasis"><em>매우 중요</em></span> 할 수도 있다. Elasticsearch를 온라인 상점에서,
+많은 상품들의 재고를 저장하는데 사용하고 있다고 가정해 보자. 상품을 팔 때마다 Elasticsearch에서 재고를 감소시켜야 한다.</p><p>어느 날 관리자가 sale을 하기로 했다. 갑자기 매초마다 여러 가지 상품이 팔릴 것이다. 동시에 동작하고 있는 두 개의 web 프로세스를 생각해 보자.
+둘 모두 하나의 상품에 대한 판매를 각각 진행하고 있는 것을 <a class="link" href="data-in-data-out.html#img-data-lww" title="Figure 7. 동시성 제어가 없는 경우의 결과">동시성 제어가 없는 경우의 결과</a>에서 볼수 있다.</p><div class="figure"><a id="img-data-lww"></a><p class="title"><strong>Figure 7. 동시성 제어가 없는 경우의 결과</strong></p><div class="figure-contents"><div class="mediaobject" align="center"><img src="images/elas_0301.png" align="middle" width="270" alt="동시성 제어가 없는 경우의 결과" /></div></div></div><br class="figure-break" /><p><code class="literal">web_2</code> 가 <code class="literal">재고 수</code> 복사본의 최신 상태임을 알지 못하기 때문에,<code class="literal">재고 수</code> 에 대한 <code class="literal">web_1</code> 의 변화가 사라졌다.
+결과적으로, 실제로 가지고 있는 것보다 더 많은 상품이 있다고 생각하여, 존재하지 않는 상품을 고객들에게 판매하여, 고객을 실망시킬 것이다.</p><p>변화가 더 자주 발생할수록, 데이터를 읽는 것과 업데이트 사이에 간격이 더 길수록, 변경 사항이 사라질 가능성은 더 많아진다.</p><p>데이터베이스의 세계에서, 동시에 업데이트가 이루어지는 경우에, 변경 사항이 사라지지 않을 것을 보장하기 위해<a id="id-1.4.5.20.9.1" class="indexterm"></a><a id="id-1.4.5.20.9.2" class="indexterm"></a>,
+흔히 사용되는 두 가지 방법이 있다:</p><div class="variablelist"><dl class="variablelist"><dt><span class="term">
+<span class="emphasis"><em>비관적인 동시성 제어</em></span>
+</span></dt><dd>
+RDB에서 널이 사용된다. 변경 사항이 충돌할 가능성이 있고, 그래서 block은 충돌을 막기 위해 resource에 접근한다고 가정한다.
+전형적인 예는 데이터를 읽기 전에 row를 잠그는 것이다. 데이터를 잠근 thread만 해당 row에 있는 데이터를 바꿀 수 있도록 하는 것이다.
+</dd><dt><span class="term">
+<span class="emphasis"><em>낙관적인 동시성 제어</em></span>
+</span></dt><dd>
+Elasticsearch에서 사용된다. <a id="id-1.4.5.20.10.2.2.1.1" class="indexterm"></a>충돌은 발생할 가능성이 적고, 시도되는 작업을 막지 않는다. 그러나, 읽기와 쓰기 사이에 근본 데이터가 변경되면,
+업데이트는 실패한다. 충돌을 해결하는 방법은 응용프로그램에 달려 있다. 예를 들어 새로운 데이터를 이용하여 업데이트를 다시 시도할 수도 있거나, 새로운 데이터를 사용하거나, 사용자에게 상황을 보고할 수도 있다.
+</dd></dl></div></div><div class="section"><div class="titlepage"><div><div><h2 class="title"><a id="optimistic-concurrency-control"></a>낙관적인 동시성 제어</h2></div></div></div><p>Elasticsearch는 분산되어 있다. document가 <a id="id-1.4.5.21.2.1" class="indexterm"></a>
+<a id="id-1.4.5.21.2.2" class="indexterm"></a>생성되거나, 업데이트, 삭제되면,
+document의 새로운 버전은 cluster의 다른 node로 복제된다. Elasticsearch는 비동기적이고 동시성을 가진다.
+즉, 복제 요청이 병렬로 보내지고, <span class="emphasis"><em>차례대로 도착하지 않을지도</em></span>  모른다. Elasticsearch 기존 버전의 document가 새로운 버전의 document를 절대로 덮어쓰지 않을 것을 보장하는 방법이 필요하다.</p><p>위에서 <code class="literal">index</code>, <code class="literal">get</code>, <code class="literal">delete</code> 를 이야기할 때, 모든 document가 <code class="literal">_version</code> 넘버를 가지며, document가 변경될 때마다 증가한다고 이야기 했다.
+Elasticsearch는 변경 사항이 올바르게 적용되었다는 것을 보장하기 위해, <code class="literal">_version</code> 넘버를 사용한다. 기존 버전의 document가 새로운 버전보다 늦게 도착하면, 간단히 무시한다.</p><p>응용프로그램에 의해 만들어지는 변경 사항의 충돌이, 데이터 손실로 나타나지 않도록 보장하기 위해<a id="id-1.4.5.21.4.1" class="indexterm"></a>
+<a id="id-1.4.5.21.4.2" class="indexterm"></a>,
+<code class="literal">_version</code> 넘버를 이용할 수 있다. 변경하려는 document의 <code class="literal">버전</code> 넘버를 지정함으로써 가능하다. 해당 버전이 더 이상 최신이 아니면, 요청은 실패한다.</p><p>새로운 블로그 포스트를 생성하자:</p><div class="pre_wrapper"><pre class="programlisting prettyprint lang-js">PUT /website/blog/1/_create
+{
+  "title": "My first blog entry",
+  "text":  "Just trying this out..."
+}</pre></div><div class="sense_widget" data-snippet="snippets/030_Data/40_Concurrency.json"></div><p>응답 body는 새로 생성된 document는 <code class="literal">_version</code> 넘버 1을 나타낸다. 이 document를 변경한다고 생각해 보자.
+web form에 이 데이터를 표시하고, 수정하고, 새로운 버전을 저장한다.</p><p>먼저, 이 document를 가져오자:</p><div class="pre_wrapper"><pre class="programlisting prettyprint lang-js">GET /website/blog/1</pre></div><div class="sense_widget" data-snippet="snippets/030_Data/40_Concurrency.json"></div><p>응답 body는 동일한 <code class="literal">_version</code> 넘버 1을 포함하고 있다:</p><div class="pre_wrapper"><pre class="programlisting prettyprint lang-js">{
+  "_index" :   "website",
+  "_type" :    "blog",
+  "_id" :      "1",
+  "_version" : 1,
+  "found" :    true,
+  "_source" :  {
+      "title": "My first blog entry",
+      "text":  "Just trying this out..."
+  }
+}</pre></div><p>이제 document를 다시 색인 하여, 변경 사항을 저장하자. 적용하려는 변경 사항에 <code class="literal">버전</code> 을 지정한다.</p><div class="pre_wrapper"><pre class="programlisting prettyprint lang-js">PUT /website/blog/1?version=1 <a id="CO9-1"></a><span><img src="images/icons/callouts/1.png" alt="" /></span>
+{
+  "title": "My first blog entry",
+  "text":  "Starting to get the hang of this..."
+}</pre></div><div class="sense_widget" data-snippet="snippets/030_Data/40_Concurrency.json"></div><div class="calloutlist"><table border="0" summary="Callout list"><tr><td width="5%" valign="top" align="left"><p><a href="#CO9-1"><span><img src="images/icons/callouts/1.png" alt="" /></span></a> </p></td><td valign="top" align="left"><p>
+index에 있는 document의 현재 <code class="literal">_version</code> 이 버전 <code class="literal">1</code> 인 경우에만 업데이트 되어야 한다.
+</p></td></tr></table></div><p>이 요청은 성공한다. 그리고 응답 body는 <code class="literal">_version</code> 이 <code class="literal">2</code> 로 증가되었음을 나타낸다.</p><div class="pre_wrapper"><pre class="programlisting prettyprint lang-js">{
+  "_index":   "website",
+  "_type":    "blog",
+  "_id":      "1",
+  "_version": 2
+  "created":  false
+}</pre></div><div class="sense_widget" data-snippet="snippets/030_Data/40_Concurrency.json"></div><p>그러나, 여전히 <code class="literal">version=1</code> 을 지정하여, 동일한 index 요청을 다시 실행하면, Elasticsearch는 HTTP 응답 code
+<code class="literal">409 Conflict</code> 로 응답할 것이다. body는 아래와 같다:</p><div class="pre_wrapper"><pre class="programlisting prettyprint lang-js">{
+  "error" : "VersionConflictEngineException[[website][2] [blog][1]:
+             version conflict, current [2], provided [1]]",
+  "status" : 409
+}</pre></div><div class="sense_widget" data-snippet="snippets/030_Data/40_Concurrency.json"></div><p>이것은 Elasticsearch에 있는 document의 현재 <code class="literal">_version</code> 넘버가 <code class="literal">2</code> 인데, 버전 <code class="literal">1</code> 을 업데이트하려 했다고 알려준다.</p><p>이에 따라 해야 할 작업은, 응용프로그램의 요구사항에 따라 달라진다. 다른 이가 이미 document를 변경했다고,
+다시 저장하기 전에 변경사항을 검토해야 한다고, 사용자에게 알려줘야 한다. 그렇지 않으면, 위의 상품 `재고` 의 예처럼, 최신 document를 가져오고, 변경사항을 다시 적용하려 할 것이다.</p><p>document는 <code class="literal">버전</code> 매개변수를 사용해 수정이나 삭제를 위한 모든 API가 낙관적인 동시성 제어를 코드의 일부분에 적용할 수 있도록 한다.</p><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="_외부_시스템에서_버전_사용"></a>외부 시스템에서 버전 사용</h3></div></div></div><p>일반적인 설정은 기본 데이터 저장소로서 다른 데이터베이스를 사용하고, 데이터를 검색 가능하도록<a id="id-1.4.5.21.27.2.1" class="indexterm"></a>
+<a id="id-1.4.5.21.27.2.2" class="indexterm"></a><a id="id-1.4.5.21.27.2.3" class="indexterm"></a> Elasticsearch를 사용하는 것이다.
+즉, 기본 데이터 저장소에서의 모든 수정 사항을, 수정이 발생하자마자, Elasticsearch에 복사할 필요가 있다.
+멀티프로세스가 데이터 동기화를 책임지고 있다면, 위에서 언급한 것과 유사한 동시성 문제가 발생할 수 있다.</p><p>주 데이터베이스가 이미 버전(또는 버전 넘버로 사용될 수 있는 <code class="literal">timestamp</code> 같은 값) 넘버를 가지고 있다면,
+query string에<a id="id-1.4.5.21.27.3.2" class="indexterm"></a>
+<a id="id-1.4.5.21.27.3.3" class="indexterm"></a> <code class="literal">version_type=external</code> 을 추가함으로써, Elasticsearch에 이런 버전을 그대로 쓸 수 있다.
+버전은 0보다 크고, <code class="literal">9.2e+18</code> --보다 작은, 정수여야 한다. Java에서는 양수 <code class="literal">long</code> 이다.</p><p>외부 버전 넘버를 다루는 방법은, 위에서 언급했던 내부 버전과 약간 다르다. 현재의 <code class="literal">_version</code> 이 요청에 지정된 버전과 <span class="emphasis"><em>같다</em></span> 는 것을 확인하는 대신,
+Elasticsearch는 현재의 버전이 지정한 <code class="literal">_version</code> 보다 <span class="emphasis"><em>작은지</em></span> 를 확인한다. 요청이 성공하면, 외부 버전을 document의 새로운 <code class="literal">_version</code> 으로 저장한다.</p><p>외부 버전은 index, delete 요청뿐만 아니라, 새로운 document를 _생성할_  때에도 지정할 수 있다.</p><p>예를 들면, 외부 버전을 <code class="literal">5</code> 로 해서, 새로운 블로그 포스트를 생성하려면, 아래와 같이 한다:</p><div class="pre_wrapper"><pre class="programlisting prettyprint lang-js">PUT /website/blog/2?version=5&amp;version_type=external
+{
+  "title": "My first external blog entry",
+  "text":  "Starting to get the hang of this..."
+}</pre></div><div class="sense_widget" data-snippet="snippets/030_Data/40_External_versions.json"></div><p>응답에서, 현재 <code class="literal">_version</code>  넘버가 <code class="literal">5</code> 라는 것을 볼 수 있다:</p><div class="pre_wrapper"><pre class="programlisting prettyprint lang-js">{
+  "_index":   "website",
+  "_type":    "blog",
+  "_id":      "2",
+  "_version": 5,
+  "created":  true
+}</pre></div><p>이제, 새로운 <code class="literal">버전</code> 넘버를 <code class="literal">10</code> 으로 해서, 이 document를 업데이트해 보자.</p><div class="pre_wrapper"><pre class="programlisting prettyprint lang-js">PUT /website/blog/2?version=10&amp;version_type=external
+{
+  "title": "My first external blog entry",
+  "text":  "This is a piece of cake..."
+}</pre></div><div class="sense_widget" data-snippet="snippets/030_Data/40_External_versions.json"></div><p>요청은 성공하고, 현재의 <code class="literal">_version</code> 은 <code class="literal">10</code> 으로 설정된다.</p><div class="pre_wrapper"><pre class="programlisting prettyprint lang-js">{
+  "_index":   "website",
+  "_type":    "blog",
+  "_id":      "2",
+  "_version": 10,
+  "created":  false
+}</pre></div><p>이 요청을 다시 실행하면, 전에 보았던 것과 동일한 충돌 에러를 내면서, 실패할 것이다.
+왜냐하면, 지정한 외부 버전이 Elasticsearch의 현재 버전보다 높지 않기 때문이다.</p></div></div><div class="section"><div class="titlepage"><div><div><h2 class="title"><a id="partial-updates"></a>document의 부분적인 업데이트</h2></div></div></div><p><a class="link" href="data-in-data-out.html#update-doc" title="전체 document 업데이트">전체 Documents 업데이트</a>에서, document를 업데이트하는 방식은<a id="id-1.4.5.22.2.2" class="indexterm"></a>
+<a id="id-1.4.5.22.2.3" class="indexterm"></a><a id="id-1.4.5.22.2.4" class="indexterm"></a>
+<a id="id-1.4.5.22.2.5" class="indexterm"></a> document를 검색해서 업데이트하고,
+전체 document를 다시 색인 한다고 언급했다. 이것은 사실이다. 그러나 <code class="literal">update</code>  API를 사용하면, 단일 요청으로, counter를 증가시키는 것과 같은 부분적인 업데이트를 할 수 있다.</p><p>document는 불변(수정할 수 없고, 오직 대체해야 한다)이라고 언급했다. <code class="literal">update</code>  API도 같은 원칙을 <span class="emphasis"><em>가져야</em></span> 한다.
+외부적으로는, document가 있던 곳에, 부분적으로 document를 업데이트하는 것처럼 나타난다. 그러나, 내부적으로,
+<code class="literal">update</code>  API는 이미 언급한 것과 같이, 단순히 <span class="emphasis"><em>검색해서-변경하고-재색인하는</em></span>  프로세스를 따른다.
+차이점은 이 프로세스가 shard내에서 발생한다는 것이다. 이렇게 되면, 다중 요청에 의한 네트워크 부하를 피할 수 있다. <span class="emphasis"><em>가져오고, 재색인</em></span> 하는 작업 사이의 시간을 절약하여,
+다른 프로세스의 변경 사항과 충돌할 가능성도 줄어든다.</p><p><code class="literal">업데이트</code>  요청의 가장 단순한 형태는, <code class="literal">doc</code>  매개변수로 document의 일부를 받아, 기존 document와 병합하는 것이다.
+오브젝트는 함께 병합되고, 기존의 숫자 field는 덮어 써지고, 새로운 field는 추가된다. 예를 들면, <code class="literal">tags</code>  field와 <code class="literal">views</code>  field를,
+블로그 포스트에 추가할 수 있다:</p><div class="pre_wrapper"><pre class="programlisting prettyprint lang-js">POST /website/blog/1/_update
+{
+   "doc" : {
+      "tags" : [ "testing" ],
+      "views": 0
+   }
+}</pre></div><div class="sense_widget" data-snippet="snippets/030_Data/45_Partial_update.json"></div><p>요청이 성공하면, <code class="literal">index</code> 요청과 유사한 응답을 볼 수 있다:</p><div class="pre_wrapper"><pre class="programlisting prettyprint lang-js">{
+   "_index" :   "website",
+   "_id" :      "1",
+   "_type" :    "blog",
+   "_version" : 3
+}</pre></div><p>document를 검색해 보면, 업데이트된 <code class="literal">_source</code> field를 볼 수 있다:</p><div class="pre_wrapper"><pre class="programlisting prettyprint lang-js">{
+   "_index":    "website",
+   "_type":     "blog",
+   "_id":       "1",
+   "_version":  3,
+   "found":     true,
+   "_source": {
+      "title":  "My first blog entry",
+      "text":   "Starting to get the hang of this...",
+      "tags": [ "testing" ], <a id="CO10-1"></a><span><img src="images/icons/callouts/1.png" alt="" /></span>
+      "views":  0 <a id="CO10-2"></a><span><img src="images/icons/callouts/2.png" alt="" /></span>
+   }
+}</pre></div><div class="sense_widget" data-snippet="snippets/030_Data/45_Partial_update.json"></div><div class="calloutlist"><table border="0" summary="Callout list"><tr><td width="5%" valign="top" align="left"><p><a href="#CO10-1"><span><img src="images/icons/callouts/1.png" alt="" /></span></a> <a href="#CO10-2"><span><img src="images/icons/callouts/2.png" alt="" /></span></a> </p></td><td valign="top" align="left"><p>
+새로운 field가 <code class="literal">_source</code> 에 추가되었다.
+</p></td></tr></table></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="_부분_업데이트를_위한_script_사용"></a>부분 업데이트를 위한 script 사용</h3></div></div></div><p>script는 <code class="literal">_source</code> field의 내용을 변경하기 위해, <code class="literal">update</code> API에서 사용될 수 있다.
+이것은<a id="id-1.4.5.22.13.2.3" class="indexterm"></a> 업데이트 script내에서 <code class="literal">ctx._source</code> 로 참조된다.
+예를 들면, 블로그 게시물이 가진, `views`의 수를 증가시키기 위해 script를 사용할 수 있다.</p><div class="pre_wrapper"><pre class="programlisting prettyprint lang-js">POST /website/blog/1/_update
+{
+   "script" : "ctx._source.views+=1"
+}</pre></div><div class="sense_widget" data-snippet="snippets/030_Data/45_Partial_update.json"></div><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>Groovy scripting</strong></p></div></div></div><p>API가 충분하지 않은 <a id="id-1.4.5.22.13.5.2.1" class="indexterm"></a>
+<a id="id-1.4.5.22.13.5.2.2" class="indexterm"></a>
+<a id="id-1.4.5.22.13.5.2.3" class="indexterm"></a><a id="id-1.4.5.22.13.5.2.4" class="indexterm"></a>
+<a id="id-1.4.5.22.13.5.2.5" class="indexterm"></a>
+<a id="id-1.4.5.22.13.5.2.6" class="indexterm"></a>경우에,
+Elasticsearch에서는 사용자 정의 로직을 script로 작성할 수 있다.<a id="id-1.4.5.22.13.5.2.7" class="indexterm"></a>
+<a id="id-1.4.5.22.13.5.2.8" class="indexterm"></a> scripting은 검색, 정렬, 집계, 그리고 document 업데이트 같은, 많은 API를 지원한다.
+script는 요청의 일부로 전달될 수 있고, 특별한 index .scripts에서 가져오거나 디스크에서 로드 할 수 있다.
+기본 script 언어는 javascript와 유사한 문법을 가지는, 빠른 표현 script 언어인 <a class="ulink" href="http://groovy.codehaus.org/" target="_top">Groovy</a><a id="id-1.4.5.22.13.5.2.10" class="indexterm"></a> 이다.
+이것은 Elasticsearch 1.3버전에서 처음 소개되었으며, <span class="emphasis"><em>샌드박스</em></span> 에서 실행되지만, 공격자가 Groovy 스크립트를 구성해 샌드박스를 피해서 Elasticsearch Java VM을 구동중인
+사용자로 쉘 명령어를 실행 시킬수 있는 Groovy 스크립팅 엔진의 취약 점이 있다.</p><p>그래서 v1.3.8, v1.4.3 과 v1.5.0 이상의 버전에서 기본적으로 비활성화 되어 있다.
+또는 직접 클러스터의 모든 노드에 있는 <code class="literal">config/elasticsearch.yml</code> 파일에 설정을 추가하여 동적 Groovy 스크립트를 비횔성화 할 수 있다:</p><div class="pre_wrapper"><pre class="programlisting prettyprint lang-yaml">script.groovy.sandbox.enabled: false</pre></div><p>이설정이 Groovy 샌드 박스는 종료 시키면, 동적 Groovy 스크립트가 특별한 <code class="literal">.scripts</code> 색인으로 부터의 요청이나 검색을 승인하는것을 방지한다.
+여전히 모든 노드의 <code class="literal">config/scripts/</code> 디렉토리에 파일로 저장된 Groovy 스크립트는 사용 가능하다.</p><p>아키텍처와 보인상 취약점에 대한 우려가 필요하지 않은 경우, 예를 들자면 Elasticsearch 의 endpoints가 신뢰하는 응용프로그램들에게만 노출되고 사용가능하다면,
+응용프로그램의 필요에 따라 동적 스크립트을 다시 활성화 할 수 있다.</p><p><a class="ulink" href="http://www.elasticsearch.org/guide/en/elasticsearch/reference/current/modules-scripting.html" target="_top">스크립트 참조 문서</a>.에서, script에 대해 더 많은 것을 읽을 수 있다.</p></div><p><code class="literal">tags</code> 배열에 새로운 tag를 추가하기 위해서도 사용할 수 있다.
+이 예제에서 script 자체에 hard coding하지 않고, 새로운 tag를 매개변수로 지정했다.
+이것은 다른 tag를 추가할 때마다 새로운 script를 다시 compile하지 않고, 나중에 script를 재사용하기 위해서이다:</p><div class="pre_wrapper"><pre class="programlisting prettyprint lang-js">POST /website/blog/1/_update
+{
+   "script" : "ctx._source.tags+=new_tag",
+   "params" : {
+      "new_tag" : "search"
+   }
+}</pre></div><div class="sense_widget" data-snippet="snippets/030_Data/45_Partial_update.json"></div><p>document를 가져와 보면, 마지막 두 개의 요청의 효과를 볼 수 있다:</p><div class="pre_wrapper"><pre class="programlisting prettyprint lang-js">{
+   "_index":    "website",
+   "_type":     "blog",
+   "_id":       "1",
+   "_version":  5,
+   "found":     true,
+   "_source": {
+      "title":  "My first blog entry",
+      "text":   "Starting to get the hang of this...",
+      "tags":  ["testing", "search"], <a id="CO11-1"></a><span><img src="images/icons/callouts/1.png" alt="" /></span>
+      "views":  1 <a id="CO11-2"></a><span><img src="images/icons/callouts/2.png" alt="" /></span>
+   }
+}</pre></div><div class="calloutlist"><table border="0" summary="Callout list"><tr><td width="5%" valign="top" align="left"><p><a href="#CO11-1"><span><img src="images/icons/callouts/1.png" alt="" /></span></a> </p></td><td valign="top" align="left"><p>
+<code class="literal">search</code> tag가 <code class="literal">tags</code> 에 추가되었다.
+</p></td></tr><tr><td width="5%" valign="top" align="left"><p><a href="#CO11-2"><span><img src="images/icons/callouts/2.png" alt="" /></span></a> </p></td><td valign="top" align="left"><p>
+<code class="literal">views</code> field가 증가하였다.
+</p></td></tr></table></div><p>심지어, document의 내용을 기준으로, document를 삭제(<code class="literal">ctx.op</code> 를 <code class="literal">delete</code> 로 설정)할 수도 있다.</p><div class="pre_wrapper"><pre class="programlisting prettyprint lang-js">POST /website/blog/1/_update
+{
+   "script" : "ctx.op = ctx._source.views == count ? 'delete' : 'none'",
+    "params" : {
+        "count": 1
+    }
+}</pre></div><div class="sense_widget" data-snippet="snippets/030_Data/45_Partial_update.json"></div></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="_아직_존재하지_않는_document_업데이트"></a>아직 존재하지 않는 document 업데이트</h3></div></div></div><p>Elasticsearch에 <a id="id-1.4.5.22.14.2.1" class="indexterm"></a>
+<a id="id-1.4.5.22.14.2.2" class="indexterm"></a>pageview counter 저장한다고 가정해 보자.
+사용자가 page를 볼 때마다 page의 counter를 증가시켜야 한다. 그런데, 그 page가 새로운 page라면, counter가 이미 존재한다고 확신할 수 없다.
+아직 존재하지 않는 document를 업데이트하려 하면, 업데이트는 실패할 것이다.</p><p>이런 경우에, 존재하지 않을 경우에, 생성하도록 지정하는, <code class="literal">upsert</code> 매개변수를 지정할<a id="id-1.4.5.22.14.3.2" class="indexterm"></a> 수 있다.</p><div class="pre_wrapper"><pre class="programlisting prettyprint lang-js">POST /website/pageviews/1/_update
+{
+   "script" : "ctx._source.views+=1",
+   "upsert": {
+       "views": 1
+   }
+}</pre></div><div class="sense_widget" data-snippet="snippets/030_Data/45_Upsert.json"></div><p>이 요청을 처음 실행하면, <code class="literal">upsert</code> 값은 <code class="literal">views</code> field가 <code class="literal">1</code> 로 초기화되어, 새로운 document로 색인 될 것이다.
+또 실행하면, document가 이미 존재하기 때문에, 증가시킨 <code class="literal">views</code>  counter 가 <code class="literal">script</code> 에 업데이트되어 적용 된다.</p></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="_업데이트와_충돌"></a>업데이트와 충돌</h3></div></div></div><p>이절을 소개하면서 <span class="emphasis"><em>검색</em></span>  과  <span class="emphasis"><em>재색인</em></span>  단계 사이는 더 작아, 변경 사항이 충돌할 기회가 더 작을 것이라고 이야기<a id="id-1.4.5.22.15.2.3" class="indexterm"></a>
+<a id="id-1.4.5.22.15.2.4" class="indexterm"></a><a id="id-1.4.5.22.15.2.5" class="indexterm"></a>
+<a id="id-1.4.5.22.15.2.6" class="indexterm"></a> 했다.
+그러나 가능성이 완전히 없을 수는 없다. 업데이트가 document를 재색인하기 전에, 다른 프로세스가 document <code class="literal">업데이트</code> 요청을 보낼 가능성은 여전하다.</p><p>데이터 손실을 방지하기 위해, <code class="literal">update</code> API는 <span class="emphasis"><em>검색</em></span> 단계에서 document의 현재 <code class="literal">_version</code> 을 가져오고, <span class="emphasis"><em>재색인</em></span>  단계에서 <code class="literal">색인</code> 요청에 그것을 넘긴다.
+검색와 재색인 사이에서 다른 프로세스가 document를 업데이트하면, <code class="literal">_version</code> 넘버가 일치하지 않아, 업데이트 요청은 실패한다.</p><p>부분 업데이트 중 많은 경우에 있어, document가 업데이트되었다는 것은 문제가 아니다. 예를 들자면,
+두 개의 프로세스가 모두 page view counter를 증가시키려고 하면, 발생한 순서는 관계없다. 만약 충돌이 일어나면, 업데이트을 다시 시도하면 된다.</p><p>실패하기 전에, <code class="literal">업데이트</code> 를 재시도 할 횟수를 <code class="literal">retry_on_conflict</code> 에 설정하여, 자동으로<a id="id-1.4.5.22.15.5.3" class="indexterm"></a>"query strings"<a id="id-1.4.5.22.15.5.4" class="indexterm"></a> 이를 수행할 수 있다.
+기본값은 <code class="literal">0</code> 이다.</p><div class="pre_wrapper"><pre class="programlisting prettyprint lang-js">POST /website/pageviews/1/_update?retry_on_conflict=5 <a id="CO12-1"></a><span><img src="images/icons/callouts/1.png" alt="" /></span>
+{
+   "script" : "ctx._source.views+=1",
+   "upsert": {
+       "views": 0
+   }
+}</pre></div><div class="sense_widget" data-snippet="snippets/030_Data/45_Upsert.json"></div><div class="calloutlist"><table border="0" summary="Callout list"><tr><td width="5%" valign="top" align="left"><p><a href="#CO12-1"><span><img src="images/icons/callouts/1.png" alt="" /></span></a> </p></td><td valign="top" align="left"><p>
+실패하면 5번을 재시도한다.
+</p></td></tr></table></div><p>이 동작은 증가의 순서가 중요하지 않은 경우에는 잘 된다. 그러나, 변경의 순서가 중요한 다른 상황도 <span class="emphasis"><em>있다</em></span>. <a class="link" href="data-in-data-out.html#index-doc" title="document 색인"><code class="literal">index</code> API</a>처럼,
+<code class="literal">update</code> API는 기본적으로 <span class="emphasis"><em>last-write-wins</em></span> 라는 방식을 채택하지만, <a class="link" href="data-in-data-out.html#optimistic-concurrency-control" title="낙관적인 동시성 제어">낙관적 동시성 제어</a> 를 사용할 수 있도록,
+업데이트하려는 document의 버전을 지정 할 수도 있다.</p></div></div><div class="section"><div class="titlepage"><div><div><h2 class="title"><a id="_다수의_document_검색"></a>다수의 document 검색</h2></div></div></div><p>Elasticsearch가 빠른 만큼, 여전히 더 빨라질 수 있다.<a id="id-1.4.5.23.2.1" class="indexterm"></a>
+<a id="id-1.4.5.23.2.2" class="indexterm"></a> 다수의 요청을 하나로 조합하는 것은,
+각 요청을 개별적으로 처리하는 경우에 발생하는 네트워크 부하를 피할 수 있다. 만약 Elasticsearch에서 다수의 document를 검색할 필요가 있다면,
+document 별로 검색하는 대신, <span class="emphasis"><em>multi-get</em></span> 이나 <code class="literal">mget</code> API<a id="id-1.4.5.23.2.5" class="indexterm"></a>를 사용하여, 한번의 요청으로 모두 가져오는 것이 더 빠르다.</p><p><code class="literal">mget</code> API는 각 <a id="id-1.4.5.23.3.2" class="indexterm"></a>
+<a id="id-1.4.5.23.3.3" class="indexterm"></a>요소가 가져오려는 document의 <code class="literal">_index</code>, <code class="literal">_type</code>, <code class="literal">_id</code> 의
+ metadata를 가진 docs 배열을 지정해야 한다. 하나 이상의 특정 field만 가져오려면, <code class="literal">_source</code> field를 지정할 수도 있다:</p><div class="pre_wrapper"><pre class="programlisting prettyprint lang-js">GET /_mget
+{
+   "docs" : [
+      {
+         "_index" : "website",
+         "_type" :  "blog",
+         "_id" :    2
+      },
+      {
+         "_index" : "website",
+         "_type" :  "pageviews",
+         "_id" :    1,
+         "_source": "views"
+      }
+   ]
+}</pre></div><div class="sense_widget" data-snippet="snippets/030_Data/50_Mget.json"></div><p>응답 body도 요청에서 지정한 것과 동일한 순서로, document별로 응답을 포함하는 <code class="literal">docs</code> 배열을<a id="id-1.4.5.23.6.2" class="indexterm"></a>
+<a id="id-1.4.5.23.6.3" class="indexterm"></a> 포함한다.
+이들 응답 각각은 개별 <a class="link" href="data-in-data-out.html#get-doc" title="document 검색"><code class="literal">get</code> 요청</a>에서 얻은 응답 body와 같다.</p><div class="pre_wrapper"><pre class="programlisting prettyprint lang-js">{
+   "docs" : [
+      {
+         "_index" :   "website",
+         "_id" :      "2",
+         "_type" :    "blog",
+         "found" :    true,
+         "_source" : {
+            "text" :  "This is a piece of cake...",
+            "title" : "My first external blog entry"
+         },
+         "_version" : 10
+      },
+      {
+         "_index" :   "website",
+         "_id" :      "1",
+         "_type" :    "pageviews",
+         "found" :    true,
+         "_version" : 2,
+         "_source" : {
+            "views" : 2
+         }
+      }
+   ]
+}</pre></div><div class="sense_widget" data-snippet="snippets/030_Data/50_Mget.json"></div><p>동일한 <code class="literal">_index</code> 에 있는(심지어 동일한 <code class="literal">_type</code> 의) 모든 document를 검색하려 한다면, URL에 기본 <code class="literal">/_index</code> 나 기본 <code class="literal">/_index/_type</code> 을 지정하면 된다.</p><p>개별 요청에 이런 값들을 재정의하면 된다:</p><div class="pre_wrapper"><pre class="programlisting prettyprint lang-js">GET /website/blog/_mget
+{
+   "docs" : [
+      { "_id" : 2 },
+      { "_type" : "pageviews", "_id" :   1 }
+   ]
+}</pre></div><div class="sense_widget" data-snippet="snippets/030_Data/50_Mget.json"></div><p>사실, 모든 document가 동일한 <code class="literal">_index</code> 와 <code class="literal">_type</code> 을 가진다면, 모든 <code class="literal">docs</code> 배열 대신에, <code class="literal">ids</code> 의 배열을 넘겨도 된다:</p><div class="pre_wrapper"><pre class="programlisting prettyprint lang-js">GET /website/blog/_mget
+{
+   "ids" : [ "2", "1" ]
+}</pre></div><p>요청한 것 중 두 번째 document가 존재하지 않는다는 것을 눈 여겨 보자. type을 <code class="literal">blog</code> 로 지정했으나,
+<code class="literal">pageviews</code> type의 document ID를 <code class="literal">1</code> 로 지정했다. 응답 body에 document가 존재하지 않는다고 나타난다:</p><div class="pre_wrapper"><pre class="programlisting prettyprint lang-js">{
+  "docs" : [
+    {
+      "_index" :   "website",
+      "_type" :    "blog",
+      "_id" :      "2",
+      "_version" : 10,
+      "found" :    true,
+      "_source" : {
+        "title":   "My first external blog entry",
+        "text":    "This is a piece of cake..."
+      }
+    },
+    {
+      "_index" :   "website",
+      "_type" :    "blog",
+      "_id" :      "1",
+      "found" :    false  <a id="CO13-1"></a><span><img src="images/icons/callouts/1.png" alt="" /></span>
+    }
+  ]
+}</pre></div><div class="sense_widget" data-snippet="snippets/030_Data/50_Mget.json"></div><div class="calloutlist"><table border="0" summary="Callout list"><tr><td width="5%" valign="top" align="left"><p><a href="#CO13-1"><span><img src="images/icons/callouts/1.png" alt="" /></span></a> </p></td><td valign="top" align="left"><p>
+이 document는 존재하지 않는다.
+</p></td></tr></table></div><p>두 번째 document가 발견되지 않는다는 사실은, 첫 번째 document를 검색하는데 아무런 영향을
+미치지 못한다. 각 document는 개별적으로 검색되고 보고된다.</p><div class="note admon"><div class="icon"><img alt="Note" src="images/icons/note.png" /></div><div class="admon_content"><p>비록 document가 하나도 발견되지 않았지만, 위의 요청에 대한 HTTP 상태 code는 <code class="literal">200</code> 이다.
+사실, document가 <span class="emphasis"><em>전혀</em></span>  발견되지 않아도 여전히 <code class="literal">200</code> 이다. 그 이유는 <code class="literal">mget</code> 요청 자체가 성공적으로 완료되었기 때문이다.
+개별 document의 성공 여부를 결정하려면 <a id="id-1.4.5.23.20.1.5" class="indexterm"></a><code class="literal">found</code> flag를 확인해야 한다.</p></div></div></div><div class="section"><div class="titlepage"><div><div><h2 class="title"><a id="bulk"></a>비용이 저렴한 bulk</h2></div></div></div><p><code class="literal">mget</code> 이 다수의 document를 한번에 가져오는 것과 마찬가지로, <code class="literal">bulk</code> API는<a id="id-1.4.5.24.2.3" class="indexterm"></a> 다수의 <code class="literal">생성</code>, <code class="literal">색인</code>, <code class="literal">업데이트</code>, <code class="literal">삭제</code> 요청을 한 번에 처리한다.
+log events같은 데이터를 색인할 필요가 있다면 굉장히 유용하다. 이것은 수백, 수천을 대기하게 하고, 일괄 색인할 수 있다.</p><p><code class="literal">bulk</code> 요청 body는 아래와 같은데, 약간 색다른 format이다:</p><div class="pre_wrapper"><pre class="programlisting prettyprint lang-js">{ action: { metadata }}\n
+{ request body        }\n
+{ action: { metadata }}\n
+{ request body        }\n
+...</pre></div><p>이 형태는 유효한 한 줄의 JSON document와 줄 바꿈 문자(<code class="literal">\n</code> )와<a id="id-1.4.5.24.5.2" class="indexterm"></a> 함께 결합한 stream과 같다.
+두 가지 중요한 사항을 주의하자:</p><div class="itemizedlist"><ul class="itemizedlist" type="disc"><li class="listitem">
+모든 라인은 <span class="emphasis"><em>마지막 라인을 포함하여</em></span>, 줄 바꿈 문자(<code class="literal">\n</code> )로 끝나야 한다. 이것은 효율적인 라인 구분을 위한 구분자로 사용된다.
+</li><li class="listitem">
+라인은 분석에 방해가 되는, unescaped된 줄 바꿈 문자(<code class="literal">\n</code> )를 포함할 수 없다. JSON이 pretty-print되어서는 <span class="emphasis"><em>안 된다</em></span> 는 것을 의미한다.
+</li></ul></div><div class="tip admon"><div class="icon"><img alt="Tip" src="images/icons/tip.png" /></div><div class="admon_content"><p><a class="link" href="distributed-docs.html#bulk-format" title="Why the Funny Format?">왜 이상한 format인가?</a>에서 왜 bulk API가 이 형식을 사용하는지를 설명할 것이다.</p></div></div><p><code class="literal">action/metadata</code> 라인은 <span class="emphasis"><em>어느 document</em></span> 에 <span class="emphasis"><em>어떤 동작</em></span> 을 할 것인지를 지정하는 것이다.</p><p>+action+은 아래 값 중의 하나여야 한다<a id="id-1.4.5.24.9.1" class="indexterm"></a>.</p><div class="variablelist"><dl class="variablelist"><dt><span class="term">
+<code class="literal">create</code>
+</span></dt><dd>
+    document가 아직 존재하지 않는 경우에만 document를 생성한다. <a class="link" href="data-in-data-out.html#create-doc" title="새로운 document 생성">새로운 document 생성</a>을 참고하자.
+</dd><dt><span class="term">
+<code class="literal">index</code>
+</span></dt><dd>
+    새로운 document를 생성하거나, 기존의 document를 대체한다. <a class="link" href="data-in-data-out.html#index-doc" title="document 색인">document 색인</a>과 <a class="link" href="data-in-data-out.html#update-doc" title="전체 document 업데이트">전체 document 업데이트</a>를 참고하자.
+</dd><dt><span class="term">
+<code class="literal">update</code>
+</span></dt><dd>
+    특정 document에 대한 부분적인 업데이트를 한다. <a class="link" href="data-in-data-out.html#partial-updates" title="document의 부분적인 업데이트">document의 부분적인 업데이트</a>를 참고하자.
+</dd><dt><span class="term">
+<code class="literal">delete</code>
+</span></dt><dd>
+    document를 삭제한다. <a class="link" href="data-in-data-out.html#delete-doc" title="document 삭제">document 삭제</a>를 참고하자.
+</dd></dl></div><p>+metadata+는 색인, 생성, 수정, 삭제하려는 document의 <code class="literal">_index</code>, <code class="literal">_type</code> 그리고 <code class="literal">_id</code> 를 <a id="id-1.4.5.24.11.4" class="indexterm"></a>"metadata지정할 수 있다.</p><p>예를 들자면, <code class="literal">delete</code> 요청은 아래와 같다.</p><div class="pre_wrapper"><pre class="programlisting prettyprint lang-js">{ "delete": { "_index": "website", "_type": "blog", "_id": "123" }}</pre></div><p><code class="literal">요청 body</code> 라인은 document의<a id="id-1.4.5.24.14.2" class="indexterm"></a> <code class="literal">_source</code> (document가 포함하고 있는 field와 value) 자체로 구성되어 있다.
+앞뒤가 맞는 <code class="literal">색인</code> 과 <code class="literal">생성</code> 작업이 필요하다. 반드시 색인할 document를 지정해야 한다.</p><p><code class="literal">update</code> 동작을 위해서도 필요하다. <code class="literal">update</code> API에 전달한 것(<code class="literal">doc</code>, <code class="literal">upsert</code>, <code class="literal">script</code>  등)과 동일한 요청 body로 구성된다. delete를 위해서는 +요청 body+가 필요 없다.</p><div class="pre_wrapper"><pre class="programlisting prettyprint lang-js">{ "create":  { "_index": "website", "_type": "blog", "_id": "123" }}
+{ "title":    "My first blog post" }</pre></div><p><code class="literal">_id</code> 가 지정되지 않으면 ID는 자동으로 생성된다.</p><div class="pre_wrapper"><pre class="programlisting prettyprint lang-js">{ "index": { "_index": "website", "_type": "blog" }}
+{ "title":    "My second blog post" }</pre></div><p>전부 함께 모은 완벽한 <code class="literal">bulk</code> 요청은<a id="id-1.4.5.24.19.2" class="indexterm"></a>
+<a id="id-1.4.5.24.19.3" class="indexterm"></a> 아래와 같다:</p><div class="pre_wrapper"><pre class="programlisting prettyprint lang-js">POST /_bulk
+{ "delete": { "_index": "website", "_type": "blog", "_id": "123" }} <a id="CO14-1"></a><span><img src="images/icons/callouts/1.png" alt="" /></span>
+{ "create": { "_index": "website", "_type": "blog", "_id": "123" }}
+{ "title":    "My first blog post" }
+{ "index":  { "_index": "website", "_type": "blog" }}
+{ "title":    "My second blog post" }
+{ "update": { "_index": "website", "_type": "blog", "_id": "123", "_retry_on_conflict" : 3} }
+{ "doc" : {"title" : "My updated blog post"} } <a id="CO14-2"></a><span><img src="images/icons/callouts/2.png" alt="" /></span></pre></div><div class="sense_widget" data-snippet="snippets/030_Data/55_Bulk.json"></div><div class="calloutlist"><table border="0" summary="Callout list"><tr><td width="5%" valign="top" align="left"><p><a href="#CO14-1"><span><img src="images/icons/callouts/1.png" alt="" /></span></a> </p></td><td valign="top" align="left"><p>
+<code class="literal">delete</code> 는 요청 body를 가지지 않는다. 바로 다른 action이 나온다.
+</p></td></tr><tr><td width="5%" valign="top" align="left"><p><a href="#CO14-2"><span><img src="images/icons/callouts/2.png" alt="" /></span></a> </p></td><td valign="top" align="left"><p>
+마지막에 줄 바꿈 문자를 기억하자.
+</p></td></tr></table></div><p>Elasticsearch의 응답은 요청한 것과 동일한 순서로, 각 요청의 결과를 나열한, <code class="literal">items</code> 배열을<a id="id-1.4.5.24.23.2" class="indexterm"></a><a id="id-1.4.5.24.23.3" class="indexterm"></a>
+<a id="id-1.4.5.24.23.4" class="indexterm"></a> 포함한다.</p><div class="pre_wrapper"><pre class="programlisting prettyprint lang-js">{
+   "took": 4,
+   "errors": false, <a id="CO15-1"></a><span><img src="images/icons/callouts/1.png" alt="" /></span>
+   "items": [
+      {  "delete": {
+            "_index":   "website",
+            "_type":    "blog",
+            "_id":      "123",
+            "_version": 2,
+            "status":   200,
+            "found":    true
+      }},
+      {  "create": {
+            "_index":   "website",
+            "_type":    "blog",
+            "_id":      "123",
+            "_version": 3,
+            "status":   201
+      }},
+      {  "create": {
+            "_index":   "website",
+            "_type":    "blog",
+            "_id":      "EiwfApScQiiy7TIKFxRCTw",
+            "_version": 1,
+            "status":   201
+      }},
+      {  "update": {
+            "_index":   "website",
+            "_type":    "blog",
+            "_id":      "123",
+            "_version": 4,
+            "status":   200
+      }}
+   ]
+}</pre></div><div class="sense_widget" data-snippet="snippets/030_Data/55_Bulk.json"></div><div class="calloutlist"><table border="0" summary="Callout list"><tr><td width="5%" valign="top" align="left"><p><a href="#CO15-1"><span><img src="images/icons/callouts/1.png" alt="" /></span></a> </p></td><td valign="top" align="left"><p>
+모든 하위 요청이 성공적으로 완료되었다.
+</p></td></tr></table></div><p>각 하위 요청은 독립적으로 실행된다. 따라서 어떤 하위 요청의 실패가 다른 것의 성공에 영향을 미치지 않는다.
+어떤 요청이라도 실패하면, top-level의 <code class="literal">error</code> flag가 <code class="literal">true</code> 로 설정되고, 자세한 에러는 관련 있는 요청 아래에 나타난다:</p><div class="pre_wrapper"><pre class="programlisting prettyprint lang-js">POST /_bulk
+{ "create": { "_index": "website", "_type": "blog", "_id": "123" }}
+{ "title":    "Cannot create - it already exists" }
+{ "index":  { "_index": "website", "_type": "blog", "_id": "123" }}
+{ "title":    "But we can update it" }</pre></div><div class="sense_widget" data-snippet="snippets/030_Data/55_Bulk_independent.json"></div><p>응답에서 <code class="literal">123</code>  document가 이미 존재하기 때문에 <code class="literal">create</code> 가 실패했으나, 이어지는 <code class="literal">index</code> 요청(역시 <code class="literal">123</code> )은 성공했다는 것을 볼 수 있다.</p><div class="pre_wrapper"><pre class="programlisting prettyprint lang-js">{
+   "took": 3,
+   "errors": true, <a id="CO16-1"></a><span><img src="images/icons/callouts/1.png" alt="" /></span>
+   "items": [
+      {  "create": {
+            "_index":   "website",
+            "_type":    "blog",
+            "_id":      "123",
+            "status":   409, <a id="CO16-2"></a><span><img src="images/icons/callouts/2.png" alt="" /></span>
+            "error":    "DocumentAlreadyExistsException <a id="CO16-3"></a><span><img src="images/icons/callouts/3.png" alt="" /></span>
+                        [[website][4] [blog][123]:
+                        document already exists]"
+      }},
+      {  "index": {
+            "_index":   "website",
+            "_type":    "blog",
+            "_id":      "123",
+            "_version": 5,
+            "status":   200 <a id="CO16-4"></a><span><img src="images/icons/callouts/4.png" alt="" /></span>
+      }}
+   ]
+}</pre></div><div class="sense_widget" data-snippet="snippets/030_Data/55_Bulk_independent.json"></div><div class="calloutlist"><table border="0" summary="Callout list"><tr><td width="5%" valign="top" align="left"><p><a href="#CO16-1"><span><img src="images/icons/callouts/1.png" alt="" /></span></a> </p></td><td valign="top" align="left"><p>
+하나 이상의 요청이 실패했다.
+</p></td></tr><tr><td width="5%" valign="top" align="left"><p><a href="#CO16-2"><span><img src="images/icons/callouts/2.png" alt="" /></span></a> </p></td><td valign="top" align="left"><p>
+이 요청에 대한 HTTP 상태 code는 `409 CONFLICT`로 나타났다.
+</p></td></tr><tr><td width="5%" valign="top" align="left"><p><a href="#CO16-3"><span><img src="images/icons/callouts/3.png" alt="" /></span></a> </p></td><td valign="top" align="left"><p>
+왜 요청이 실패했는지를 설명하는 에러 메시지
+</p></td></tr><tr><td width="5%" valign="top" align="left"><p><a href="#CO16-4"><span><img src="images/icons/callouts/4.png" alt="" /></span></a> </p></td><td valign="top" align="left"><p>
+두 번째 요청은 HTTP 상태 code `200 OK`로 성공했다.
+</p></td></tr></table></div><p>즉,<a id="id-1.4.5.24.34.1" class="indexterm"></a>
+<a id="id-1.4.5.24.34.2" class="indexterm"></a> bulk 요청은 원자성 을 보장하지 않는다.
+transaction을 구현하는데 사용할 수 없다. 각 요청은 개별적으로 처리되기 때문에, 어떤 요청의 성공, 실패는 다른 요청과 무관하다.</p><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="_반복하지_마라"></a>반복하지 마라</h3></div></div></div><p>동일한 <code class="literal">index</code>, 동일한 <code class="literal">type</code> 에 log 데이터를 일괄 색인 한다고 가정해 보자. 모든 document에 동일한
+metadata를 <a id="id-1.4.5.24.35.2.3" class="indexterm"></a>
+<a id="id-1.4.5.24.35.2.4" class="indexterm"></a><a id="id-1.4.5.24.35.2.5" class="indexterm"></a>
+<a id="id-1.4.5.24.35.2.6" class="indexterm"></a>지정하는 것은 낭비이다.
+대신, <code class="literal">mget</code>  API처럼 <code class="literal">bulk</code> 요청은 URL에 기본 <code class="literal">/_index</code> 또는 <code class="literal">/_index/_type</code> 을 사용할 수 있다:</p><div class="pre_wrapper"><pre class="programlisting prettyprint lang-js">POST /website/_bulk
+{ "index": { "_type": "log" }}
+{ "event": "User logged in" }</pre></div><div class="sense_widget" data-snippet="snippets/030_Data/55_Bulk_defaults.json"></div><p>URL에 있는 값들은 기본값으로 사용이 되지만, metadata 라인에 <code class="literal">_index</code>, <code class="literal">_type</code> 을 사용할 수 있다:</p><div class="pre_wrapper"><pre class="programlisting prettyprint lang-js">POST /website/log/_bulk
+{ "index": {}}
+{ "event": "User logged in" }
+{ "index": { "_type": "blog" }}
+{ "title": "Overriding the default type" }</pre></div><div class="sense_widget" data-snippet="snippets/030_Data/55_Bulk_defaults.json"></div></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="_얼마나_커야_너무_큰_것인가"></a>얼마나 커야 너무 큰 것인가?</h3></div></div></div><p>전체 bulk 요청은 요청을 받을 node의 메모리에 load되어야 한다. 따라서 요청이 클수록, 다른 요청들이 이용할 메모리가 줄어든다.<a id="id-1.4.5.24.36.2.1" class="indexterm"></a>
+<a id="id-1.4.5.24.36.2.2" class="indexterm"></a>
+bulk 요청을 위한 적절한 크기가 있다. 그 크기 이상이면 성능은 나아지지 않고, 오히려 떨어진다. 그러나, 적절한 크기는 고정된 숫자가 아니다.
+전적으로 H/W, document의 크기와 복잡함 그리고 색인/검색의 부하에 달려있다.</p><p>다행히도 _최적의 지점_은 쉽게 찾을 수 있다. 크기를 점점 증가시키면서, 일괄 처리로, 일반적인 document를 색인 해 보자.
+성능이 내려가기 시작할 때가 크기가 너무 큰 것이다. 일괄 처리를 시작하기 좋은 지점은 1000 ~ 5000건의 document 작업이다.
+만약 document가 매우 크다면, 조금 더 작은 크기로 하기 바란다.</p><p>bulk 요청의 물리적인 크기를 안다는 것은 때때로 유용하다. 1KB짜리 document 1000건은 1MB짜리 document 1000건과 매우 다르다.
+시작하기 알맞은 bulk size는 5 ~ 15MB 정도이다.</p></div></div></div><div class="navfooter"><span class="prev"><a href="distributed-cluster.html">
+              « 
+              Cluster 내부 동작</a>
+           
+        </span><span class="next">
+           
+          <a href="distributed-docs.html">Distributed Document Store
+               »
+            </a></span></div>
+<!-- end body -->
+
+            </section>
+
+            <div id="rtpcontainer"
+        >
+	<h3>Top Videos</h3>
+	<ul class="lists">
+		<li><a href="https://www.elastic.co/webinars/get-started-with-elasticsearch/?baymax=default&elektra=docs&storm=top-video">Getting Started</a></li>
+		<li><a href="http://www.elastic.co/webinars/elasticsearch-performance-optimization-tale-two-tickets/?elektra=docs">Scaling</a></li>
+		<li><a href="http://www.elastic.co/webinars/shield-securing-your-data-in-elasticsearch/?elektra=docs">Security</a></li>
+	</ul>
+</div>
+
+
+	  	
+
+
+
+
+<script src="//app-lon02.marketo.com/js/forms2/js/forms2.min.js"></script>
+	<!-- subscribe-newsletter -->
+	<div id="subscribe-newsletter">
+		<div class="container">
+			<div class="row">
+				<div class="12u">
+					<div class="subscribe-wrapper" id="rtp-newsletter">
+						<header>
+							<h3>Subscribe to our newsletter</h3>
+						</header>
+						<div class="subscribe-form">
+							<form id="mktoForm_1398" class="container"></form>
+							<div class="form_thanks hide">
+								
+									<p>Thanks for subscribing! We'll keep you updated with new releases.</p>
+								
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+  	<!-- Footer -->
+	<div id="footer-wrapper">
+		<section id="footer" class="container">
+			<div class="row">
+				<div class="12u">
+					<!-- Copyright -->
+					<div id="copyright">
+	<p>
+		© 2016. All Rights Reserved - Elasticsearch
+	</p>
+	<ul class="links">
+		<li>Elasticsearch is a trademark of Elasticsearch BV, registered in the U.S. and in other countries</li>
+		<li><a href="/legal/trademarks" id="footer_trademarks">Trademarks</a></li>
+		<li><a href="/legal/terms-of-use" id="footer_terms">Terms</a></li>
+		<li><a href="/legal/privacy-policy" id="footer_privacy">Privacy</a></li>
+	</ul>
+	<p>
+		Apache, Apache Lucene, Apache Hadoop, Hadoop, HDFS and the yellow elephant logo are trademarks of the <a href="http://www.apache.org/" target="_blank">Apache Software Foundation</a> in the United States and/or other&nbsp;countries.
+	</p>
+</div><!--<div class="row">
+{replace4}
+</div>-->
+				</div>
+			</div>					
+		</section>
+	</div>
+			
+	<!-- Social Media -->
+	<div id="socialmedia-wrapper">
+		<section id="socialmedia" class="container">
+			<!-- social icons -->
+			<div id="social">
+				<ul class="links">
+					
+						<li class="facebook grayscale"><a href="http://www.facebook.com/elastic.co" target="_blank" id="footer_facebook"></a></li>
+					
+						<li class="twitter grayscale"><a href="https://www.twitter.com/elastic" target="_blank" id="footer_twitter"></a></li>
+					
+						<li class="linkedin grayscale"><a href="https://www.linkedin.com/company/elastic-co" target="_blank" id="footer_linkedin"></a></li>
+					
+						<li class="xing grayscale"><a href="https://www.xing.com/companies/elastic.co" target="_blank" id="footer_xing"></a></li>
+					
+						<li class="youtube grayscale"><a href="https://www.youtube.com/user/elasticsearch" target="_blank" id="footer_youtube"></a></li>
+					
+				</ul>
+			</div>
+		</section>
+	</div>
+
+
+<style type="text/css">
+	
+		.facebook{background:url("https://static-www.elastic.co/assets/bltda40eebd7c7cae9a/facebook.svg?q=100") no-repeat;}		
+	
+		.twitter{background:url("https://static-www.elastic.co/assets/bltfd3b1511512f4632/twitter.svg?q=100") no-repeat;}		
+	
+		.linkedin{background:url("https://static-www.elastic.co/assets/blt6b4f6f8d6b96f814/linkedin.svg?q=100") no-repeat;}		
+	
+		.xing{background:url("https://static-www.elastic.co/assets/blta76b2ae2b2f10a98/xing.svg?q=100") no-repeat;}		
+	
+		.youtube{background:url("https://static-www.elastic.co/assets/blt5761648c9581fb53/youtube.svg?q=100") no-repeat;}		
+	
+</style>
+
+<script>
+MktoForms2.loadForm("//app-lon02.marketo.com", "813-MAM-392", 1398,function(form){
+	form.onSuccess(function(form){
+		$('#mktoForm_1398').css('display','none');
+		$('#subscribe-newsletter header').hide();
+		$('#mktoForm_1398').siblings('.form_thanks').removeClass('hide')
+		dataLayer.push({'event': 'mktoFormSubmit'});
+	    return false;
+  	});
+});
+</script>	
+
+  	</div>
+  	<!-- <div class="preloader">
+    	<div class="status"></div>
+	</div> -->
+  	<style></style>
+   	<script type="text/javascript">
+	var suggestionsUrl = "https://search.elastic.co/suggest";	
+</script>
+<script src="https://static-www.elastic.co/static/js/jquery.autocomplete.js?q=100"></script>
+<script src="https://static-www.elastic.co/static/js/script.js?q=100"></script>
+
+
+   	
+   	
+   	
+   	<script type="application/ld+json">
+	
+		
+	
+	{
+	  	"@context": "http://schema.org",
+	  	"@type": "Organization",
+	  	"name" : "Elastic",
+	  	"url": "https://www.elastic.co/",
+	  	"logo": "https://www.elastic.co/static/img/elastic-logo-200.png",
+		"sameAs" : [ "https://www.facebook.com/elastic.co",
+			"https://twitter.com/elastic",
+			"https://plus.google.com/105178019064686397293",
+			"https://www.youtube.com/user/elasticsearch",
+			"https://www.linkedin.com/company/elasticsearch"
+		],
+	  	"potentialAction": {
+	    	"@type": "SearchAction",
+	    	"target": "https://www.elastic.co/search?q={query_string}",
+	    	"query-input": "required name=query_string"
+	  	}
+	}
+</script>	
+
+            <script type="text/javascript" src="docs.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.1/jquery.cookie.min.js"></script>
+<script type='text/javascript' src='https://google-code-prettify.googlecode.com/svn/loader/run_prettify.js'></script>
+
+            </body>
+        
+

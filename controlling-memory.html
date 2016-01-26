@@ -1,0 +1,1477 @@
+
+<!DOCTYPE HTML>
+<html lang="en-us">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>지연시간 과 메모리사용 제어</title><meta name="generator" content="DocBook XSL Stylesheets V1.78.1" /><link rel="home" href="index.html" title="Elasticsearch: The Definitive Guide" /><link rel="up" href="aggregations.html" title="Aggregations" /><link rel="prev" href="significant-terms.html" title="의미 있는 단어" /><link rel="next" href="_맺음말.html" title="맺음말" />
+  
+ 	<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+
+ 	<!-- RTP tag --> 
+	<script type='text/javascript' async>
+	(function(c,h,a,f,i,e){c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
+	 c[a].a=i;c[a].e=e;var g=h.createElement("script");g.async=true;g.type="text/javascript";
+	 g.src=f+'?aid='+i;var b=h.getElementsByTagName("script")[0];b.parentNode.insertBefore(g,b);
+	 })(window,document,"rtp","//sjrtp2-cdn.marketo.com/rtp-api/v1/rtp.js","elasticco");
+	 
+	rtp('send','view');
+	rtp('get', 'campaign',true);
+	</script>
+	<!-- End of RTP tag -->
+	
+	
+ 	<link rel="apple-touch-icon" sizes="57x57"  href="https://www.elastic.co/apple-icon-57x57.png?change=123">
+<link rel="apple-touch-icon" sizes="60x60"  href="https://www.elastic.co/apple-icon-60x60.png?change=123">
+<link rel="apple-touch-icon" sizes="72x72"  href="https://www.elastic.co/apple-icon-72x72.png?change=123">
+<link rel="apple-touch-icon" sizes="76x76"  href="https://www.elastic.co/apple-icon-76x76.png?change=123">
+<link rel="apple-touch-icon" sizes="114x114"  href="https://www.elastic.co/apple-icon-114x114.png?change=123">
+<link rel="apple-touch-icon" sizes="120x120"  href="https://www.elastic.co/apple-icon-120x120.png?change=123">
+<link rel="apple-touch-icon" sizes="144x144"  href="https://www.elastic.co/apple-icon-144x144.png?change=123">
+<link rel="apple-touch-icon" sizes="152x152"  href="https://www.elastic.co/apple-icon-152x152.png?change=123">
+<link rel="apple-touch-icon" sizes="180x180"  href="https://www.elastic.co/apple-icon-180x180.png?change=123">
+<link rel="icon" type="image/png" sizes="192x192"   href="https://www.elastic.co/android-icon-192x192.png?change=123">
+<link rel="icon" type="image/png" sizes="32x32"  href="https://www.elastic.co/favicon-32x32.png?change=123">
+<link rel="icon" type="image/png" sizes="96x96"  href="https://www.elastic.co/favicon-96x96.png?change=123">
+<link rel="icon" type="image/png" sizes="16x16"  href="https://www.elastic.co/favicon-16x16.png?change=123">
+<link rel="manifest"  href="https://www.elastic.co/manifest.json">
+<meta name="msapplication-TileColor" content="#ffffff">
+<meta name="msapplication-TileImage" content="/ms-icon-144x144.png">
+<meta name="theme-color" content="#ffffff">
+
+<!-- DC tags section -->
+<link rel="schema.DC" href="http://purl.org/dc/elements/1.1/" >
+<link rel="schema.DCTERMS" href="http://purl.org/dc/terms/" >
+<meta name="DC.title" content="Guide template" >
+
+<!-- end DC tags -->
+
+	<meta name="description" content="" />
+
+	<link rel="canonical" href="" />
+
+	<meta property="og:image" content="https://www.elastic.co/static/img/elastic-logo-200.png" />
+	
+
+
+	
+	<link type="text/css" rel="stylesheet" href="https://static-www.elastic.co/static/css/skel.css?q=100" />
+	<link type="text/css" rel="stylesheet" href="https://static-www.elastic.co/static/css/style.css?q=100" />	
+	<script src="https://static-www.elastic.co/static/js/skel.min.js?q=100"></script>
+	
+		<script type="text/javascript">form_name = "" ; cdn_url="https://static-www.elastic.co";cdn_slug = "100"</script>
+	
+	<script src="https://static-www.elastic.co/static/js/init.js?q=100"></script>
+	<script src="https://static-www.elastic.co/static/js/jquery.min.js?q=100"></script>
+	<script src="https://static-www.elastic.co/static/js/jquery.cookie.js?q=100"></script>
+	<!--<script type="text/javascript">
+	    (function() {
+	        var path = '//easy.myfonts.net/v2/js?sid=10336(font-family=Avenir+35+Light)&sid=10338(font-family=Avenir+55+Roman)&sid=10340(font-family=Avenir+85+Heavy)&sid=10344(font-family=Avenir+65+Medium)&key=nAD6PCOPrX',
+	            protocol = ('https:' == document.location.protocol ? 'https:' : 'http:'),
+	            trial = document.createElement('script');
+	        trial.type = 'text/javascript';
+	        trial.async = true;
+	        trial.src = protocol + path;
+	        var head = document.getElementsByTagName("head")[0];
+	        head.appendChild(trial);
+	    })();
+	</script>-->
+
+	
+	<link type="text/css" rel="stylesheet"  href="https://www.elastic.co/static/css/prettify.css" />
+	<script type="text/javascript"  src="https://www.elastic.co/static/js/prettify.js"></script>
+
+
+
+<link rel="stylesheet" type="text/css" href="styles.css" />
+
+</head>
+<body >
+	<!-- Google Tag Manager -->
+	<script>dataLayer = [];</script><noscript><iframe src="//www.googletagmanager.com/ns.html?id=GTM-58RLH5"
+													  height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+	<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+			new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+			j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+			'//www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+	})(window,document,'script','dataLayer','GTM-58RLH5');</script>
+	<!-- End Google Tag Manager -->
+	
+	<div class="header-cont">
+		<div id="header-wrapper">
+			
+
+
+	<script  src="https://www.elastic.co/static/js/jquery.tokeninput.js?change=123"></script>
+	<link rel="stylesheet" type="text/css"  href="https://www.elastic.co/static/css/token-input.css">
+
+<div class="shortcuts-wrapper">
+	<div class="container">
+		<!-- Shortcuts -->
+		<nav id="shortcuts">
+			<ul class="links">
+				
+					<li class="shortcut-1">
+						<a href="/downloads" id="header_downloads" >
+							<span class="txt">downloads</span>	
+						</a>
+					</li>
+				
+					<li class="shortcut-2">
+						<a href="/guide" id="header_guide" >
+							<span class="txt">docs</span>	
+						</a>
+					</li>
+				
+					<li class="shortcut-3">
+						<a href="/subscriptions" id="header_subscriptions" >
+							<span class="txt">support</span>	
+						</a>
+					</li>
+				
+					<li class="shortcut-4">
+						<a href="https://discuss.elastic.co" id="header_discuss" target="_blank">
+							<span class="txt">discuss</span>	
+						</a>
+					</li>
+				
+					<li class="shortcut-5">
+						<a href="/contact" id="header_contact" >
+							<span class="txt">contact</span>	
+						</a>
+					</li>
+				
+			</ul>
+		</nav>
+		<div class="languages-wrapper">
+			<div class="global-language">
+				<ul class="language">
+					<!-- <li class="active-language"><a class="active" href="#">EN</a></li> -->
+					
+						<li><a href="#">EN</a></li>
+					
+				</ul>
+				<ul class="all-languages">
+					
+						
+						<li><a href="/guide_template">English</a></li>
+					
+						
+						<li><a href="/fr/guide_template">French</a></li>
+					
+						
+						<li><a href="/de/guide_template">German</a></li>
+					
+						
+						<li><a href="/jp/guide_template">Japanese</a></li>
+					
+						
+						<li><a href="/kr/guide_template">Korean</a></li>
+					
+				</ul>
+			</div>
+		</div>
+	</div>
+</div>
+<div class="container w100">
+	<div class="row 0%">
+		<div class="12u">
+			
+
+<section class="first-container desktop-main-nav">
+	<div class="row 0%">
+		<div class="11u 6u(small) 6u(xsmall)">
+			<div id="elastic">
+				<h1>
+					<a href="/">
+						<div id="elastic-logo">
+						<svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+	 viewBox="0 0 400 130" preserveAspectRatio="xMinYMin meet" enable-background="new 0 0 400 130" xml:space="preserve">
+    <g>
+    	<g>
+    		<path fill="#FFFFFF" d="M122.5,67.8c0-10.3-6.4-19.2-15.9-22.7c0.4-2.2,0.6-4.3,0.6-6.6c0-19.1-15.5-34.6-34.6-34.6
+    			c-11.1,0-21.5,5.3-28,14.4c-3.2-2.5-7.1-3.8-11.2-3.8c-10.1,0-18.4,8.2-18.4,18.4c0,2.2,0.4,4.4,1.1,6.4C6.5,42.6,0,51.8,0,62
+    			c0,10.3,6.4,19.3,16,22.8c-0.4,2.1-0.6,4.3-0.6,6.6c0,19,15.5,34.5,34.5,34.5c11.2,0,21.5-5.4,28-14.4c3.2,2.5,7.2,3.9,11.3,3.9
+    			c10.1,0,18.4-8.2,18.4-18.4c0-2.2-0.4-4.4-1.1-6.4C115.9,87.2,122.5,78,122.5,67.8z"/>
+    		<g>
+    			<path fill="#F4BD19" d="M47.9,56.3l27.3,12.5l27.6-24.2c0.4-2,0.6-4,0.6-6.1c0-17-13.8-30.8-30.8-30.8c-10.2,0-19.7,5-25.4,13.4
+    				l-4.6,23.8L47.9,56.3z"/>
+    		</g>
+    		<g>
+    			<path fill="#3CBEB1" d="M19.6,85.2c-0.4,2-0.6,4.1-0.6,6.2c0,17,13.9,30.9,30.9,30.9c10.3,0,19.8-5.1,25.6-13.5L80,85l-6.1-11.6
+    				L46.5,60.9L19.6,85.2z"/>
+    		</g>
+    		<g>
+    			<path fill="#E9478C" d="M19.4,37.9l18.7,4.4L42.3,21c-2.6-2-5.7-3-9-3c-8.1,0-14.8,6.6-14.8,14.8C18.5,34.5,18.8,36.3,19.4,37.9z
+    				"/>
+    		</g>
+    		<g>
+    			<path fill="#2C458F" d="M17.8,42.4C9.4,45.1,3.6,53.2,3.6,62c0,8.6,5.3,16.3,13.3,19.3l26.3-23.8l-4.8-10.3L17.8,42.4z"/>
+    		</g>
+    		<g>
+    			<path fill="#95C63D" d="M80.3,108.7c2.6,2,5.7,3.1,8.9,3.1c8.1,0,14.8-6.6,14.8-14.8c0-1.8-0.3-3.5-0.9-5.1l-18.7-4.4L80.3,108.7
+    				z"/>
+    		</g>
+    		<g>
+    			<path fill="#176655" d="M84.1,82.6l20.6,4.8c8.4-2.8,14.2-10.8,14.2-19.6c0-8.6-5.3-16.2-13.3-19.3l-27,23.6L84.1,82.6z"/>
+    		</g>
+    	</g>
+    	<path d="M162.8,76.3c0,0.1,0,0.6,0.1,1.4c0.1,0.8,0.3,1.8,0.6,3c0.3,1.1,0.8,2.4,1.4,3.7c0.6,1.3,1.4,2.5,2.5,3.6
+    		c1,1.1,2.3,2,3.8,2.7c1.5,0.7,3.4,1.1,5.6,1.1c1.8,0,3.3-0.1,4.6-0.4c1.3-0.3,2.4-0.7,3.4-1.3c1-0.6,1.9-1.3,2.7-2.2
+    		c0.8-0.9,1.6-1.9,2.4-3.1c0.5-0.7,1-1.2,1.6-1.5c0.6-0.3,1.2-0.4,1.8-0.4c1,0,2,0.4,2.8,1.1c0.9,0.7,1.3,1.7,1.3,2.8
+    		c0,0.7-0.4,1.7-1.1,3.1c-0.7,1.4-1.9,2.8-3.6,4.1c-1.6,1.4-3.7,2.6-6.3,3.6c-2.6,1-5.7,1.5-9.5,1.5c-3.8,0-7.2-0.7-10.2-2.1
+    		c-3-1.4-5.5-3.2-7.5-5.6c-2-2.3-3.6-5-4.7-8.1c-1.1-3.1-1.6-6.3-1.6-9.7c0-3.5,0.5-6.8,1.6-9.9c1.1-3.1,2.7-5.8,4.7-8.1
+    		c2-2.3,4.5-4.1,7.4-5.5c2.9-1.3,6.1-2,9.6-2c3.3,0,6.3,0.5,9.2,1.5c2.8,1,5.3,2.4,7.4,4.3c2.1,1.9,3.7,4.1,5,6.8
+    		c1.2,2.7,1.8,5.8,1.8,9.2c0,2.1-0.5,3.7-1.6,4.8c-1,1.1-2.2,1.6-3.6,1.6H162.8z M170.9,56.4c-1.5,0.6-2.7,1.4-3.7,2.4
+    		c-1,0.9-1.8,2-2.4,3.1c-0.6,1.1-1,2.2-1.3,3.2c-0.3,1-0.5,1.8-0.5,2.5c-0.1,0.7-0.1,1.1-0.1,1.2h27.9c0-1.8-0.3-3.5-0.9-5.1
+    		c-0.6-1.6-1.5-3-2.6-4.3c-1.2-1.2-2.7-2.2-4.5-3c-1.8-0.7-4-1.1-6.5-1.1C174.2,55.5,172.4,55.8,170.9,56.4z"/>
+    	<path d="M214.3,94.6c0,1.3-0.4,2.3-1.3,3.2c-0.9,0.9-1.9,1.3-3.2,1.3c-1.3,0-2.3-0.4-3.2-1.3c-0.9-0.9-1.3-2-1.3-3.2V35.1
+    		c0-1.3,0.4-2.3,1.3-3.2c0.9-0.9,2-1.3,3.2-1.3c1.3,0,2.3,0.4,3.2,1.3c0.9,0.9,1.3,1.9,1.3,3.2V94.6z"/>
+    	<path d="M229.8,63.5c-0.6,0.3-1.2,0.5-1.9,0.5c-1.2,0-2.2-0.4-3.2-1.1c-1-0.7-1.5-1.8-1.5-3.1c0-0.5,0.1-1.1,0.4-1.9
+    		c0.5-1.2,1.2-2.4,2.1-3.6c0.9-1.2,2-2.2,3.5-3.1s3.3-1.7,5.4-2.2c2.2-0.5,4.8-0.8,7.9-0.8c5.9,0,10.5,1.2,14,3.5
+    		c3.5,2.3,5.2,5.8,5.2,10.3v32.8c0,1.3-0.4,2.3-1.3,3.2c-0.9,0.9-1.9,1.3-3.2,1.3c-1.3,0-2.3-0.4-3.2-1.3c-0.9-0.9-1.3-2-1.3-3.2v-2
+    		c-1.2,2-4.7,4.5-7.5,5.3c-2.8,0.8-5.7,1.2-8.8,1.2c-2,0-3.9-0.3-5.9-0.8c-2-0.5-3.8-1.4-5.3-2.5c-1.6-1.1-2.9-2.6-3.8-4.3
+    		c-1-1.7-1.5-3.8-1.5-6.2c0-2.8,0.5-5.7,1.6-7.5c1.1-1.9,2.6-3.4,4.4-4.6c1.8-1.2,3.9-2.1,6.3-2.8c2.4-0.6,4.9-1.1,7.5-1.4
+    		c3-0.3,5.4-0.7,7.2-1.2c1.7-0.4,3-0.9,3.9-1.5c0.9-0.6,1.4-1.2,1.6-2c0.2-0.7,0.3-1.6,0.3-2.5c0-1.1-0.3-2-0.9-2.8
+    		c-0.6-0.8-1.4-1.5-2.4-2c-1-0.5-2.1-0.9-3.3-1.2s-2.4-0.4-3.5-0.4c-2.1,0-3.7,0.2-5,0.5c-1.3,0.3-2.3,0.8-3.1,1.4
+    		c-0.8,0.6-1.5,1.3-1.9,2.1c-0.5,0.8-0.9,1.6-1.3,2.5C230.9,62.6,230.4,63.1,229.8,63.5z M250.6,74.4c-1.1,0.3-2.4,0.6-3.8,0.8
+    		c-1.5,0.2-3,0.4-4.6,0.6c-1.6,0.2-3.1,0.5-4.6,0.9c-1.5,0.3-2.8,0.8-4,1.5c-1.2,0.7-2.2,1.5-2.9,2.5c-0.7,1-1.1,3-1.1,4.6
+    		c0,1.3,0.3,2.3,0.8,3.1c0.5,0.8,1.2,1.5,2.1,2c0.9,0.5,1.8,0.8,2.9,1c1.1,0.2,2.2,0.3,3.3,0.3c1.7,0,3.3-0.2,5-0.6
+    		c1.7-0.4,3.2-1,4.5-1.9s2.4-2,3.3-3.5c0.8-1.4,1.2-3.8,1.2-5.9v-6.1L250.6,74.4z"/>
+    	<path d="M307.6,90.9c-1.1,2-2.7,3.6-4.6,4.8s-4.1,2.1-6.6,2.7c-2.5,0.5-5.2,0.8-7.9,0.8c-3.9,0-7.2-0.6-9.9-1.8
+    		c-2.7-1.2-4.9-2.6-6.5-4.1c-1.7-1.6-2.9-3.1-3.7-4.7c-0.7-1.6-1.1-2.7-1.1-3.5c0-1.3,0.5-2.4,1.4-3.2c0.9-0.8,2-1.2,3.1-1.2
+    		c0.7,0,1.3,0.2,2,0.6c0.6,0.4,1.1,1,1.5,1.9c1,2.5,2.5,4.5,4.7,6.2c2.2,1.7,5.2,2.5,9.3,2.5c1.8,0,3.4-0.2,4.7-0.6
+    		c1.3-0.4,2.4-1,3.2-1.7c0.8-0.7,1.4-1.5,1.9-2.4c0.4-0.9,0.6-1.8,0.6-2.8c0-2-0.8-3.4-2.3-4.4c-1.5-1-3.5-1.7-5.8-2.3
+    		c-2.3-0.6-4.8-1.1-7.5-1.6c-2.7-0.5-5.2-1.2-7.5-2.2c-2.3-0.9-4.2-2.3-5.8-4c-1.6-1.8-2.3-4.2-2.3-7.3c0-4.5,1.6-8,4.9-10.5
+    		c3.3-2.5,7.8-3.8,13.7-3.8c3.3,0,6,0.3,8.3,1c2.2,0.7,4.1,1.6,5.5,2.7c0.6,0.5,1.2,1,1.8,1.7c0.6,0.7,1.2,1.4,1.8,2.2
+    		c0.6,0.8,1,1.5,1.4,2.3c0.4,0.7,0.6,1.4,0.6,2c0,1.3-0.5,2.4-1.6,3.1c-1,0.8-2.2,1.2-3.4,1.2c-0.7,0-1.5-0.1-2.1-0.6
+    		c-0.6-0.6-1-1.3-1.3-1.8c-0.5-1.1-1.1-2-1.7-2.8c-0.5-0.8-1.2-1.5-2-2c-0.8-0.5-1.8-0.9-3-1.2c-1.2-0.3-2.7-0.4-4.4-0.4
+    		c-3.5,0-6,0.6-7.6,1.7c-1.6,1.1-2.4,2.5-2.4,4.2c0,1.3,0.5,2.3,1.4,3.1c0.9,0.8,2.1,1.4,3.7,2c1.5,0.5,3.3,1,5.2,1.4
+    		c2,0.4,3.9,0.8,5.9,1.3c2,0.5,4,1.1,5.9,1.7c1.9,0.7,3.7,1.6,5.2,2.7c1.5,1.1,2.7,2.5,3.7,4.1c0.9,1.6,1.4,3.6,1.4,6
+    		C309.4,86.4,308.8,88.9,307.6,90.9z"/>
+    	<path d="M327.4,48.8h4.7c1.1,0,2,0.4,2.8,1.2c0.8,0.8,1.2,1.7,1.2,2.8c0,1.1-0.4,2.1-1.2,2.8s-1.7,1.1-2.8,1.1h-4.7v37.9
+    		c0,1.3-0.4,2.3-1.3,3.2c-0.9,0.9-2,1.3-3.2,1.3c-1.3,0-2.3-0.4-3.2-1.3c-0.9-0.9-1.3-2-1.3-3.2V56.7h-4.6c-1.1,0-2-0.4-2.8-1.1
+    		c-0.8-0.7-1.2-1.7-1.2-2.8c0-1.1,0.4-2,1.2-2.8c0.8-0.8,1.7-1.2,2.8-1.2h4.6V39c0-1.3,0.4-2.3,1.3-3.2s1.9-1.3,3.2-1.3
+    		c1.3,0,2.3,0.4,3.2,1.3s1.3,1.9,1.3,3.2V48.8z"/>
+    	<path d="M341.5,32.1c1-1,2.2-1.5,3.7-1.5c1.4,0,2.6,0.5,3.6,1.5c1,1,1.5,2.2,1.5,3.6c0,1.4-0.5,2.6-1.5,3.6c-1,1-2.2,1.5-3.6,1.5
+    		c-1.4,0-2.7-0.5-3.7-1.5c-1-1-1.5-2.2-1.5-3.6C340,34.2,340.5,33,341.5,32.1z M349.6,94.6c0,1.3-0.4,2.3-1.3,3.2
+    		c-0.9,0.9-1.9,1.3-3.2,1.3c-1.3,0-2.3-0.4-3.2-1.3c-0.9-0.9-1.3-2-1.3-3.2V53.3c0-1.3,0.4-2.3,1.3-3.2c0.9-0.9,2-1.3,3.2-1.3
+    		c1.3,0,2.3,0.4,3.2,1.3c0.9,0.9,1.3,2,1.3,3.2V94.6z"/>
+    	<path d="M369.1,97.3c-2.9-1.2-5.4-3-7.5-5.2c-2.1-2.2-3.8-4.9-5-8.1c-1.2-3.1-1.8-6.6-1.8-10.4c0-3.8,0.6-7.3,1.8-10.5
+    		c1.2-3.1,2.9-5.8,5-8.1c2.1-2.2,4.6-4,7.5-5.2c2.9-1.2,6-1.9,9.4-1.9c3.4,0,6.4,0.5,9,1.5c2.5,1,4.6,2.2,6.2,3.6
+    		c1.6,1.4,3.2,2.9,4,4.4c0.5,0.9,0.9,1.5,0.9,2.6c0,1.3-0.5,2.3-1.4,3.1c-0.9,0.7-2,1.1-3.1,1.1c-0.8,0-1.6-0.2-2.2-0.6
+    		c-0.7-0.4-1.2-1.3-1.8-2.1c-1-1.4-0.5-0.6-1.1-1.5c-0.7-0.9-1.5-1.6-2.5-2.3c-1-0.7-2.2-1.2-3.5-1.6c-1.4-0.4-2.8-0.6-4.4-0.6
+    		c-1.8,0-3.5,0.3-5.3,1c-1.8,0.7-3.3,1.7-4.7,3.1c-1.4,1.4-2.5,3.3-3.4,5.6s-1.3,5.1-1.3,8.4c0,3.3,0.4,6.1,1.3,8.4s2,4.2,3.4,5.6
+    		c1.4,1.4,3,2.5,4.7,3.1c1.8,0.7,3.5,1,5.3,1c1.6,0,3.1-0.2,4.4-0.6c1.3-0.4,2.5-0.9,3.5-1.6c1-0.7,1.8-1.5,2.5-2.3
+    		c0.7-0.9,1.1-1.8,1.4-2.7c0.3-1,0.8-1.7,1.5-2.1c0.7-0.4,1.4-0.6,2.2-0.6c1.1,0,2.2,0.4,3.1,1.1c0.9,0.7,1.4,1.7,1.4,3
+    		c0,0.6-0.3,1.7-0.9,3.1c-0.6,1.5-1.6,2.9-3.1,4.4c-1.5,1.5-3.5,2.8-6.2,4c-2.6,1.1-6,1.7-10,1.7C375.1,99.2,372,98.5,369.1,97.3z"
+    		/>
+    </g>
+</svg>
+						</div>
+					</a>
+				</h1>
+			</div>
+			<nav id="nav">
+				<ul>
+					
+					<li>
+						
+							
+						
+						<a href="/products" id="nav_products"   >Products</a>
+						
+						<ul class="dropdown">
+							
+								<li><a href="/products/elasticsearch" id="nav_elasticsearch" >elasticsearch</a></li>								
+							
+								<li><a href="/found" id="nav_hosted-elasticsearch" >elasticsearch as a service</a></li>								
+							
+								<li><a href="/products/logstash" id="nav_logstash" >logstash</a></li>								
+							
+								<li><a href="/products/kibana" id="nav_kibana" >kibana</a></li>								
+							
+								<li><a href="/products/beats" id="nav_beats" >beats</a></li>								
+							
+								<li><a href="/products/watcher" id="nav_watcher" >watcher</a></li>								
+							
+								<li><a href="/products/shield" id="nav_shield" >shield</a></li>								
+							
+								<li><a href="/products/marvel" id="nav_marvel" >marvel</a></li>								
+							
+								<li><a href="/products/hadoop" id="nav_hadoop" >hadoop</a></li>								
+							
+								<li><a href="/downloads" id="nav_downloads" >downloads</a></li>								
+								
+						</ul>							
+					</li>
+					
+					<li>
+						
+							
+						
+						<a href="/subscriptions" id="nav_subscriptions"   >Subscriptions</a>
+						
+						<ul class="dropdown">
+								
+						</ul>							
+					</li>
+					
+					<li>
+						
+							
+						
+						<a href="/learn" id="nav_learn"   >Learn</a>
+						
+						<ul class="dropdown">
+							
+								<li><a href="/guide" id="nav_guide" >docs</a></li>								
+							
+								<li><a href="/videos" id="nav_videos" >videos</a></li>								
+							
+								<li><a href="/training" id="nav_training" >training</a></li>								
+							
+								<li><a href="/services" id="nav_services" >services</a></li>								
+							
+								<li><a href="/blog" id="nav_learn_blog" >blog</a></li>								
+							
+								<li><a href="/elasticon" id="nav_learn_elasticon" >elastic{ON}</a></li>								
+								
+						</ul>							
+					</li>
+					
+					<li>
+						
+							
+						
+						<a href="/community" id="nav_community"   >Community</a>
+						
+						<ul class="dropdown">
+							
+								<li><a href="/community/meetups" id="nav_meetups" >meetups</a></li>								
+							
+								<li><a href="https://discuss.elastic.co" id="nav_discuss" target="_blank">discuss</a></li>								
+							
+								<li><a href="/community/codeofconduct" id="nav_codeofconduct" >code of conduct</a></li>								
+								
+						</ul>							
+					</li>
+					
+					<li>
+						
+							
+						
+						<a href="/use-cases" id="nav_usecases"   >Use Cases</a>
+						
+						<ul class="dropdown">
+								
+						</ul>							
+					</li>
+					
+					<li>
+						
+							
+						
+						<a href="/blog" id="nav_blog"   >Blog</a>
+						
+						<ul class="dropdown">
+							
+								<li><a href="/blog/category/news" id="blog_news" >News</a></li>								
+							
+								<li><a href="/blog/category/engineering" id="blog_engineering" >Engineering</a></li>								
+							
+								<li><a href="/blog/category/user-stories" id="blog_user-stories" >User Stories</a></li>								
+							
+								<li><a href="/blog/category/releases" id="blog_releases" >Releases</a></li>								
+							
+								<li><a href="/blog/archive" id="blog_archive" >Archive</a></li>								
+								
+						</ul>							
+					</li>
+					
+					<li>
+						
+							
+						
+						<a href="/about" id="nav_about"   >About</a>
+						
+						<ul class="dropdown">
+							
+								<li><a href="/about/leadership" id="nav_leadership" >leadership</a></li>								
+							
+								<li><a href="/about/board" id="nav_board" >board of directors</a></li>								
+							
+								<li><a href="/about/careers" id="nav_careers" >careers</a></li>								
+							
+								<li><a href="/about/partners" id="nav_partners" >partners</a></li>								
+							
+								<li><a href="/about/press" id="nav_press" >press</a></li>								
+								
+						</ul>							
+					</li>
+					
+				</ul>
+			</nav>			
+			<!-- Searchbar Input box -->
+			 <!-- <form method="get" action="/search" name="searchForm" class="header-search-form" id="searchMobileFrm">
+			   <input type="text" id="search-header-autocomplete" name="q" class="form-control global-input" placeholder="elastic{search}">
+			</form>
+			<div class="mobile-auto-complete"></div> -->  
+		</div>
+		<div class="1u 6u(small) 6u(xsmall)">
+			<div id="searchbar">
+				<a href="#" class="button icon"></a>
+			</div>
+			<!-- <div class="nav-auto-complete"></div> -->
+		</div>
+	</div>
+</section>
+<div class="mobile-menu-wrapper">
+	<div class="row 0%">
+		<div class="8u 6u(small) 6u(xsmall)">
+			<div id="elastic">
+				<h1>
+					<a href="/">
+						<div id="elastic-logo">
+						<svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+	 viewBox="0 0 400 130" preserveAspectRatio="xMinYMin meet" enable-background="new 0 0 400 130" xml:space="preserve">
+    <g>
+    	<g>
+    		<path fill="#FFFFFF" d="M122.5,67.8c0-10.3-6.4-19.2-15.9-22.7c0.4-2.2,0.6-4.3,0.6-6.6c0-19.1-15.5-34.6-34.6-34.6
+    			c-11.1,0-21.5,5.3-28,14.4c-3.2-2.5-7.1-3.8-11.2-3.8c-10.1,0-18.4,8.2-18.4,18.4c0,2.2,0.4,4.4,1.1,6.4C6.5,42.6,0,51.8,0,62
+    			c0,10.3,6.4,19.3,16,22.8c-0.4,2.1-0.6,4.3-0.6,6.6c0,19,15.5,34.5,34.5,34.5c11.2,0,21.5-5.4,28-14.4c3.2,2.5,7.2,3.9,11.3,3.9
+    			c10.1,0,18.4-8.2,18.4-18.4c0-2.2-0.4-4.4-1.1-6.4C115.9,87.2,122.5,78,122.5,67.8z"/>
+    		<g>
+    			<path fill="#F4BD19" d="M47.9,56.3l27.3,12.5l27.6-24.2c0.4-2,0.6-4,0.6-6.1c0-17-13.8-30.8-30.8-30.8c-10.2,0-19.7,5-25.4,13.4
+    				l-4.6,23.8L47.9,56.3z"/>
+    		</g>
+    		<g>
+    			<path fill="#3CBEB1" d="M19.6,85.2c-0.4,2-0.6,4.1-0.6,6.2c0,17,13.9,30.9,30.9,30.9c10.3,0,19.8-5.1,25.6-13.5L80,85l-6.1-11.6
+    				L46.5,60.9L19.6,85.2z"/>
+    		</g>
+    		<g>
+    			<path fill="#E9478C" d="M19.4,37.9l18.7,4.4L42.3,21c-2.6-2-5.7-3-9-3c-8.1,0-14.8,6.6-14.8,14.8C18.5,34.5,18.8,36.3,19.4,37.9z
+    				"/>
+    		</g>
+    		<g>
+    			<path fill="#2C458F" d="M17.8,42.4C9.4,45.1,3.6,53.2,3.6,62c0,8.6,5.3,16.3,13.3,19.3l26.3-23.8l-4.8-10.3L17.8,42.4z"/>
+    		</g>
+    		<g>
+    			<path fill="#95C63D" d="M80.3,108.7c2.6,2,5.7,3.1,8.9,3.1c8.1,0,14.8-6.6,14.8-14.8c0-1.8-0.3-3.5-0.9-5.1l-18.7-4.4L80.3,108.7
+    				z"/>
+    		</g>
+    		<g>
+    			<path fill="#176655" d="M84.1,82.6l20.6,4.8c8.4-2.8,14.2-10.8,14.2-19.6c0-8.6-5.3-16.2-13.3-19.3l-27,23.6L84.1,82.6z"/>
+    		</g>
+    	</g>
+    	<path d="M162.8,76.3c0,0.1,0,0.6,0.1,1.4c0.1,0.8,0.3,1.8,0.6,3c0.3,1.1,0.8,2.4,1.4,3.7c0.6,1.3,1.4,2.5,2.5,3.6
+    		c1,1.1,2.3,2,3.8,2.7c1.5,0.7,3.4,1.1,5.6,1.1c1.8,0,3.3-0.1,4.6-0.4c1.3-0.3,2.4-0.7,3.4-1.3c1-0.6,1.9-1.3,2.7-2.2
+    		c0.8-0.9,1.6-1.9,2.4-3.1c0.5-0.7,1-1.2,1.6-1.5c0.6-0.3,1.2-0.4,1.8-0.4c1,0,2,0.4,2.8,1.1c0.9,0.7,1.3,1.7,1.3,2.8
+    		c0,0.7-0.4,1.7-1.1,3.1c-0.7,1.4-1.9,2.8-3.6,4.1c-1.6,1.4-3.7,2.6-6.3,3.6c-2.6,1-5.7,1.5-9.5,1.5c-3.8,0-7.2-0.7-10.2-2.1
+    		c-3-1.4-5.5-3.2-7.5-5.6c-2-2.3-3.6-5-4.7-8.1c-1.1-3.1-1.6-6.3-1.6-9.7c0-3.5,0.5-6.8,1.6-9.9c1.1-3.1,2.7-5.8,4.7-8.1
+    		c2-2.3,4.5-4.1,7.4-5.5c2.9-1.3,6.1-2,9.6-2c3.3,0,6.3,0.5,9.2,1.5c2.8,1,5.3,2.4,7.4,4.3c2.1,1.9,3.7,4.1,5,6.8
+    		c1.2,2.7,1.8,5.8,1.8,9.2c0,2.1-0.5,3.7-1.6,4.8c-1,1.1-2.2,1.6-3.6,1.6H162.8z M170.9,56.4c-1.5,0.6-2.7,1.4-3.7,2.4
+    		c-1,0.9-1.8,2-2.4,3.1c-0.6,1.1-1,2.2-1.3,3.2c-0.3,1-0.5,1.8-0.5,2.5c-0.1,0.7-0.1,1.1-0.1,1.2h27.9c0-1.8-0.3-3.5-0.9-5.1
+    		c-0.6-1.6-1.5-3-2.6-4.3c-1.2-1.2-2.7-2.2-4.5-3c-1.8-0.7-4-1.1-6.5-1.1C174.2,55.5,172.4,55.8,170.9,56.4z"/>
+    	<path d="M214.3,94.6c0,1.3-0.4,2.3-1.3,3.2c-0.9,0.9-1.9,1.3-3.2,1.3c-1.3,0-2.3-0.4-3.2-1.3c-0.9-0.9-1.3-2-1.3-3.2V35.1
+    		c0-1.3,0.4-2.3,1.3-3.2c0.9-0.9,2-1.3,3.2-1.3c1.3,0,2.3,0.4,3.2,1.3c0.9,0.9,1.3,1.9,1.3,3.2V94.6z"/>
+    	<path d="M229.8,63.5c-0.6,0.3-1.2,0.5-1.9,0.5c-1.2,0-2.2-0.4-3.2-1.1c-1-0.7-1.5-1.8-1.5-3.1c0-0.5,0.1-1.1,0.4-1.9
+    		c0.5-1.2,1.2-2.4,2.1-3.6c0.9-1.2,2-2.2,3.5-3.1s3.3-1.7,5.4-2.2c2.2-0.5,4.8-0.8,7.9-0.8c5.9,0,10.5,1.2,14,3.5
+    		c3.5,2.3,5.2,5.8,5.2,10.3v32.8c0,1.3-0.4,2.3-1.3,3.2c-0.9,0.9-1.9,1.3-3.2,1.3c-1.3,0-2.3-0.4-3.2-1.3c-0.9-0.9-1.3-2-1.3-3.2v-2
+    		c-1.2,2-4.7,4.5-7.5,5.3c-2.8,0.8-5.7,1.2-8.8,1.2c-2,0-3.9-0.3-5.9-0.8c-2-0.5-3.8-1.4-5.3-2.5c-1.6-1.1-2.9-2.6-3.8-4.3
+    		c-1-1.7-1.5-3.8-1.5-6.2c0-2.8,0.5-5.7,1.6-7.5c1.1-1.9,2.6-3.4,4.4-4.6c1.8-1.2,3.9-2.1,6.3-2.8c2.4-0.6,4.9-1.1,7.5-1.4
+    		c3-0.3,5.4-0.7,7.2-1.2c1.7-0.4,3-0.9,3.9-1.5c0.9-0.6,1.4-1.2,1.6-2c0.2-0.7,0.3-1.6,0.3-2.5c0-1.1-0.3-2-0.9-2.8
+    		c-0.6-0.8-1.4-1.5-2.4-2c-1-0.5-2.1-0.9-3.3-1.2s-2.4-0.4-3.5-0.4c-2.1,0-3.7,0.2-5,0.5c-1.3,0.3-2.3,0.8-3.1,1.4
+    		c-0.8,0.6-1.5,1.3-1.9,2.1c-0.5,0.8-0.9,1.6-1.3,2.5C230.9,62.6,230.4,63.1,229.8,63.5z M250.6,74.4c-1.1,0.3-2.4,0.6-3.8,0.8
+    		c-1.5,0.2-3,0.4-4.6,0.6c-1.6,0.2-3.1,0.5-4.6,0.9c-1.5,0.3-2.8,0.8-4,1.5c-1.2,0.7-2.2,1.5-2.9,2.5c-0.7,1-1.1,3-1.1,4.6
+    		c0,1.3,0.3,2.3,0.8,3.1c0.5,0.8,1.2,1.5,2.1,2c0.9,0.5,1.8,0.8,2.9,1c1.1,0.2,2.2,0.3,3.3,0.3c1.7,0,3.3-0.2,5-0.6
+    		c1.7-0.4,3.2-1,4.5-1.9s2.4-2,3.3-3.5c0.8-1.4,1.2-3.8,1.2-5.9v-6.1L250.6,74.4z"/>
+    	<path d="M307.6,90.9c-1.1,2-2.7,3.6-4.6,4.8s-4.1,2.1-6.6,2.7c-2.5,0.5-5.2,0.8-7.9,0.8c-3.9,0-7.2-0.6-9.9-1.8
+    		c-2.7-1.2-4.9-2.6-6.5-4.1c-1.7-1.6-2.9-3.1-3.7-4.7c-0.7-1.6-1.1-2.7-1.1-3.5c0-1.3,0.5-2.4,1.4-3.2c0.9-0.8,2-1.2,3.1-1.2
+    		c0.7,0,1.3,0.2,2,0.6c0.6,0.4,1.1,1,1.5,1.9c1,2.5,2.5,4.5,4.7,6.2c2.2,1.7,5.2,2.5,9.3,2.5c1.8,0,3.4-0.2,4.7-0.6
+    		c1.3-0.4,2.4-1,3.2-1.7c0.8-0.7,1.4-1.5,1.9-2.4c0.4-0.9,0.6-1.8,0.6-2.8c0-2-0.8-3.4-2.3-4.4c-1.5-1-3.5-1.7-5.8-2.3
+    		c-2.3-0.6-4.8-1.1-7.5-1.6c-2.7-0.5-5.2-1.2-7.5-2.2c-2.3-0.9-4.2-2.3-5.8-4c-1.6-1.8-2.3-4.2-2.3-7.3c0-4.5,1.6-8,4.9-10.5
+    		c3.3-2.5,7.8-3.8,13.7-3.8c3.3,0,6,0.3,8.3,1c2.2,0.7,4.1,1.6,5.5,2.7c0.6,0.5,1.2,1,1.8,1.7c0.6,0.7,1.2,1.4,1.8,2.2
+    		c0.6,0.8,1,1.5,1.4,2.3c0.4,0.7,0.6,1.4,0.6,2c0,1.3-0.5,2.4-1.6,3.1c-1,0.8-2.2,1.2-3.4,1.2c-0.7,0-1.5-0.1-2.1-0.6
+    		c-0.6-0.6-1-1.3-1.3-1.8c-0.5-1.1-1.1-2-1.7-2.8c-0.5-0.8-1.2-1.5-2-2c-0.8-0.5-1.8-0.9-3-1.2c-1.2-0.3-2.7-0.4-4.4-0.4
+    		c-3.5,0-6,0.6-7.6,1.7c-1.6,1.1-2.4,2.5-2.4,4.2c0,1.3,0.5,2.3,1.4,3.1c0.9,0.8,2.1,1.4,3.7,2c1.5,0.5,3.3,1,5.2,1.4
+    		c2,0.4,3.9,0.8,5.9,1.3c2,0.5,4,1.1,5.9,1.7c1.9,0.7,3.7,1.6,5.2,2.7c1.5,1.1,2.7,2.5,3.7,4.1c0.9,1.6,1.4,3.6,1.4,6
+    		C309.4,86.4,308.8,88.9,307.6,90.9z"/>
+    	<path d="M327.4,48.8h4.7c1.1,0,2,0.4,2.8,1.2c0.8,0.8,1.2,1.7,1.2,2.8c0,1.1-0.4,2.1-1.2,2.8s-1.7,1.1-2.8,1.1h-4.7v37.9
+    		c0,1.3-0.4,2.3-1.3,3.2c-0.9,0.9-2,1.3-3.2,1.3c-1.3,0-2.3-0.4-3.2-1.3c-0.9-0.9-1.3-2-1.3-3.2V56.7h-4.6c-1.1,0-2-0.4-2.8-1.1
+    		c-0.8-0.7-1.2-1.7-1.2-2.8c0-1.1,0.4-2,1.2-2.8c0.8-0.8,1.7-1.2,2.8-1.2h4.6V39c0-1.3,0.4-2.3,1.3-3.2s1.9-1.3,3.2-1.3
+    		c1.3,0,2.3,0.4,3.2,1.3s1.3,1.9,1.3,3.2V48.8z"/>
+    	<path d="M341.5,32.1c1-1,2.2-1.5,3.7-1.5c1.4,0,2.6,0.5,3.6,1.5c1,1,1.5,2.2,1.5,3.6c0,1.4-0.5,2.6-1.5,3.6c-1,1-2.2,1.5-3.6,1.5
+    		c-1.4,0-2.7-0.5-3.7-1.5c-1-1-1.5-2.2-1.5-3.6C340,34.2,340.5,33,341.5,32.1z M349.6,94.6c0,1.3-0.4,2.3-1.3,3.2
+    		c-0.9,0.9-1.9,1.3-3.2,1.3c-1.3,0-2.3-0.4-3.2-1.3c-0.9-0.9-1.3-2-1.3-3.2V53.3c0-1.3,0.4-2.3,1.3-3.2c0.9-0.9,2-1.3,3.2-1.3
+    		c1.3,0,2.3,0.4,3.2,1.3c0.9,0.9,1.3,2,1.3,3.2V94.6z"/>
+    	<path d="M369.1,97.3c-2.9-1.2-5.4-3-7.5-5.2c-2.1-2.2-3.8-4.9-5-8.1c-1.2-3.1-1.8-6.6-1.8-10.4c0-3.8,0.6-7.3,1.8-10.5
+    		c1.2-3.1,2.9-5.8,5-8.1c2.1-2.2,4.6-4,7.5-5.2c2.9-1.2,6-1.9,9.4-1.9c3.4,0,6.4,0.5,9,1.5c2.5,1,4.6,2.2,6.2,3.6
+    		c1.6,1.4,3.2,2.9,4,4.4c0.5,0.9,0.9,1.5,0.9,2.6c0,1.3-0.5,2.3-1.4,3.1c-0.9,0.7-2,1.1-3.1,1.1c-0.8,0-1.6-0.2-2.2-0.6
+    		c-0.7-0.4-1.2-1.3-1.8-2.1c-1-1.4-0.5-0.6-1.1-1.5c-0.7-0.9-1.5-1.6-2.5-2.3c-1-0.7-2.2-1.2-3.5-1.6c-1.4-0.4-2.8-0.6-4.4-0.6
+    		c-1.8,0-3.5,0.3-5.3,1c-1.8,0.7-3.3,1.7-4.7,3.1c-1.4,1.4-2.5,3.3-3.4,5.6s-1.3,5.1-1.3,8.4c0,3.3,0.4,6.1,1.3,8.4s2,4.2,3.4,5.6
+    		c1.4,1.4,3,2.5,4.7,3.1c1.8,0.7,3.5,1,5.3,1c1.6,0,3.1-0.2,4.4-0.6c1.3-0.4,2.5-0.9,3.5-1.6c1-0.7,1.8-1.5,2.5-2.3
+    		c0.7-0.9,1.1-1.8,1.4-2.7c0.3-1,0.8-1.7,1.5-2.1c0.7-0.4,1.4-0.6,2.2-0.6c1.1,0,2.2,0.4,3.1,1.1c0.9,0.7,1.4,1.7,1.4,3
+    		c0,0.6-0.3,1.7-0.9,3.1c-0.6,1.5-1.6,2.9-3.1,4.4c-1.5,1.5-3.5,2.8-6.2,4c-2.6,1.1-6,1.7-10,1.7C375.1,99.2,372,98.5,369.1,97.3z"
+    		/>
+    </g>
+</svg>
+						</div>
+					</a>
+				</h1>
+			</div>
+		</div>
+		<div class="4u 6u(small) 6u(xsmall) text-right">
+			<!-- <div class="mobile-menu-wrapper"> -->
+				<ul class="m-shortcuts">
+					
+					<li><a href="#" class="m-search" id="header-search"></a></li>
+					
+					<li><a href="/guide" class="m-docs" id="mobile-docs"></a></li>
+					
+					<li><a href="/contact" class="m-contact" id="mobile-contact"></a></li>
+					
+				</ul>	
+				<nav class="nav-menu">
+					<div class="menu-button">
+						<span></span>
+					</div>
+					<div class="nav-menu-list-wrap">
+						<div class="nav-menu-list">
+							
+								<h3><a href="/products" id="nav_products" >Products</a></h3>
+
+								
+								<ul>
+									
+									<li><a href="/products/elasticsearch" id="nav_elasticsearch" >elasticsearch</a></li>
+									
+									<li><a href="/found" id="nav_hosted-elasticsearch" >elasticsearch as a service</a></li>
+									
+									<li><a href="/products/logstash" id="nav_logstash" >logstash</a></li>
+									
+									<li><a href="/products/kibana" id="nav_kibana" >kibana</a></li>
+									
+									<li><a href="/products/beats" id="nav_beats" >beats</a></li>
+									
+									<li><a href="/products/watcher" id="nav_watcher" >watcher</a></li>
+									
+									<li><a href="/products/shield" id="nav_shield" >shield</a></li>
+									
+									<li><a href="/products/marvel" id="nav_marvel" >marvel</a></li>
+									
+									<li><a href="/products/hadoop" id="nav_hadoop" >hadoop</a></li>
+									
+									<li><a href="/downloads" id="nav_downloads" >downloads</a></li>
+									
+								</ul>
+								
+							
+								<h3><a href="/subscriptions" id="nav_subscriptions" >Subscriptions</a></h3>
+
+								
+							
+								<h3><a href="/learn" id="nav_learn" >Learn</a></h3>
+
+								
+								<ul>
+									
+									<li><a href="/guide" id="nav_guide" >docs</a></li>
+									
+									<li><a href="/videos" id="nav_videos" >videos</a></li>
+									
+									<li><a href="/training" id="nav_training" >training</a></li>
+									
+									<li><a href="/services" id="nav_services" >services</a></li>
+									
+									<li><a href="/blog" id="nav_learn_blog" >blog</a></li>
+									
+									<li><a href="/elasticon" id="nav_learn_elasticon" >elastic{ON}</a></li>
+									
+								</ul>
+								
+							
+								<h3><a href="/community" id="nav_community" >Community</a></h3>
+
+								
+								<ul>
+									
+									<li><a href="/community/meetups" id="nav_meetups" >meetups</a></li>
+									
+									<li><a href="/https:/discuss.elastic.co" id="nav_discuss" target="_blank">discuss</a></li>
+									
+									<li><a href="/community/codeofconduct" id="nav_codeofconduct" >code of conduct</a></li>
+									
+								</ul>
+								
+							
+								<h3><a href="/use-cases" id="nav_usecases" >Use Cases</a></h3>
+
+								
+							
+								<h3><a href="/blog" id="nav_blog" >Blog</a></h3>
+
+								
+								<ul>
+									
+									<li><a href="/blog/category/news" id="blog_news" >News</a></li>
+									
+									<li><a href="/blog/category/engineering" id="blog_engineering" >Engineering</a></li>
+									
+									<li><a href="/blog/category/user-stories" id="blog_user-stories" >User Stories</a></li>
+									
+									<li><a href="/blog/category/releases" id="blog_releases" >Releases</a></li>
+									
+									<li><a href="/blog/archive" id="blog_archive" >Archive</a></li>
+									
+								</ul>
+								
+							
+								<h3><a href="/about" id="nav_about" >About</a></h3>
+
+								
+								<ul>
+									
+									<li><a href="/about/leadership" id="nav_leadership" >leadership</a></li>
+									
+									<li><a href="/about/board" id="nav_board" >board of directors</a></li>
+									
+									<li><a href="/about/careers" id="nav_careers" >careers</a></li>
+									
+									<li><a href="/about/partners" id="nav_partners" >partners</a></li>
+									
+									<li><a href="/about/press" id="nav_press" >press</a></li>
+									
+								</ul>
+								
+							
+						</div>
+					</div>
+				</nav>
+			<!-- </div> -->
+		</div>
+	</div>
+</div>
+<!-- Mobile Menu -->
+
+
+		</div>
+	</div>
+</div>
+<div class="header-search-wrapper">	
+	<div class="container">
+		<div class="big-search">
+			<i class="big-search-icon"></i>
+			<form method="get" action="/search" autocomplete="on" name="searchForm" id="searchfrm">
+				<ul class="tags-wrapper">
+					<li class="search-field"><input type="text" class="form-control global-input" id="autocomplete" name="q"></li>
+				</ul>
+			</form>
+			<a href="#" class="header-search-cancel"></a>
+		</div>
+		<div class="nav-auto-complete"></div>
+	</div>
+</div>
+<style>	
+	
+	
+		.m-shortcuts li a.m-search {
+			background: url("https://static-www.elastic.co/assets/blt174b13be89ff803c/m-search-icon.png?q=100") no-repeat scroll center center rgba(0, 0, 0, 0);
+			background-size: contain;}
+	
+		.m-shortcuts li a.m-docs {
+			background: url("https://static-www.elastic.co/assets/blt5ba03f594a7d610a/m-guide-icon.png?q=100") no-repeat scroll center center rgba(0, 0, 0, 0);
+			background-size: contain;}
+	
+		.m-shortcuts li a.m-contact {
+			background: url("https://static-www.elastic.co/assets/blt38c3e853c4b1174d/m-contact-icon.png?q=100") no-repeat scroll center center rgba(0, 0, 0, 0);
+			background-size: contain;}
+		
+</style>
+		</div>
+	</div>
+  	<div id="content">
+  		
+  			
+            <div id="pageheader">
+    <div class="container">
+        <header>
+            <h1><a href="/learn" title="Learn">Learn</a> |</h1>
+            <h2><a href="/guide" title="Docs">Docs</a></h2>
+        </header>
+    </div>
+</div>
+<section id="guide">
+
+            <!-- start body -->
+<div class="breadcrumbs"><span class="breadcrumb-link"><a href="index.html">Elasticsearch: The Definitive Guide</a></span> » <span class="breadcrumb-link"><a href="aggregations.html">Aggregations </a></span> » <span class="breadcrumb-node">지연시간 과 메모리사용 제어</span></div><div class="navheader"><span class="prev"><a href="significant-terms.html">
+              « 
+              의미 있는 단어</a>
+           
+        </span><span class="next">
+           
+          <a href="_맺음말.html">맺음말
+               »
+            </a></span></div><div class="chapter"><div class="titlepage"><div><div><h2 class="title"><a id="controlling-memory"></a>지연시간 과 메모리사용 제어</h2></div></div></div><div class="section"><div class="titlepage"><div><div><h2 class="title"><a id="fielddata"></a>Fielddata</h2></div></div></div><p>집계는 <span class="emphasis"><em>fielddata</em></span> (<a class="link" href="sorting.html#fielddata-intro" title="Fielddata">fielddata 소개</a>에서 간단히 소개된)로 알려진 데이터 구조를 통해,
+동작한다. <a id="id-1.7.12.2.2.3" class="indexterm"></a><a id="id-1.7.12.2.2.4" class="indexterm"></a>
+<a id="id-1.7.12.2.2.5" class="indexterm"></a>fielddata는 Elasticsearch의 cluster에서,
+메모리의 가장 큰 소비자이다. 때문에, 그것이 동작하는 방법을 이해하는 것은 중요하다.</p><div class="tip admon"><div class="icon"><img alt="Tip" src="images/icons/tip.png" /></div><div class="admon_content"><p>fielddata는 메모리에 바로 로드 되거나, 색인 시에 구축되어 디스크에 저장될 수 있다.<a id="id-1.7.12.2.3.1.1" class="indexterm"></a>
+<a id="id-1.7.12.2.3.1.2" class="indexterm"></a>
+나중에, <a class="xref" href="controlling-memory.html#doc-values" title="Doc Values">Doc Values</a>에서 디스크상(on-disk)의 fielddata에 대해 이야기할 것이다.
+지금은, 현재 Elasticsearch의 기본 동작 모드인, 메모리상(in-memory)의 fielddata에 집중할 것이다.
+이것은 향후 버전에서 변경할 수 있다.</p></div></div><p>inverted indices는 특정 작업에 대해서만 효율적이기 때문에, fielddata는 존재한다.
+inverted index는<a id="id-1.7.12.2.4.1" class="indexterm"></a>
+<a id="id-1.7.12.2.4.2" class="indexterm"></a> 단어를 포함하는 document를 찾는 것에 탁월하다.
+정반대의 방향(단어가 어떤 하나의 document에 존재하는지를 판단하는 것)에서는 잘 동작하지 않는다.
+집계는 이 두 번째 액세스 형태가 필요하다.</p><p>다음의 inverted index를 고려해 보자:</p><pre class="literallayout">Term      Doc_1   Doc_2   Doc_3
+------------------------------------
+brown   |   X   |   X   |
+dog     |   X   |       |   X
+dogs    |       |   X   |   X
+fox     |   X   |       |   X
+foxes   |       |   X   |
+in      |       |   X   |
+jumped  |   X   |       |   X
+lazy    |   X   |   X   |
+leap    |       |   X   |
+over    |   X   |   X   |   X
+quick   |   X   |   X   |   X
+summer  |       |   X   |
+the     |   X   |       |   X
+------------------------------------</pre><p><code class="literal">brown</code> 을 언급하는 document에서, 단어의 완벽한 목록을 만들려면, 아래와 같은 query를 만들 어야 한다:</p><div class="pre_wrapper"><pre class="programlisting prettyprint lang-js">GET /my_index/_search
+{
+  "query" : {
+    "match" : {
+      "body" : "brown"
+    }
+  },
+  "aggs" : {
+    "popular_terms": {
+      "terms" : {
+        "field" : "body"
+      }
+    }
+  }
+}</pre></div><p>query 부분은 간단하고 효율적이다. inverted index는 단어를 기준으로 정렬된다. 그래서, 먼저 단어 목록에서 <code class="literal">brown</code> 을 찾고,
+그 다음에 <code class="literal">brown</code> 을 포함하는 document를 찾기 위해, column 전부를 검색한다. <code class="literal">Doc_1</code> 과 <code class="literal">Doc_2</code> 가 token <code class="literal">brown</code> 을 포함하는 것을, 매우 빠르게 볼 수 있다.</p><p>그 다음에 집계 부분에서, <code class="literal">Doc_1</code> 과 <code class="literal">Doc_2</code> 에 있는 유일한 단어를 검색해야 한다.<a id="id-1.7.12.2.10.3" class="indexterm"></a>
+<a id="id-1.7.12.2.10.4" class="indexterm"></a>
+<a id="id-1.7.12.2.10.5" class="indexterm"></a>
+inverted index에서 이렇게 하면, 비용이 많이 드는 프로세스가 될 것이다.
+index에서 모든 단어에 대해 반복해야 하고, <code class="literal">Doc_1</code> 과 <code class="literal">Doc_2</code> 의 column에서 token을 수집해야 한다.
+이것은 매우 느리고, 조정도 어렵다. 단어와 document의 수가 증가할수록, 실행시간도 증가할 것이다.</p><p>fielddata는 그 관계를 반대로 하여, 이 문제를 해결한다.
+inverted index는 단어를 단어를 포함하고 있는 document에 mapping하는 반면에,
+fielddata는 document를 document에 의해 포함되는 단어에 mapping한다:</p><pre class="literallayout">Doc      Terms
+-----------------------------------------------------------------
+Doc_1 | brown, dog, fox, jumped, lazy, over, quick, the
+Doc_2 | brown, dogs, foxes, in, lazy, leap, over, quick, summer
+Doc_3 | dog, dogs, fox, jumped, over, quick, the
+-----------------------------------------------------------------</pre><p>데이터가 uninverted되면, <code class="literal">Doc_1</code> 과 <code class="literal">Doc_2</code> 에서 유일한 token을 수집하는 것은 간단하다.
+각 document의 행으로 가서, 단어 모두를 수집하고, 두 집합을 조합하면 된다.</p><div class="tip admon"><div class="icon"><img alt="Tip" src="images/icons/tip.png" /></div><div class="admon_content"><p>fielddata cache는 segment별이다.<a id="id-1.7.12.2.14.1.1" class="indexterm"></a><a id="id-1.7.12.2.14.1.2" class="indexterm"></a>
+<a id="id-1.7.12.2.14.1.3" class="indexterm"></a> 즉, 새로운 segment가 검색에 나타났을 때,
+기존 segment에서의 fielddata cache는 여전히 유효하다.
+새로운 segment에 대한 데이터만 메모리에 로드되면 된다.</p></div></div><p>따라서, 검색과 집계는 밀접하게 엮여 있다. 검색은 inverted index를 이용하여, document를 찾는다.
+집계는 fielddata에서 값을 수집하고 집계한다. fielddata 자체는 inverted index에서 생성된다.</p><p>이 장의 나머지 부분은 fielddata의 메모리 공간을 줄이거나,
+실행 속도를 증가시키는 등의 다양한 기능에 대해 이야기할 것이다.</p><div class="note admon"><div class="icon"><img alt="Note" src="images/icons/note.png" /></div><div class="admon_content"><p>fielddata가 집계에만 사용되는 것은 아니다.<a id="id-1.7.12.2.17.1.1" class="indexterm"></a>
+<a id="id-1.7.12.2.17.1.2" class="indexterm"></a> 특정 document에
+포함된 값을 조회해야 하는 모든 연산에도 필요하다. 집계 이외에도, 정렬, field 값에 액세스하는 scripts,
+부모-자식 관계(<a class="link" href="parent-child.html" title="Parent-Child Relationship">부모-자식 관계</a> 참조), 그리고,
+<a class="link" href="geopoints.html#geo-distance" title="Geo Distance Filter"><code class="literal">geo_distance</code></a>  같은 특정 유형의 query나 filter에도 사용된다.</p></div></div></div><div class="section"><div class="titlepage"><div><div><h2 class="title"><a id="aggregations-and-analysis"></a>집계와 분석</h2></div></div></div><p>terms bucket 같은, 일부 집계는 <a id="id-1.7.12.3.2.1" class="indexterm"></a>
+<a id="id-1.7.12.3.2.2" class="indexterm"></a><a id="id-1.7.12.3.2.3" class="indexterm"></a>
+<a id="id-1.7.12.3.2.4" class="indexterm"></a>string field에서 동작한다.
+그리고 string field는 <code class="literal">analyzed</code> 또는 <code class="literal">not_analyzed</code> 이다. 분석은 집계에 얼마나 영향을 미치는가? 라는 질문이 나올 수 있다.<a id="id-1.7.12.3.2.7" class="indexterm"></a>
+<a id="id-1.7.12.3.2.8" class="indexterm"></a><a id="id-1.7.12.3.2.9" class="indexterm"></a><a id="id-1.7.12.3.2.10" class="indexterm"></a></p><p>답은 "아주 많이"이다. 이것은 예제를 통해 가장 잘 보여줄 수 있다.
+먼저, 미국의 몇몇 주(state)를 나타내는 document를 색인 하자:</p><div class="pre_wrapper"><pre class="programlisting prettyprint lang-js">POST /agg_analysis/data/_bulk
+{ "index": {}}
+{ "state" : "New York" }
+{ "index": {}}
+{ "state" : "New Jersey" }
+{ "index": {}}
+{ "state" : "New Mexico" }
+{ "index": {}}
+{ "state" : "New York" }
+{ "index": {}}
+{ "state" : "New York" }</pre></div><p>데이터 집합에서 유일한 주(state)와 그 수를 나타내는 목록을 만들려고 한다. 간단하게, <code class="literal">terms</code> bucket을 사용해 보자:</p><div class="pre_wrapper"><pre class="programlisting prettyprint lang-js">GET /agg_analysis/data/_search?search_type=count
+{
+    "aggs" : {
+        "states" : {
+            "terms" : {
+                "field" : "state"
+            }
+        }
+    }
+}</pre></div><p>다음과 같은 결과가 나올 것이다:</p><div class="pre_wrapper"><pre class="programlisting prettyprint lang-js">{
+...
+   "aggregations": {
+      "states": {
+         "buckets": [
+            {
+               "key": "new",
+               "doc_count": 5
+            },
+            {
+               "key": "york",
+               "doc_count": 3
+            },
+            {
+               "key": "jersey",
+               "doc_count": 1
+            },
+            {
+               "key": "mexico",
+               "doc_count": 1
+            }
+         ]
+      }
+   }
+}</pre></div><p>이런, 우리가 원하던 것이 전혀 아니다. 집계는 주(state)의 수를 세는 것이 아니라, 개별 단어를 세고 있다.
+근본적인 이유는 간단하다. 집계는 inverted index에서 만들어지고, inverted index는 <span class="emphasis"><em>사후 분석(post-analysis)</em></span> 이다.</p><p>Elasticsearch에 이들 document를 추가하면, <code class="literal">"New York"</code> 이라는 문자열은 분석되고,
+token으로 만들어져, <code class="literal">["new", "york"]</code> 이 된다. 그 다음에, 이들 개별 token은 fielddata를 채우는데 사용되고,
+결과적으로 <code class="literal">New York</code> 대신 <code class="literal">new</code> 의 수를 보고 있다.</p><p>이것은 확실히 우리가 원하던 바가 아니다. 하지만, 다행히도 쉽게 수정할 수 있다.</p><p><code class="literal">주(state)</code> 에 대한 다중 field를 정의하고, 그것을 <code class="literal">not_analyzed</code> 로 설정해야 한다.
+이것은 <code class="literal">New York</code> 이 분석되지 않도록 한다. 즉, 그것은 집계 시에 단일 token으로 남게 된다.
+<span class="emphasis"><em>raw</em></span> 라는 다중 field를 지정해서, 전체 프로세스를 다시 시도해 보자.</p><div class="pre_wrapper"><pre class="programlisting prettyprint lang-js">DELETE /agg_analysis/
+PUT /agg_analysis
+{
+  "mappings": {
+    "data": {
+      "properties": {
+        "state" : {
+          "type": "string",
+          "fields": {
+            "raw" : {
+              "type": "string",
+              "index": "not_analyzed"<a id="CO217-1"></a><span><img src="images/icons/callouts/1.png" alt="" /></span>
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+POST /agg_analysis/data/_bulk
+{ "index": {}}
+{ "state" : "New York" }
+{ "index": {}}
+{ "state" : "New Jersey" }
+{ "index": {}}
+{ "state" : "New Mexico" }
+{ "index": {}}
+{ "state" : "New York" }
+{ "index": {}}
+{ "state" : "New York" }
+
+GET /agg_analysis/data/_search?search_type=count
+{
+  "aggs" : {
+    "states" : {
+        "terms" : {
+            "field" : "state.raw" <a id="CO217-2"></a><span><img src="images/icons/callouts/2.png" alt="" /></span>
+        }
+    }
+  }
+}</pre></div><div class="calloutlist"><table border="0" summary="Callout list"><tr><td width="5%" valign="top" align="left"><p><a href="#CO217-1"><span><img src="images/icons/callouts/1.png" alt="" /></span></a> </p></td><td valign="top" align="left"><p>
+이번에는 확실하게, <code class="literal">states</code> field를 지정하고, <code class="literal">not_analyzed</code> 하위 field를 포함하였다.
+</p></td></tr><tr><td width="5%" valign="top" align="left"><p><a href="#CO217-2"><span><img src="images/icons/callouts/2.png" alt="" /></span></a> </p></td><td valign="top" align="left"><p>
+집계는 <code class="literal">state</code> 가 아닌 <code class="literal">state.raw</code> 로 실행된다.
+</p></td></tr></table></div><p>이제, 집계를 실행해 보면, 만족스러운 결과가 나온다:</p><div class="pre_wrapper"><pre class="programlisting prettyprint lang-js">{
+...
+   "aggregations": {
+      "states": {
+         "buckets": [
+            {
+               "key": "New York",
+               "doc_count": 3
+            },
+            {
+               "key": "New Jersey",
+               "doc_count": 1
+            },
+            {
+               "key": "New Mexico",
+               "doc_count": 1
+            }
+         ]
+      }
+   }
+}</pre></div><p>실제로, 이런 문제는 쉽게 찾을 수 있다. 집계는 단순히 이상한 bucket을 반환하고,
+분석 문제를 제기할 것이다. 일반적이지만, 집계에 analyzed field를 사용하려는 경우가 많은 것은 아니다.
+의심이 들면, 둘 모두를 위해, 선택이 가능한 다중 field를 추가하자.<a id="id-1.7.12.3.17.1" class="indexterm"></a>
+<a id="id-1.7.12.3.17.2" class="indexterm"></a></p><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="_높은_cardinality의_메모리에_끼치는_영향"></a>높은 cardinality의 메모리에 끼치는 영향</h3></div></div></div><p>analyzed field의 집계를 피하려는 또 다른 이유가 있다. 높은 cardinality를 가진 field가 fielddata에 로드 되면,
+아주 많은 양의 메모리를 사용한다.<a id="id-1.7.12.3.18.2.1" class="indexterm"></a>
+<a id="id-1.7.12.3.18.2.2" class="indexterm"></a><a id="id-1.7.12.3.18.2.3" class="indexterm"></a>
+<a id="id-1.7.12.3.18.2.4" class="indexterm"></a>
+분석 프로세스는 흔히 (항상은 아니지만), 아주 많은 token과 많은 유일한 token을 생성한다.
+이것은 field의 전체 cardinality를 증가시키고, 더 많은 메모리 압박에 기여한다.<a id="id-1.7.12.3.18.2.5" class="indexterm"></a>
+<a id="id-1.7.12.3.18.2.6" class="indexterm"></a></p><p>분석의 특정 유형은 메모리에 대해 <span class="emphasis"><em>매우</em></span> 비우호적이다. ngram 분석 프로세스를 생각해 보자.<a id="id-1.7.12.3.18.3.2" class="indexterm"></a>
+<a id="id-1.7.12.3.18.3.3" class="indexterm"></a>
+<code class="literal">New York</code> 이라는 단어는 ngram되어, 다음과 같은 token이 된다.</p><div class="itemizedlist"><ul class="itemizedlist" type="disc"><li class="listitem">
+<code class="literal">ne</code>
+</li><li class="listitem">
+<code class="literal">ew</code>
+</li><li class="listitem">
+<code class="literal">w </code>
+</li><li class="listitem">
+<code class="literal"> y</code>
+</li><li class="listitem">
+<code class="literal">yo</code>
+</li><li class="listitem">
+<code class="literal">or</code>
+</li><li class="listitem">
+<code class="literal">rk</code>
+</li></ul></div><p>ngram 프로세스가 얼마나 많은 유일한 token을 생성하는지, 특히 텍스트의 단락을 분석하는 경우를 생각해 보자.
+이들을 메모리에 로드되면, 쉽게 힙(heap) 공간을 소모할 수 있다.</p><p>그래서, field에서 집계하기 전에, field가 <code class="literal">not_analyzed</code> 인지 확인하기는 시간을 가지자.
+그리고, analyzed field를 집계해야 한다면, 분석 프로세스가 터무니없는 수의 token을 생성하지 않는지 확인해야 한다.</p><div class="tip admon"><div class="icon"><img alt="Tip" src="images/icons/tip.png" /></div><div class="admon_content"><p>결국, field가 <code class="literal">analyzed</code> 나 <code class="literal">not_analyzed</code> 인 것은 중요하지 않다.
+field에 유일한 값이 많을수록(cardinality가 높을수록), 더 많은 메모리가 필요하다.
+모든 유일한 문자열을 메모리에 저장해야 하는 string field에서,
+이것은 특히 그렇다. 문자열이 길수록 더 많은 메모리를 사용한다.</p></div></div></div></div><div class="section"><div class="titlepage"><div><div><h2 class="title"><a id="_메모리_사용의_제한"></a>메모리 사용의 제한</h2></div></div></div><p>집계(또는 field 값을 액세스해야 하는 모든 연산)를 빠르게 하기 위해서는,<a id="id-1.7.12.4.2.1" class="indexterm"></a>
+<a id="id-1.7.12.4.2.2" class="indexterm"></a> fielddata가 메모리에 로드되어 있기 때문에,
+fielddata를 액세스하면 빠를 것이다.<a id="id-1.7.12.4.2.3" class="indexterm"></a><a id="id-1.7.12.4.2.4" class="indexterm"></a>
+<a id="id-1.7.12.4.2.5" class="indexterm"></a> 그러나,
+너무 많은 데이터를 메모리에 로드하면, JVM이 heap의 여유 공간을 찾으려 하기 때문에, garbage collection을 느리게 하는 원인이 되거나,
+심지어 OutofMemory Exception이 발생할 수 있다.</p><p>Elasticsearch가 query에 일치하는 document에 대한 값만을,
+fielddata에 로드 하는 것은 아니다. <span class="emphasis"><em>index에 있는 모든 document</em></span> , 심지어 다른 <code class="literal">_type</code> 의 document에 대한 값도 로드한다.</p><p>어떤 query로 document X, Y, Z에 액세스해야 한다면, 다음 query에서는 다른 document에 액세스해야 할 것이다.
+모든 값을 한번에 로드 하고, 그것을 <span class="emphasis"><em>메모리에 유지하는</em></span> 것이, 모든 요청을 inverted index에서 찾는 것보다, 비용이 더 싸다.</p><p>JVM의 heap은<a id="id-1.7.12.4.5.1" class="indexterm"></a>
+<a id="id-1.7.12.4.5.2" class="indexterm"></a> 현명하게 사용해야 하는, 제한된 자원이다.
+fielddata의 heap 사용에 미치는 영향을 제한하는, 많은 메커니즘이 존재한다. heap의 남용은 node의 불안정(느린 garbage collection 덕분에)이나,
+다운(OutofMemory Exception)의 원인이기 때문에, 이런 제한은 중요하다.</p><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>heap 크기의 선택</strong></p></div></div></div><p><code class="literal">$ES_HEAP_SIZE</code> 환경 변수를 가지고, Elasticsearch의 heap size를 설정할<a id="id-1.7.12.4.6.2.2" class="indexterm"></a>
+<a id="id-1.7.12.4.6.2.3" class="indexterm"></a> 때 적용할,
+두 가지 규칙이 있다:</p><div class="variablelist"><dl class="variablelist"><dt><span class="term">
+이용 가능한 RAM의 50% 이상은 불가
+</span></dt><dd>
+Lucene은 kernel에 의해 관리되는, filesystem cache를 잘 사용한다.
+filesystem cache가 충분하지 않으면, 성능이 저하된다.
+</dd></dl></div><p>32GB 이상은 불가:
+heap이 32GB보다 적다면, JVM은 압축 포인터(compressed pointer)사용할 수 있는데,
+이는 많은 메모리를 _절약_한다. pointer당 8byte가 아닌 4byte.</p><p>+
+heap이 32GB에서 34GB로 증가되면, 모든 포인터가 두 배의 공간을 가지기 때문에,
+이용할 수 있는 메모리가 더 <span class="emphasis"><em>적어진다</em></span> 는 것을 의미한다. 또한 더 큰 heap은 garbage collection에
+더 많은 비용이 들고, node를 불안정하게 할 수 있다.</p><p>이 제한은, fielddata에 사용될 수 있는 많은 메모리에, 직접적인 영향을 준다.</p></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="fielddata-size"></a>Fielddata의 크기</h3></div></div></div><p><code class="literal">indices.fielddata.cache.size</code> 는 fielddata에 할당되는 heap 공간의 크기를 제어한다.<a id="id-1.7.12.4.7.2.2" class="indexterm"></a>
+<a id="id-1.7.12.4.7.2.3" class="indexterm"></a><a id="id-1.7.12.4.7.2.4" class="indexterm"></a>
+<a id="id-1.7.12.4.7.2.5" class="indexterm"></a>
+<a id="id-1.7.12.4.7.2.6" class="indexterm"></a>
+새로운 field 값에 액세스하는 것이 필요한, query를 실행하면, 메모리에 값을 로드하고, fielddata에 그것을 추가한다.
+얻어진 fielddata의 크기가 지정된 <code class="literal">size</code> 를 초과하면, 공간을 마련하기 위해, 다른 값들은 제거될 것이다.</p><p>기본적으로 이 설정은 <span class="emphasis"><em>무제한</em></span> —이다. Elasticsearch는 절대로 fielddata에서 다른 값들을 제거하지 않는다.</p><p>이 기본값은 고의적으로 선택되었다. fielddata는 일시적인 cache가 아니다. 그것은 빠른 실행을 위해,
+액세스 가능한 메모리에 있는 데이터 구조이고, 구축 비용이 비싸다. 모든 요청에 대해 데이터를 다시 로드 한다면, 성능은 끔찍해질 것이다.</p><p>제한된 크기는 데이터 구조에서 데이터를 강제로 제거한다. 아래에서 이 값을 설정하여 검토할 것이다.
+하지만 먼저 주의할 점이 있다:</p><div class="warning admon"><div class="icon"><img alt="Warning" src="images/icons/warning.png" /></div><div class="admon_content"><p>이 설정은 보호장치이지, 부족한 메모리에 대한 해결책이 아니다.</p><p>fielddata를 메모리에 상주시킬 만큼, 메모리가 충분하지 않다면, Elasticsearch는
+항상 디스크에서 데이터를 다시 로드 해야 하고, 공간을 만들기 위해 다른 데이터를 제거해야 한다.
+제거는 많은 디스크 I/O를 가져오고, 메모리에 많은 양의 garbage를 만들어낸다.
+이를 나중에 garbage collection을 통해 정리해야 한다.</p></div></div><p>매일 새로운 index를 사용하여, log를 색인 하는 작업을 가정해 보자. 일반적으로 하루나 이틀 전의
+데이터에만 관심을 가지게 된다. 과거의 index를 보관하겠지만, 그들은 거의 조회되지 않는다.
+그러나, 기본 설정으로 인해, 과거 index의 fielddata는 절대 제거되지 않는다.
+fielddata에 circuit breaker(<a class="link" href="controlling-memory.html#circuit-breaker" title="자동 차단기">자동 차단기</a> 참조)가 작동될 때까지,
+증가를 계속할 것이다. 이것은 더 이상의 fielddata가 로드되는 것을 방지한다.</p><p>이 시점에서 문제가 발생한다. 과거 index의 fielddata를 액세스하는 query를 실행할 수 있지만,
+새로운 값을 로드할 수는 없다. 새로운 값을 위한 공간을 만들기 위해, 기존 값을 제거해야 한다.</p><p>이런 시나리오를 방지하기 위해, <code class="literal">config/elasticsearch.yml</code> file에, 아래 설정을 추가하여,
+fielddata의 상한선을 둘 수 있다.</p><div class="pre_wrapper"><pre class="programlisting prettyprint lang-yaml">indices.fielddata.cache.size:  40% <a id="CO218-1"></a><span><img src="images/icons/callouts/1.png" alt="" /></span></pre></div><div class="calloutlist"><table border="0" summary="Callout list"><tr><td width="5%" valign="top" align="left"><p><a href="#CO218-1"><span><img src="images/icons/callouts/1.png" alt="" /></span></a> </p></td><td valign="top" align="left"><p>
+heap 크기의 비율이나, <code class="literal">5GB</code> 같은 고정 값을 설정할 수 있다.
+</p></td></tr></table></div><p>이 설정을 하면, 최소한, 최근에 사용된 fielddata는 새로 로드되는 데이터를 위한,
+공간을 만들기 위하여, 제거될 것이다.<a id="id-1.7.12.4.7.12.1" class="indexterm"></a>
+<a id="id-1.7.12.4.7.12.2" class="indexterm"></a></p><div class="warning admon"><div class="icon"><img alt="Warning" src="images/icons/warning.png" /></div><div class="admon_content"><p>online에서 볼 수 있는 다른 설정( <code class="literal">indices.fielddata.cache.expire</code> )이 있다.</p><p>이 설정을 <span class="emphasis"><em>절대로</em></span> 사용하지 말라고 부탁한다. 이것은 미래에는 더 이상 사용되지 않을 것이다.</p><p>이 설정은 <code class="literal">expire</code> 보다 더 오래된 값을, 그 값의 사용 여부에 관계없이 fielddata에서
+제거할 것이다.</p><p>이것은 성능에 <span class="emphasis"><em>끔찍한</em></span> 영향을 준다. 제거에는 많은 비용이 들어가는데,
+이것은 실질적인 이점도 없이, 일부러 실질적인 제거를 <span class="emphasis"><em>계획</em></span> 한다.</p><p>이 설정을 사용할 타당한 이유가 없다. 문자 그대로, 가상의 유용한 상황을 이론화할 수도 없다. 그것은 현재,
+과거 버전과의 호환성 때문에 존재한다. 슬프게도, 이 책에서 그 설정을 언급한 이후로,
+인터넷에서 좋은 성능 팁으로, 다양한 글에서 추천되고 있다.</p><p>그렇지 않다. 절대 사용하지 말라.</p></div></div></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="monitoring-fielddata"></a>Fielddata 모니터링</h3></div></div></div><p>fielddata에 얼마나 많은 메모리가<a id="id-1.7.12.4.8.2.1" class="indexterm"></a>
+<a id="id-1.7.12.4.8.2.2" class="indexterm"></a><a id="id-1.7.12.4.8.2.3" class="indexterm"></a>
+<a id="id-1.7.12.4.8.2.4" class="indexterm"></a>
+<a id="id-1.7.12.4.8.2.5" class="indexterm"></a> 사용되고 있는지,
+그리고 어떤 데이터가 제거되는지, 자세히 관찰해야 한다.
+높은 제거 횟수는 심각한 자원 이슈와 성능 저하의 원인을 가리킨다.</p><p>fielddata의 사용량은 다음 API로 관찰 할 수 있다:</p><div class="itemizedlist"><ul class="itemizedlist" type="disc"><li class="listitem"><p class="simpara">
+<a class="ulink" href="http://www.elastic.co/guide/en/elasticsearch/reference/current/indices-stats.html" target="_top"><code class="literal">indices-stats</code> API</a>를 이용한 index별 관찰:
+</p><div class="pre_wrapper"><pre class="programlisting prettyprint lang-json">GET /_stats/fielddata?fields=*</pre></div></li><li class="listitem"><p class="simpara">
+<a class="ulink" href="http://bit.ly/1586yDn" target="_top"><code class="literal">nodes-stats</code> API</a>를 이용한 index별 관찰:
+</p><div class="pre_wrapper"><pre class="programlisting prettyprint lang-json">GET /_nodes/stats/indices/fielddata?fields=*</pre></div></li><li class="listitem">
+또는 node별, index 별 관찰
+</li></ul></div><div class="pre_wrapper"><pre class="programlisting prettyprint lang-json">GET /_nodes/stats/indices/fielddata?level=indices&amp;fields=*</pre></div><p><code class="literal">?fields=*</code> 를 설정하면, 메모리 사용량은 각 field로 세분화된다.</p></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="circuit-breaker"></a>자동 차단기</h3></div></div></div><p>눈치 빠른 독자는, fielddata 크기 설정에 문제가 있음을 알 수 있을 것이다. fielddata 크기는 데이터가 로드된 <span class="emphasis"><em>후에</em></span> 확인된다.<a id="id-1.7.12.4.9.2.2" class="indexterm"></a>
+<a id="id-1.7.12.4.9.2.3" class="indexterm"></a>
+<a id="id-1.7.12.4.9.2.4" class="indexterm"></a>
+fielddata에, 이용할 수 있는 메모리보다 더 많이 로드 해야 하는 query가 오면, 어떻게 될까? 당연히, OutOfMemeoy Exception이 발생할 것이다.<a id="id-1.7.12.4.9.2.5" class="indexterm"></a><a id="id-1.7.12.4.9.2.6" class="indexterm"></a></p><p>Elasticsearch는 이런 상황을 처리하기 위하여 설계된, <span class="emphasis"><em>fielddata circuit breaker</em></span> 를 가지고 있다.<a id="id-1.7.12.4.9.3.2" class="indexterm"></a>
+circuit breaker는 관련된 field(type, cardinality, size 등)를 가로채, query에 필요한 메모리를 추정한다. 그 다음에,
+필요한 fielddata를 총 fielddata의 크기에 넣으면, 설정된 heap의 비율 이상인지를 알아내기 위해 확인한다.</p><p>추정된 query 크기가 한계보다 더 크면, circuit breaker가 <span class="emphasis"><em>작동</em></span> 되고,
+query는 중단되고 exception을 반환한다. 이것은 데이터가 로드되기 <span class="emphasis"><em>전</em></span> 에 일어난다.
+즉, OutOfMemory Exception이 발생하지 않는다.</p><div class="sidebar"><div class="titlepage"><div><div><p class="title"><strong>이용 가능한 Circuit Breakers</strong></p></div></div></div><p>Elasticsearch는 circuit breaker를 여러 개 가지고 있다. 그것 모두는 메모리 한계를 초과하지 않도록 보장한다.</p><div class="variablelist"><dl class="variablelist"><dt><span class="term">
+<code class="literal">indices.breaker.fielddata.limit</code>
+</span></dt><dd>
+    <code class="literal">fielddata</code> circuit breaker는 기본적으로,
+    fielddata 의 크기를 heap의 60%로 제한한다.
+</dd><dt><span class="term">
+<code class="literal">indices.breaker.request.limit</code>
+</span></dt><dd>
+    <code class="literal">request</code> circuit breaker는 요청의 다른 부분을 완성하는데
+    필요한 구조(예: 집계 bucket의 생성)의 크기를 추정하고,
+    기본적으로, 그들을 heap의 40%로 제한한다.
+</dd><dt><span class="term">
+<code class="literal">indices.breaker.total.limit</code>
+</span></dt><dd>
+    <code class="literal">total</code> circuit breaker는 <code class="literal">request</code> circuit breaker와
+        <code class="literal">fielddata</code> circuit breaker를 감싸고 있다.
+        기본적으로, 위의 둘의 조합이 heap의 70% 이상을 사용하지 않도록 한다.
+</dd></dl></div></div><p>circuit breaker 제한은 <code class="literal">config/elasticsearch.yml</code> file에서 지정하거나,
+동작하고 있는 cluster에 동적으로 업데이트될 수 있다.</p><div class="pre_wrapper"><pre class="programlisting prettyprint lang-js">PUT /_cluster/settings
+{
+  "persistent" : {
+    "indices.breaker.fielddata.limit" : "40%" <a id="CO219-1"></a><span><img src="images/icons/callouts/1.png" alt="" /></span>
+  }
+}</pre></div><div class="calloutlist"><table border="0" summary="Callout list"><tr><td width="5%" valign="top" align="left"><p><a href="#CO219-1"><span><img src="images/icons/callouts/1.png" alt="" /></span></a> </p></td><td valign="top" align="left"><p>
+제한은 heap의 백분율로 나타낸다.
+</p></td></tr></table></div><p>상대적으로 보수적인 값으로 circuit breaker를 설정하는 것이 가장 좋다.
+fielddata는, <code class="literal">request</code> circuit breaker, 색인 메모리 버퍼, filter cache,
+열려 있는 indices를 위한 Lucene의 데이터 구조 그리고 다양한 임시 구조와,
+heap을 공유해야 한다는 점을 기억하자. 이런 이유로, 상당히 보수적인 60%가 기본이다.
+지나치게 낙관적인 설정은 잠재적으로 OutOfMemory Exception을 발생시킬 수 있다.
+이는 전체 node를 다운시킬 것이다.</p><p>반면에, 지나치게 보수적인 값은 단순하게 응용프로그램에서 처리될 수 있는
+query를 예외로 반환할 것이다. exception이 crash보다 더 낫다.
+이러한 예외는 query를 다시 검토할 수 있는 기회가 된다.
+왜 이런 query가 heap의 60% 이상을 <span class="emphasis"><em>사용할까</em></span>?</p><div class="tip admon"><div class="icon"><img alt="Tip" src="images/icons/tip.png" /></div><div class="admon_content"><p><a class="link" href="controlling-memory.html#fielddata-size" title="Fielddata의 크기">fielddata의 크기</a>에서, 기존의 사용되지 않은 fielddata를 제거하기 위해,
+fielddata 크기에 제한을 추가하는 것에 대해 이야기했다. <code class="literal">indices.fielddata.cache.size</code> 와 <code class="literal">indices.breaker.fielddata.limit</code> 사이의 관계는 중요하다.
+circuit breaker 제한이 cache 크기보다 더 작으면, 데이터는 제거되지 않을 것이다. 정상적으로 동작하기 위해서는 circuit breaker 제한이 cache 크기보다 더 커야 <span class="emphasis"><em>한다</em></span>.</p></div></div><p>circuit breaker가 추정된 query 크기를, 실제 사용된 heap 메모리의 양이 아닌, heap의 총 크기와 비교한다는 점은 중요하다.
+다양한 기술적인 이유 때문에 이렇게 동작한다.(예를 들자면, heap이 가득 찬 것으로 보이지만, 실제로는 garbage가 수집될 것을 기다리고 있다.)
+이것을 적절하게 추정하는 것은 어렵다. 그러나, 최종 사용자로서는 이것이 보수적이어야 한다는 의미이다. 왜냐하면, <span class="emphasis"><em>남은</em></span> heap이 아닌, 총 heap과 비교하기 때문이다.
+<a id="id-1.7.12.4.9.12.2" class="indexterm"></a>
+<a id="id-1.7.12.4.9.12.3" class="indexterm"></a></p></div></div><div class="section"><div class="titlepage"><div><div><h2 class="title"><a id="_fielddata_필터링"></a>fielddata 필터링</h2></div></div></div><p>사용자들이 각자가 좋아하는 노래를 들을 수 있는 website를 운영 중이라고 가정해 보자.<a id="id-1.7.12.5.2.1" class="indexterm"></a>
+<a id="id-1.7.12.5.2.2" class="indexterm"></a><a id="id-1.7.12.5.2.3" class="indexterm"></a>
+<a id="id-1.7.12.5.2.4" class="indexterm"></a>
+<a id="id-1.7.12.5.2.5" class="indexterm"></a>
+사용자들이 각자의 음악 라이브러리를 쉽게 관리하도록 하기 위해서, 그들이 원하는 어떠한 tag라도 노래에 달 수 있게 하였다.
+<code class="literal">rock</code>, <code class="literal">hiphop</code>, <code class="literal">electronica</code> 등으로 tag된 많은 노래뿐만 아니라, <code class="literal">my_16th_birthday_favourite_anthem(나의 16번째 생일에 매우 좋아했던 기념)</code> 이라고 tag된 곡도 보게 될 것이다.</p><p>이제 각 노래에 대해, 가장 인기를 끌고 있는 3개의 tag를, 사용자에게 보여 주려 한다고 가정해보자.
+rock같은 tag는 상위 3개 안에 들 것이 확실하다. 그러나, <code class="literal">my_16th_birthday_favourite_a-nthem</code> 은 순위를 확인하기가 매우 어려울 것이다.
+그러나 가장 인기를 끌고 있는 tag를 계산하기 위해, 이러한 일회성 단어 모두를 메모리에 로드 할 수 밖에 없다.</p><p>fielddata 필터링 덕분에, 이 상황을 제어할 수 있다.
+가장 인기를 끌고 있는 단어에만 관심이 있다는 것을 <span class="emphasis"><em>알기</em></span> 때문에, 관심이 적은 불필요한 단어의 로드를 방지할 수 있다:</p><div class="pre_wrapper"><pre class="programlisting prettyprint lang-js">PUT /music/_mapping/song
+{
+  "properties": {
+    "tag": {
+      "type": "string",
+      "fielddata": { <a id="CO220-1"></a><span><img src="images/icons/callouts/1.png" alt="" /></span>
+        "filter": {
+          "frequency": { <a id="CO220-2"></a><span><img src="images/icons/callouts/2.png" alt="" /></span>
+            "min":              0.01, <a id="CO220-3"></a><span><img src="images/icons/callouts/3.png" alt="" /></span>
+            "min_segment_size": 500  <a id="CO220-4"></a><span><img src="images/icons/callouts/4.png" alt="" /></span>
+          }
+        }
+      }
+    }
+  }
+}</pre></div><div class="calloutlist"><table border="0" summary="Callout list"><tr><td width="5%" valign="top" align="left"><p><a href="#CO220-1"><span><img src="images/icons/callouts/1.png" alt="" /></span></a> </p></td><td valign="top" align="left"><p>
+<code class="literal">fielddata</code> key는 이 field에 대해 fielddata를 다루는 방법을 설정한다,
+</p></td></tr><tr><td width="5%" valign="top" align="left"><p><a href="#CO220-2"><span><img src="images/icons/callouts/2.png" alt="" /></span></a> </p></td><td valign="top" align="left"><p>
+<code class="literal">frequency</code> filter는 Term Frequency를 기반으로, fielddata 로드를 필터링한다.<a id="id-1.7.12.5.6.2.1.2" class="indexterm"></a>
+<a id="id-1.7.12.5.6.2.1.3" class="indexterm"></a>
+</p></td></tr><tr><td width="5%" valign="top" align="left"><p><a href="#CO220-3"><span><img src="images/icons/callouts/3.png" alt="" /></span></a> </p></td><td valign="top" align="left"><p>
+이 segment에서 document 중 최소한 1% 이상 나타나는 단어만 로드
+</p></td></tr><tr><td width="5%" valign="top" align="left"><p><a href="#CO220-4"><span><img src="images/icons/callouts/4.png" alt="" /></span></a> </p></td><td valign="top" align="left"><p>
+500개 이하의 document를 가지고 있는 segment는 무시 한다.
+</p></td></tr></table></div><p>이 mapping이 준비가 되면, <span class="emphasis"><em>해당 segment</em></span> 의 document 중,
+최소한 1% 이상 나타나는 단어만 메모리에 로드 될 것이다. <code class="literal">max</code> Term Frequency(max)를 지정할 수도 있는데,
+이는 (<a class="link" href="stopwords.html" title="Stopwords: Performance Versus Precision">불용어</a>처럼, <span class="emphasis"><em>아주</em></span> 흔한 단어를 제외하는데 사용될 수 있다.</p><p>이 경우에, term frequency는 segment별로 계산된다. 이것은 구현상의 한계이다.
+fielddata는 segment별로 로드 되고, 그 시점에서 볼 수 있는 term frequency만이 해당 segment에 대한 빈도이다.
+그러나 이 제한은 재미있는 특성을 가지고 있다. 새로 인기를 끌고 얻는 단어는 빠르게 상위권으로 올라온다.</p><p>어느 날 새로운 장르의 노래가 인기를 끌고 있다고 가정해 보자. 이 새로운 장르에 대한 tag를 가장 인기를 끌고 있는 목록에 포함하고 싶지만,
+전체 index에 대해 계산된 term frequency에 의존한다면, 새로운 tag가 <code class="literal">rock</code>, <code class="literal">electronica</code> 만큼 인기를 끌 때까지 기다려야 한다.
+frequency 필터링 방식으로 구현되었기 때문에, 새롭게 추가된 tag는 새로운 segment내 높은 빈도의 tag로써,
+빠르게 눈에 띄게 될 것이다. 따라서, 빠르게 상위권으로 떠오를 것이다.</p><p><code class="literal">min_segment_size</code> 매개변수는 특정 크기 이하의 segment를 무시하도록 한다.<a id="id-1.7.12.5.10.2" class="indexterm"></a>
+segment가 소수의 document만을 가지고 있다면, term frequency는 어떤 의미를 가지기에는 너무 조잡하다.
+작은 segment가 더 큰 segment에 곧 병합되면, 의미를 가지게 된다.</p><div class="tip admon"><div class="icon"><img alt="Tip" src="images/icons/tip.png" /></div><div class="admon_content"><p>frequency로 단어를 필터링하는 것 외에도 옵션이 있다. 정규식에 일치하는 해당 단어만을 로드할 수도 있다.
+예를 들어, hashtag(<code class="literal">#</code> 으로 시작하는 단어)만을 메모리에 로드 하기 위해, tweets에 <code class="literal">정규식</code> filter를<a id="id-1.7.12.5.11.1.3" class="indexterm"></a> 사용할 수 있다.
+이것은 <code class="literal">whitespace</code> analyzer 같은, 구두점을 유지하는 analyzer를 사용한다고 가정한 것이다.</p></div></div><p>fielddata 필터링은 메모리 사용에 <span class="emphasis"><em>막대한</em></span> 영향을 끼칠 수 있다.
+trade-off는 매우 알기 쉽다. 여러분은 본질적으로 데이터를 무시하고 있다.
+하지만, 많은 응용프로그램에서, 데이터는 어쨌든 사용되지 않고 있기 때문에, trade-off는 합리적이다.
+메모리의 절약은 크고 상대적으로 쓸모 없는 단어를 포함하는 것보다 더 중요하다.</p></div><div class="section"><div class="titlepage"><div><div><h2 class="title"><a id="doc-values"></a>Doc Values</h2></div></div></div><p>in-memory fielddata는 heap의 크기로 제한된다.<a id="id-1.7.12.6.2.1" class="indexterm"></a>
+<a id="id-1.7.12.6.2.2" class="indexterm"></a>
+이것은 수평확장에 의해 해결할 수 있는 문제(항상 더 많은 node를 추가할 수 있다.)이긴 하지만, node에서 다른 자원이 충분히 활용되지 않으면서,
+집계와 정렬의 대량 사용이 heap 공간을 소비하는 경우도 있다.</p><p>fielddata는 그 값을 메모리에 즉시 로드 하는 것이 기본이지만, 유일한 옵션은 아니다.
+heap 메모리 사용 없이, in-memory fielddata의 모든 기능을 제공하는 방식으로, 색인 시에, 디스크에 기록할 수도 있다.
+이 대안이 되는 형식을 <span class="emphasis"><em>doc values</em></span> 라<a id="id-1.7.12.6.3.2" class="indexterm"></a>
+<a id="id-1.7.12.6.3.3" class="indexterm"></a><a id="id-1.7.12.6.3.4" class="indexterm"></a> 한다.</p><p>doc values는 Elasticsearch 버전 1.0.0에서 추가되었지만, 최근까지 in-memory fielddata보다 훨씬 더 느렸다.
+성능에 대한 benchmarking과 profiling을 통해, Elasticsearch와 Lucene 양쪽 모두에서,
+다양한 병목현상이 확인되었고, 제거되었다.</p><p>이제, doc values는 in-memory fielddata보다 단지 약 10–25% 정도 더 느리고, 두 가지 주요 장점을 제공한다.</p><div class="itemizedlist"><ul class="itemizedlist" type="disc"><li class="listitem">
+heap 메모리 대신에 디스크에 있다. 보통의 경우, 메모리에 비해 너무 큰, 많은 fielddata와 함께 동작할 수 있다.
+        실제로, heap 공간(<code class="literal">$ES_HEAP_SIZE</code> )을 더 작은 크기로 설정할 수 있어, garbage collection을 빠르게 하고,
+        결과적으로 node의 안정성을 향상시킨다.
+</li><li class="listitem">
+doc values는 검색 시가 아닌 색인 시에 만들어진다. in-memory fielddata는 검색 시에 즉시,
+        inverted index를 uninvert하여 만들어야 하지만, doc values는 미리 만들어지고,
+        초기화하는 것이 훨씬 빠르다.
+</li></ul></div><p>trade-off는 size가 더 큰 index와 약간 더 느린 fielddata에 접근하는 것이다.
+doc values는 매우 효율적이다. 따라서, 많은 query에 대해서 약간 더 느린 속도를 느끼지 못할 수도 있다.
+더 빠른 garbage collection과 향상된 초기화 시간의 조합은 장점이 될 수도 있다.</p><p>사용할 수 있는 filesystem cache가 더 많을 수록, doc values는 더 잘 동작한다.
+doc values를 가지고 있는 파일이 filesystem cache에 있다면, 파일을 액세스하는 것은 RAM을 읽는 것과 거의 같다.
+그리고 filesystem cache는 JVM이 아닌 kernel이 관리한다.</p><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="_doc_values의_활성화"></a>doc values의 활성화</h3></div></div></div><p>doc values는 numeric, date, boolean, binary, geo-point field와 <code class="literal">not_analyzed</code> string field에 사용할 수 있다.<a id="id-1.7.12.6.9.2.2" class="indexterm"></a>
+<a id="id-1.7.12.6.9.2.3" class="indexterm"></a>
+현재, <code class="literal">analyzed</code> string field에는 사용할 수 없다. doc values는 field mapping에서 field별로 사용된다.
+즉, in-memory fielddata와 doc values를 조합할 수 있다:</p><div class="pre_wrapper"><pre class="programlisting prettyprint lang-js">PUT /music/_mapping/song
+{
+  "properties" : {
+    "tag": {
+      "type":       "string",
+      "index" :     "not_analyzed",
+      "doc_values": true <a id="CO221-1"></a><span><img src="images/icons/callouts/1.png" alt="" /></span>
+    }
+  }
+}</pre></div><div class="calloutlist"><table border="0" summary="Callout list"><tr><td width="5%" valign="top" align="left"><p><a href="#CO221-1"><span><img src="images/icons/callouts/1.png" alt="" /></span></a> </p></td><td valign="top" align="left"><p>
+field 생성 시에, <code class="literal">doc_values</code> 를 <code class="literal">true</code> 로 설정하는 것은,
+        in-memory fielddata 대신 디스크 기반의 fielddata를 사용한다는 의미이다.
+</p></td></tr></table></div><p>query, 집계, 정렬, scripts는 일반적인 기능이다.
+그것들이 지금 doc values를 사용할 뿐이다. 다른 설정은 불필요하다.</p><div class="tip admon"><div class="icon"><img alt="Tip" src="images/icons/tip.png" /></div><div class="admon_content"><p>마음 놓고 doc values를 사용하자. 더 많이 사용할수록, heap에 두는 것보다 스트레스를 덜 받는다.
+가까운 시일 안에 doc values가 기본 형식이 될 것이다.</p></div></div></div></div><div class="section"><div class="titlepage"><div><div><h2 class="title"><a id="preload-fielddata"></a>fielddata의 사전(事前) 로드</h2></div></div></div><p>Elasticsearch의 기본 동작은<a id="id-1.7.12.7.2.1" class="indexterm"></a>
+<a id="id-1.7.12.7.2.2" class="indexterm"></a> in-memory fielddata를 <span class="emphasis"><em>지연시켜</em></span> 로드 하는 것이다.
+Elasticsearch가 특정 field에 대해, fielddata가 필요한, query를 처음으로 만나면,
+index에 있는 각 segment에 대해, 전체 field를 메모리로 로드 한다.</p><p>작은 segment에서는 무시해도 될 정도의 시간이다. 하지만, 몇 개의 5GB짜리 segment를 가지고 있고, 메모리에 10 GB의 fielddata를 메모리로 로드 해야 한다면,
+이 과정은 수십 초가 소요될 수 있다. 짧은 응답 시간에 익숙한 사용자들은 응답하지 않는 웹사이트 때문에 놀랄 것이다.</p><p>이런 응답 시간 문제에 대응하는 세 가지 방법이 있다.</p><div class="itemizedlist"><ul class="itemizedlist" type="disc"><li class="listitem">
+fielddata를 미리 로드(Eagerly load)
+</li><li class="listitem">
+global ordinals를 미리 로드(Eagerly load)
+</li><li class="listitem">
+index warner로 cache를 미리 채우기
+</li></ul></div><p>모두 다 동일한 개념(사용자가 검색을 실행할 때, 응답 시간 문제를 없애기 위해, fielddata를 사전 로드)을 가진 변종이다.</p><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="eager-fielddata"></a>fielddata를 미리 로드하자</h3></div></div></div><p>첫 번째 도구는 <span class="emphasis"><em>eager loading</em></span>(미리 로드, 기본값인 지연 로드와는 대조적으로)<a id="id-1.7.12.7.7.2.2" class="indexterm"></a>
+<a id="id-1.7.12.7.7.2.3" class="indexterm"></a>이라 한다.
+새로운 segment가 생성(refresh, flush, merge)되면, eager loading이 활성화된 field는, segment가 검색에 표시되기 <span class="emphasis"><em>전에</em></span> , segment별로 fielddata를 미리 로드한다.</p><p>즉, segment에 대한 첫 번째 query는 fielddata 로드를 발생시킬 필요가 없다. 왜냐하면, in-memory cache는 이미 채워져 있기 때문이다.
+<span class="emphasis"><em>cold cache</em></span> 로 인한 사용자의 응답 시간 문제를 방지한다.</p><p>사전(eager) 로드는 기본적으로 field별로 활성화된다. 따라서, 어느 field를 미리 로드할 지를 제어할 수 있다:</p><div class="pre_wrapper"><pre class="programlisting prettyprint lang-js">PUT /music/_mapping/_song
+{
+  "price_usd": {
+    "type": "integer",
+    "fielddata": {
+      "loading" : "eager" <a id="CO222-1"></a><span><img src="images/icons/callouts/1.png" alt="" /></span>
+    }
+  }
+}</pre></div><div class="calloutlist"><table border="0" summary="Callout list"><tr><td width="5%" valign="top" align="left"><p><a href="#CO222-1"><span><img src="images/icons/callouts/1.png" alt="" /></span></a> </p></td><td valign="top" align="left"><p>
+<code class="literal">fielddata.loading: eager</code> 로 설정하여, 이 field의 내용을 메모리로 미리 로드한다.
+</p></td></tr></table></div><p>fielddata의 로드는 <code class="literal">update-mapping</code> API를 사용하여, 기존의 field에 <code class="literal">eager</code> 나 <code class="literal">lazy</code> 로 설정한다.</p><div class="warning admon"><div class="icon"><img alt="Warning" src="images/icons/warning.png" /></div><div class="admon_content"><p>eager loading은 fielddata 로드의 비용 지불 위치를 옮겼을 뿐이다.
+query시에 지불하는 대신, refresh시에 지급한다.</p><p>큰 segment는 작은 segment보다 refresh에 더 많은 시간이 걸린다.
+일반적으로, 큰 segment는 이미 검색에 표시된, 작은 segment의 병합으로 생성된다.
+따라서 더 느린 refresh 시간은 중요하지 않다.</p></div></div></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="global-ordinals"></a>Global Ordinals</h3></div></div></div><p>fielddata(특히, 문자열)의 메모리 사용량을 줄이는 데 사용되는 기술 중의 하나가 <a id="id-1.7.12.7.8.2.1" class="indexterm"></a> <span class="emphasis"><em>ordinal</em></span> 이다.</p><p>각각 <code class="literal">status</code> field를 가진, 10억개의 document를 가지고 있다고 가정해 보자.
+<code class="literal">status_pending</code>, <code class="literal">status_published</code>, <code class="literal">status_deleted</code> 의 세 가지 상태가 있다.
+모든 document가 상태를 모두 문자열로 가지고 있다면, document당 14 ~ 16 byte(약 15GB)를 사용해야 한다.</p><p>그 대신, 그것들을 구분하여 정렬하고, 번호를 매길(0, 1, 2) 수 있다.</p><pre class="literallayout">Ordinal | Term
+-------------------
+0       | status_deleted
+1       | status_pending
+2       | status_published</pre><p>ordinal 문자열은 ordinal 목록에 단 한번 저장된다.
+그리고, 각 document는 그것을 포함한 값을 가리키는 번호가 매겨진 ordinal를 사용할 뿐이다.</p><pre class="literallayout">    Doc     | Ordinal
+-------------------------
+0       | 1  # pending
+1       | 1  # pending
+2       | 2  # published
+3       | 0  # deleted</pre><p>이것은 메모리 사용량을 15GB에서 1GB이하로 줄인다!</p><p>그러나, 문제가 있다. fielddata cache는 <span class="emphasis"><em>segment별</em></span> 로 존재한다.
+어떤 segment가 두 가지 상태—(<code class="literal">status_deleted</code> 와 <code class="literal">status_published</code> )만을 가지고 있다면,
+결과가 되는 ordinals(0, 1)은 세 가지 상태 모두를 가지는 segment에 대한 ordinals와 동일하지 않을 것이다.</p><p><code class="literal">status</code> field에 <code class="literal">terms</code> 집계를 실행하려면, 실제 문자열 값을 집계해야 한다.
+즉, 모든 segment에서 동일한 값을 확인해야 한다. 이렇게 하는 단순한 방식은 각 segment에서 집계를 실행하고,
+각 segment에서 문자열 값을 반환하고, 그 다음에 그들을 전체 결과로 축소하는 것이다.
+이렇게 하면, CPU를 많이 사용하여 느려질 것이다.</p><p>이를 대신하여, <span class="emphasis"><em>global ordinal</em></span> 라는 구조를 사용한다.<a id="id-1.7.12.7.8.11.2" class="indexterm"></a>
+global ordinal는 fielddata 위에 구축된, 작은 메모리 데이터 구조이다.
+유일한 값은 <span class="emphasis"><em>모든 segment</em></span> 에서 확인되어, 이미 언급한 것처럼 ordinals 목록에 저장된다.</p><p>이제, <code class="literal">단어</code> 집계는 global ordinal에서 집계할 수 있다.
+ordinal을 실제 문자열 값으로 바꾸는 변환은 집계의 마지막에 한번만 일어난다.
+이것은 3~4 가지 요소로 인하여, 집계와 정렬의 성능을 증가시킨다.</p><div class="section"><div class="titlepage"><div><div><h4 class="title"><a id="_global_ordinals의_구축"></a>Global ordinals의 구축</h4></div></div></div><p>물론, 공짜는 없다.<a id="id-1.7.12.7.8.13.2.1" class="indexterm"></a>
+<a id="id-1.7.12.7.8.13.2.2" class="indexterm"></a> global ordinal는 index의 모든 segment에 대한 것이다.
+따라서, 새로운 segment가 생성되거나 오래된 segment가 삭제되면, global ordinal는 다시 구축되어야 한다.
+다시 구축하려면, 모든 segment에서 유일한 단어 모두를 읽어야 한다.
+cardinality가 높을수록(유일한 단어가 많을수록), 이 과정이 더 오래 걸린다.</p><p>global ordinal는 in-memory fielddata와 doc values 위에 구축된다.
+사실, 이것이 doc values만큼 잘 동작할 수 있는 주요한 이유중의 하나이다.</p><p>fielddata 로드와 마찬가지로, global ordinal는 기본적으로, 지연되어 만들어진다.
+index에 대해 fielddata를 필요로 하는 첫 번째 요청은 global ordinal의 구축을 발생시킨다.
+field의 cardinality에 따라, 이것은 사용자에게 심각한 응답 시간 문제로 나타날 수 있다.
+global ordinal가 다시 구축되고 나면, index의 segment에 변화(refresh, flush, merge)가 있을 때까지, 재사용된다.</p></div><div class="section"><div class="titlepage"><div><div><h4 class="title"><a id="eager-global-ordinals"></a>Global ordinals의 사전(事前) 구축</h4></div></div></div><p>개별 문자열 field는<a id="id-1.7.12.7.8.14.2.1" class="indexterm"></a>
+<a id="id-1.7.12.7.8.14.2.2" class="indexterm"></a><a id="id-1.7.12.7.8.14.2.3" class="indexterm"></a>
+<a id="id-1.7.12.7.8.14.2.4" class="indexterm"></a> global ordinal를 미리 구축하도록, 설정될 수 있다.</p><div class="pre_wrapper"><pre class="programlisting prettyprint lang-js">PUT /music/_mapping/_song
+{
+  "song_title": {mapping.
+    "type": "string",
+    "fielddata": {
+      "loading" : "eager_global_ordinals" <a id="CO223-1"></a><span><img src="images/icons/callouts/1.png" alt="" /></span>
+    }
+  }
+}</pre></div><div class="calloutlist"><table border="0" summary="Callout list"><tr><td width="5%" valign="top" align="left"><p><a href="#CO223-1"><span><img src="images/icons/callouts/1.png" alt="" /></span></a> </p></td><td valign="top" align="left"><p>
+<code class="literal">eager_global_ordinals</code> 를 설정하여, fielddata의 사전(eager) 로드를 적용한다.
+</p></td></tr></table></div><p>fielddata의 사전(eager) 로드와 마찬가지로, eager global ordinal는
+새로운 segment가 검색에 표시되기 전에 구축된다.</p><div class="note admon"><div class="icon"><img alt="Note" src="images/icons/note.png" /></div><div class="admon_content"><p>ordinals는 문자열에 사용하기 위해서만 구죽해야 한다. 수치 데이터(integers, geopoints,
+dates 등)는 값자체가 고유한 서수적 특징을 가지므로 ordinal mapping을 필요로 하지 않는다.</p><p>따라서 eager global ordinals은 문자열 field에서만 활성화 할 수 있다.</p></div></div><p>doc values 또한 자신의 eager global ordinal를 구축할 수 있다.</p><div class="pre_wrapper"><pre class="programlisting prettyprint lang-js">PUT /music/_mapping/_song
+{
+  "song_title": {
+    "type":       "string",
+    "doc_values": true,
+    "fielddata": {
+      "loading" : "eager_global_ordinals" <a id="CO224-1"></a><span><img src="images/icons/callouts/1.png" alt="" /></span>
+    }
+  }
+}</pre></div><div class="calloutlist"><table border="0" summary="Callout list"><tr><td width="5%" valign="top" align="left"><p><a href="#CO224-1"><span><img src="images/icons/callouts/1.png" alt="" /></span></a> </p></td><td valign="top" align="left"><p>
+이 경우에, fielddata는 메모리에 로드 되지 않는다. 그러나 doc values가 filesystem cache에 로드 된다.
+</p></td></tr></table></div><p>미리 로드 되는 fielddata와 달리, global ordinals의 사전(eager) 구축은 데이터의 <span class="emphasis"><em>실시간</em></span> 이라는 측면에 영향을 줄 수 있다.
+매우 높은 cardinality field의 경우, global ordinals의 구축은 refresh를 몇 초 정도 지연시킬 수 있다.
+refresh시에 매번 비용을 지불하느냐, 아니면, refresh 후에 첫 번째 query에서 비용을 지불하느냐를 선택해야 한다.
+자주 색인하고 거의 query를 하지 않는다면, 아마도 refresh할 때마다가 아닌, query시에 비용을 지불하는 것이 더 나을 것이다.</p><div class="tip admon"><div class="icon"><img alt="Tip" src="images/icons/tip.png" /></div><div class="admon_content"><p>global ordinals를 아끼자. 다시 구축하는데 수초가 걸리는, 매우 높은 cardinality를 가진 field가 있다면,
+global ordinals가 더 오랫동안 유효하도록, <code class="literal">refresh_interval</code> 을 증가시키자.
+이것은 global ordinals의 재 구축 횟수를 줄여, CPU 사용량을 줄인다.</p></div></div></div></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="index-warmers"></a>Index Warmers</h3></div></div></div><p>마지막으로 <span class="emphasis"><em>index warmer</em></span> 를 보자. warmer는<a id="id-1.7.12.7.9.2.2" class="indexterm"></a> fielddata의 사전(eager) 로드와 사전(eager) global ordinals보다 선행하지만 여전히 유용하다.
+index warmer는 새로운 segment가 검색에 표시되기 전에, 실행될 query와 집계를 지정할 수 있다.
+이 개념은 사용자가 응답 시간 문제를 결코 보지 못하게 하기 위해, 미리 채우거나, cache를 <span class="emphasis"><em>warm</em></span> 하는 것이다.</p><p>원래, warmer의 가장 중요한 사용처는 fielddata의 사전 로드를 확인하는 것이었다. 이것은 일반적으로 가장 많은 비용이 소요되는 단계이다.
+지금은, 이것이 위에서 언급한 기술로 더 잘 제어된다. 그러나, warmer는 filter cache를 미리 만드는데 사용될 수 있고,
+선택에 따라, fielddata를 미리 로드 하는데 여전히 사용할 수 있다.</p><p>warmer를 등록하고, 무슨 일이 벌어지는지 살펴보자:</p><div class="pre_wrapper"><pre class="programlisting prettyprint lang-js">PUT /music/_warmer/warmer_1 <a id="CO225-1"></a><span><img src="images/icons/callouts/1.png" alt="" /></span>
+{
+  "query" : {
+    "filtered" : {
+      "filter" : {
+        "bool": {
+          "should": [ <a id="CO225-2"></a><span><img src="images/icons/callouts/2.png" alt="" /></span>
+            { "term": { "tag": "rock"        }},
+            { "term": { "tag": "hiphop"      }},
+            { "term": { "tag": "electronics" }}
+          ]
+        }
+      }
+    }
+  },
+  "aggs" : {
+    "price" : {
+      "histogram" : {
+        "field" : "price", <a id="CO225-3"></a><span><img src="images/icons/callouts/3.png" alt="" /></span>
+        "interval" : 10
+      }
+    }
+  }
+}</pre></div><div class="calloutlist"><table border="0" summary="Callout list"><tr><td width="5%" valign="top" align="left"><p><a href="#CO225-1"><span><img src="images/icons/callouts/1.png" alt="" /></span></a> </p></td><td valign="top" align="left"><p>
+warmer는 index(<code class="literal">music</code>)와 관련되어 있고, 마지막에 <code class="literal">_warmer</code> 를 사용하여 등록되었다. 그리고 <code class="literal">warmer_1</code> 이 고유한 ID이다.
+</p></td></tr><tr><td width="5%" valign="top" align="left"><p><a href="#CO225-2"><span><img src="images/icons/callouts/2.png" alt="" /></span></a> </p></td><td valign="top" align="left"><p>
+3개의 가장 인기 있는 음악 장르는 미리 구축된 자신들의 filter cache를 가지고 있다.
+</p></td></tr><tr><td width="5%" valign="top" align="left"><p><a href="#CO225-3"><span><img src="images/icons/callouts/3.png" alt="" /></span></a> </p></td><td valign="top" align="left"><p>
+<code class="literal">price</code> field에 대한 fielddata와 global ordinal은 미리 로드된다.
+</p></td></tr></table></div><p>warmer는 특정 index에 대해 등록된다.<a id="id-1.7.12.7.9.7.1" class="indexterm"></a>
+index별로 다수의 warmer를 가질 수 있기 때문에, 각 warmer는 교유한 ID를 가진다.</p><p>그 다음에 query(어떤 query라도)를 지정하면 된다.
+query, filter, 집계, 정렬 값 script 등의, 모든 유효한 query DSL 등을 포함할 수 있다.
+핵심은 적절한 cache가 미리 채워지도록, 사용자가 만들어내는 요청을 대표하는 query를 등록하는 것이다.</p><p>새로운 segment가 생성되면, Elasticsearch는 warmer에 등록된 query를 <span class="emphasis"><em>문자 그대로</em></span> 실행한다.
+이 query를 실행하여 cache를 로드하는 것이다. 모든 query가 실행된 후에만, segment는 검색에 표시될 것이다.</p><div class="warning admon"><div class="icon"><img alt="Warning" src="images/icons/warning.png" /></div><div class="admon_content"><p>사전(eager) 로드와 마찬가지로, warmer는 cold cache의 비용 지불의 위치를 refresh할 때로 옮긴 것이다.
+warmer를 등록할 때에는 신중해야 한다. 모든 cache가 채워지도록, 수천 개의 warmer를 등록 <span class="emphasis"><em>할 수 있다</em></span>. 그러나, 그것은 새로운 segment를 검색이 가능하도록 만드는데 소요되는 시간을 급격히 증가시킨다.</p><p>실제 상황에서는, 사용자의 query 대부분을 대표하는 query 중 소수만을 선택해 등록한다.</p></div></div><p>이 설명에서 생략된 관리 세부 사항(현재 warmer를 얻는 방법, warmer의 삭제 방법 등)이 많이 있다. 나머지 세부 사항에 대해서는 <a class="ulink" href="http://bit.ly/1AUGwys" target="_top">warmers 문서</a>를 참고하자.</p></div></div><div class="section"><div class="titlepage"><div><div><h2 class="title"><a id="_조합의_확장_방지"></a>조합의 확장 방지</h2></div></div></div><p>terms bucket은 데이터에 기반한 bucket을 동적으로 생성한다.<a id="id-1.7.12.8.2.1" class="indexterm"></a><a id="id-1.7.12.8.2.2" class="indexterm"></a>
+<a id="id-1.7.12.8.2.3" class="indexterm"></a> 얼마나 많은 bucket을 생성해야 할지를 미리 알지는 못한다.
+이것은 단일 집계에서는 잘 되겠지만, 어떤 집계가 다른 집계를 포함하고, 또 다른 집계를 포함하는 등의 경우에는 어떤 일이 일어날지를 생각해 보자.
+이런 집계 각각에서, 유일한 값의 조합은, 생성된 bucket 수의 폭발적인 증가로 이어질 것이다.</p><p>영화를 나타내는 적당한 데이터 집합을 가지고 있다고 가정해 보자.
+각 document는 해당 영화의 배우를 나열하고 있다:</p><div class="pre_wrapper"><pre class="programlisting prettyprint lang-js">{
+  "actors" : [
+    "Fred Jones",
+    "Mary Jane",
+    "Elizabeth Worthing"
+  ]
+}</pre></div><p>10대 배우와 그들의 최고 조연을 알아내려면, 집계를 사용하면 쉬운 일이다:</p><div class="pre_wrapper"><pre class="programlisting prettyprint lang-js">{
+  "aggs" : {
+    "actors" : {
+      "terms" : {
+         "field" : "actors",
+         "size" :  10
+      },
+      "aggs" : {
+        "costars" : {
+          "terms" : {
+            "field" : "actors",
+            "size" :  5
+          }
+        }
+      }
+    }
+  }
+}</pre></div><p>이것은 10대 배우의 목록과, 각 배우에 대해, 그들 자신의 조연 배우의 목록을 반환한다.
+이것은 매우 적절한 집계처럼 보인다. 50개의 값만 반환될 것이다.</p><p>그러나, 외견상 문제가 없어 보이는,<a id="id-1.7.12.8.8.1" class="indexterm"></a>
+<a id="id-1.7.12.8.8.2" class="indexterm"></a>
+<a id="id-1.7.12.8.8.3" class="indexterm"></a> 이 query는 어마어마한 양의 메모리를 소모한다.
+메모리에 tree를 만들기 위해, <code class="literal">terms</code> 집계를 시각화할 수 있다. <code class="literal">actors</code> 집계는 모든 배우의 bucket을 이용하여, tree의 첫 번째 단계를 만든다.
+그 다음 <a class="xref" href="controlling-memory.html#depth-first-1" title="Figure 42. 전체 트리 구축">Figure 42, “전체 트리 구축”</a>에서 보는 것 처럼, 첫 번째 단계에서 각 node의 아래에 중첩된 <code class="literal">costars</code> 집계는 모든 조연 배우 bucket을 이용하여, 두 번째 단계를 만든다.
+즉, 어떤 하나의 영화는 n<sup>2</sup>개의 bucket을 생성한다.</p><div class="figure"><a id="depth-first-1"></a><p class="title"><strong>Figure 42. 전체 트리 구축</strong></p><div class="figure-contents"><div class="mediaobject"><img src="images/300_120_depth_first_1.svg" alt="전체 트리 구축" /></div></div></div><br class="figure-break" /><p>실제로 발생하는 수를 생각해보기 위해, 각 영화에 평균 10명의 배우가 출연했다고 가정해 보자. 그러면, 각 영화는 10<sup>2</sup> == 100개의 bucket을 만들어낸다.
+20,000개의 영화를 가지고 있다면, 대략, 2,000,000개의 bucket을 만들어 낼 것이다.</p><p>자, 이 집계는 단순하게, 10명의 주연 배우와 그들의 조연 배우, 합해서 50명을 찾고 있다.
+최종 결과를 얻으려면, 2,000,000개 bucket의 tree를 생성하고, 그것을 정렬하고, 마지막으로, 10명의 배우가 남을 때까지 정리해야 한다.
+이것은 <a class="xref" href="controlling-memory.html#depth-first-2" title="Figure 43. Sort tree">Figure 43, “Sort tree”</a> 와 <a class="xref" href="controlling-memory.html#depth-first-3" title="Figure 44. Prune tree">Figure 44, “Prune tree”</a> 에 설명되어 있다.</p><div class="figure"><a id="depth-first-2"></a><p class="title"><strong>Figure 43. Sort tree</strong></p><div class="figure-contents"><div class="mediaobject"><img src="images/300_120_depth_first_2.svg" alt="tree의 정렬" /></div></div></div><br class="figure-break" /><div class="figure"><a id="depth-first-3"></a><p class="title"><strong>Figure 44. Prune tree</strong></p><div class="figure-contents"><div class="mediaobject"><img src="images/300_120_depth_first_3.svg" alt="tree의 정리" /></div></div></div><br class="figure-break" /><p>지금, 약간 혼란스러울 것이다. 20,000개의 document는 별 것 아니고 집계도 마찬가지이다.
+만약, 2억개의 document를 가지고 있는데, 100대 배우와 그들의 최고 조연 20명을, 마찬가지로 조연의 조연을 알아내려면, 무슨 일이 일어날까?</p><p>얼마나 빨리 조합의 확장이 커질지, 이 전략은 말이 안 된다는 것을 알 수 있을 것이다.
+통제되지 않는 조합의 확장을 지원하는 세계에서는, 메모리가 부족할 수 밖에 없다.</p><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="_depth_first_vs_breadth_first"></a>Depth-First Vs Breadth-First</h3></div></div></div><p>정확히 이런 상황을 위해, Elasticsearch는 집계의 <span class="emphasis"><em>수집 모드</em></span> 를 변경할 수 있다.<a id="id-1.7.12.8.16.2.2" class="indexterm"></a> <a id="id-1.7.12.8.16.2.3" class="indexterm"></a>
+<a id="id-1.7.12.8.16.2.4" class="indexterm"></a>
+<a id="id-1.7.12.8.16.2.5" class="indexterm"></a>
+위에서 설명한 전략(완전한 tree를 구축하고, 정리하는)을 <span class="emphasis"><em>depth-first</em></span> 라 하고, 이것이 기본이다.<a id="id-1.7.12.8.16.2.7" class="indexterm"></a> depth-first는 집계의 대부분에서 잘 동작하지만,
+위와 같은 상황에서는 아니다.</p><p>이런 특별한 상황에서는, <span class="emphasis"><em>breadth-first</em></span> 라는 대조적인 수집 전략을 사용해야 한다.<a id="id-1.7.12.8.16.3.2" class="indexterm"></a> 이 전략은 약간 다르게 동작한다.
+<a class="xref" href="controlling-memory.html#breadth-first-1" title="Figure 45. 첫번째 단계의 구축">Figure 45, “첫번째 단계의 구축”</a> 에서부터 <a class="xref" href="controlling-memory.html#breadth-first-3" title="Figure 47. 첫번째 단계의 정리">Figure 47, “첫번째 단계의 정리”</a>까지 예시된 것 처럼, 집계의 첫 번째 단계를 실행한 <span class="emphasis"><em>다음</em></span> , 계속하기 전에 정리 작업을 수행한다.</p><p>이 예에서, <code class="literal">actors</code> 집계가 먼저 실행된다. 이 시점에서 tree의 첫 번째 단계를 가지고 있다.
+즉, 10대 배우가 누구인지 알고 있다. 어쨌든 10대 배우가 아닌 다른 배우들을 가지고 있을 필요가 없다.</p><div class="figure"><a id="breadth-first-1"></a><p class="title"><strong>Figure 45. 첫번째 단계의 구축</strong></p><div class="figure-contents"><div class="mediaobject"><img src="images/300_120_breadth_first_1.svg" alt="첫번째 단계의 구축" /></div></div></div><br class="figure-break" /><div class="figure"><a id="breadth-first-2"></a><p class="title"><strong>Figure 46. 첫번째 단계의 정렬</strong></p><div class="figure-contents"><div class="mediaobject"><img src="images/300_120_breadth_first_2.svg" alt="첫번째 단계의 정렬" /></div></div></div><br class="figure-break" /><div class="figure"><a id="breadth-first-3"></a><p class="title"><strong>Figure 47. 첫번째 단계의 정리</strong></p><div class="figure-contents"><div class="mediaobject"><img src="images/300_120_breadth_first_3.svg" alt="첫번째 단계의 정리" /></div></div></div><br class="figure-break" /><p>이미 10대 배우를 알고 있기 때문에, 불필요한 나머지는 정리할 수 있다. 정리 후에, <a class="xref" href="controlling-memory.html#breadth-first-4" title="Figure 48. 나머지 노드을 모두 채운다">Figure 48, “나머지 노드을 모두 채운다”</a>의 예시처럼 다음 단계가 <span class="emphasis"><em>그것의</em></span> 실행 모드를 기반으로 채워지고 집계가 완료될때 까지 작업이 반복된다.
+이것은 bucket 조합의 확장을 방지하고, 이런 종류의 query에 대한 메모리 요구량을 급격하게 줄인다.</p><div class="figure"><a id="breadth-first-4"></a><p class="title"><strong>Figure 48. 나머지 노드을 모두 채운다</strong></p><div class="figure-contents"><div class="mediaobject"><img src="images/300_120_breadth_first_4.svg" alt="Step 4: 나머지 노드을 모두 채운다" /></div></div></div><br class="figure-break" /><p>breadth-first를 사용하기 위해, collect 매개변수를 사용하여 간단하게 <a id="id-1.7.12.8.16.10.1" class="indexterm"></a>활성화할 수 있다:</p><div class="pre_wrapper"><pre class="programlisting prettyprint lang-js">{
+  "aggs" : {
+    "actors" : {
+      "terms" : {
+         "field" :        "actors",
+         "size" :         10,
+         "collect_mode" : "breadth_first" <a id="CO226-1"></a><span><img src="images/icons/callouts/1.png" alt="" /></span>
+      },
+      "aggs" : {
+        "costars" : {
+          "terms" : {
+            "field" : "actors",
+            "size" :  5
+          }
+        }
+      }
+    }
+  }
+}</pre></div><div class="calloutlist"><table border="0" summary="Callout list"><tr><td width="5%" valign="top" align="left"><p><a href="#CO226-1"><span><img src="images/icons/callouts/1.png" alt="" /></span></a> </p></td><td valign="top" align="left"><p>
+기본적으로 집계 별로 <code class="literal">breadth-first</code> 를 활성화할 수 있다.
+</p></td></tr></table></div><p>breadth-first는 bucket에 있는 document보다 더 많은 bucket이 생성될 것으로 예상되는 경우에만 사용되어야 한다.
+breadth-first는 bucket 수준에서 document 데이터를 잡고(caching), 정리한 후에, 하위 집계에 이들 document를 다시 적용(replaying)한다.</p><p>breadth-first 집계의 메모리 요구량은 정리하기 전에 각 bucket에 있는 document 수에 비례한다.
+많은 집계에서, bucket에 있는 document의 수는 매우 크다. 월간 그래프를 생각해 보면,
+bucket별로 수 천 개의 document를 수백 또는 수천 개 가지고 있을 것이다. 이런 경우 breadth-first는 좋지 않은 선택이 되고,
+depth-first가 기본이 된다.</p><p>그러나, 배우 예제(각 bucket은 상대적으로 적은 document를 가지고 있지만, 매우 많은 bucket을 만들어 내는 상황)에서,
+breadth-first는 메모리 사용이 훨씬 더 효율적이고, 그렇게 하지 않으면 실패할 집계를 구축할 수 있다.</p></div></div></div><div class="navfooter"><span class="prev"><a href="significant-terms.html">
+              « 
+              의미 있는 단어</a>
+           
+        </span><span class="next">
+           
+          <a href="_맺음말.html">맺음말
+               »
+            </a></span></div>
+<!-- end body -->
+
+            </section>
+
+            <div id="rtpcontainer"
+        >
+	<h3>Top Videos</h3>
+	<ul class="lists">
+		<li><a href="https://www.elastic.co/webinars/get-started-with-elasticsearch/?baymax=default&elektra=docs&storm=top-video">Getting Started</a></li>
+		<li><a href="http://www.elastic.co/webinars/elasticsearch-performance-optimization-tale-two-tickets/?elektra=docs">Scaling</a></li>
+		<li><a href="http://www.elastic.co/webinars/shield-securing-your-data-in-elasticsearch/?elektra=docs">Security</a></li>
+	</ul>
+</div>
+
+
+	  	
+
+
+
+
+<script src="//app-lon02.marketo.com/js/forms2/js/forms2.min.js"></script>
+	<!-- subscribe-newsletter -->
+	<div id="subscribe-newsletter">
+		<div class="container">
+			<div class="row">
+				<div class="12u">
+					<div class="subscribe-wrapper" id="rtp-newsletter">
+						<header>
+							<h3>Subscribe to our newsletter</h3>
+						</header>
+						<div class="subscribe-form">
+							<form id="mktoForm_1398" class="container"></form>
+							<div class="form_thanks hide">
+								
+									<p>Thanks for subscribing! We'll keep you updated with new releases.</p>
+								
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+  	<!-- Footer -->
+	<div id="footer-wrapper">
+		<section id="footer" class="container">
+			<div class="row">
+				<div class="12u">
+					<!-- Copyright -->
+					<div id="copyright">
+	<p>
+		© 2016. All Rights Reserved - Elasticsearch
+	</p>
+	<ul class="links">
+		<li>Elasticsearch is a trademark of Elasticsearch BV, registered in the U.S. and in other countries</li>
+		<li><a href="/legal/trademarks" id="footer_trademarks">Trademarks</a></li>
+		<li><a href="/legal/terms-of-use" id="footer_terms">Terms</a></li>
+		<li><a href="/legal/privacy-policy" id="footer_privacy">Privacy</a></li>
+	</ul>
+	<p>
+		Apache, Apache Lucene, Apache Hadoop, Hadoop, HDFS and the yellow elephant logo are trademarks of the <a href="http://www.apache.org/" target="_blank">Apache Software Foundation</a> in the United States and/or other&nbsp;countries.
+	</p>
+</div><!--<div class="row">
+{replace4}
+</div>-->
+				</div>
+			</div>					
+		</section>
+	</div>
+			
+	<!-- Social Media -->
+	<div id="socialmedia-wrapper">
+		<section id="socialmedia" class="container">
+			<!-- social icons -->
+			<div id="social">
+				<ul class="links">
+					
+						<li class="facebook grayscale"><a href="http://www.facebook.com/elastic.co" target="_blank" id="footer_facebook"></a></li>
+					
+						<li class="twitter grayscale"><a href="https://www.twitter.com/elastic" target="_blank" id="footer_twitter"></a></li>
+					
+						<li class="linkedin grayscale"><a href="https://www.linkedin.com/company/elastic-co" target="_blank" id="footer_linkedin"></a></li>
+					
+						<li class="xing grayscale"><a href="https://www.xing.com/companies/elastic.co" target="_blank" id="footer_xing"></a></li>
+					
+						<li class="youtube grayscale"><a href="https://www.youtube.com/user/elasticsearch" target="_blank" id="footer_youtube"></a></li>
+					
+				</ul>
+			</div>
+		</section>
+	</div>
+
+
+<style type="text/css">
+	
+		.facebook{background:url("https://static-www.elastic.co/assets/bltda40eebd7c7cae9a/facebook.svg?q=100") no-repeat;}		
+	
+		.twitter{background:url("https://static-www.elastic.co/assets/bltfd3b1511512f4632/twitter.svg?q=100") no-repeat;}		
+	
+		.linkedin{background:url("https://static-www.elastic.co/assets/blt6b4f6f8d6b96f814/linkedin.svg?q=100") no-repeat;}		
+	
+		.xing{background:url("https://static-www.elastic.co/assets/blta76b2ae2b2f10a98/xing.svg?q=100") no-repeat;}		
+	
+		.youtube{background:url("https://static-www.elastic.co/assets/blt5761648c9581fb53/youtube.svg?q=100") no-repeat;}		
+	
+</style>
+
+<script>
+MktoForms2.loadForm("//app-lon02.marketo.com", "813-MAM-392", 1398,function(form){
+	form.onSuccess(function(form){
+		$('#mktoForm_1398').css('display','none');
+		$('#subscribe-newsletter header').hide();
+		$('#mktoForm_1398').siblings('.form_thanks').removeClass('hide')
+		dataLayer.push({'event': 'mktoFormSubmit'});
+	    return false;
+  	});
+});
+</script>	
+
+  	</div>
+  	<!-- <div class="preloader">
+    	<div class="status"></div>
+	</div> -->
+  	<style></style>
+   	<script type="text/javascript">
+	var suggestionsUrl = "https://search.elastic.co/suggest";	
+</script>
+<script src="https://static-www.elastic.co/static/js/jquery.autocomplete.js?q=100"></script>
+<script src="https://static-www.elastic.co/static/js/script.js?q=100"></script>
+
+
+   	
+   	
+   	
+   	<script type="application/ld+json">
+	
+		
+	
+	{
+	  	"@context": "http://schema.org",
+	  	"@type": "Organization",
+	  	"name" : "Elastic",
+	  	"url": "https://www.elastic.co/",
+	  	"logo": "https://www.elastic.co/static/img/elastic-logo-200.png",
+		"sameAs" : [ "https://www.facebook.com/elastic.co",
+			"https://twitter.com/elastic",
+			"https://plus.google.com/105178019064686397293",
+			"https://www.youtube.com/user/elasticsearch",
+			"https://www.linkedin.com/company/elasticsearch"
+		],
+	  	"potentialAction": {
+	    	"@type": "SearchAction",
+	    	"target": "https://www.elastic.co/search?q={query_string}",
+	    	"query-input": "required name=query_string"
+	  	}
+	}
+</script>	
+
+            <script type="text/javascript" src="docs.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.1/jquery.cookie.min.js"></script>
+<script type='text/javascript' src='https://google-code-prettify.googlecode.com/svn/loader/run_prettify.js'></script>
+
+            </body>
+        
+
