@@ -1,28 +1,28 @@
 ifndef::es_build[= placeholder6]
 
 [[modeling-your-data]]
-= Modeling Your Data
+= 데이터를 모델링해 보자
 
 [partintro]
 --
 
-그 동안 SQL을 다뤄왔다면, Elasticsearch는 그것과 전혀 다르다.((("modeling your data")))  
-방대한 양의 데이터에 대한 성능, 확장, 실시간에 가까운 검색과 분석 등 많은 이점이 있다. 
+그 동안 SQL을 다뤄왔다면, Elasticsearch는 그것과 전혀 다르다.((("modeling your data")))
+방대한 양의 데이터에 대한 성능, 확장, 실시간에 가까운 검색과 분석 등 많은 이점이 있다.
 그리고 시작하기가 쉽다. 단순히 내려 받고, 그것을 사용하면 된다.
 
 하지만, 마술은 아니다. Elasticsearch를 최대한 활용하려면, Elasticsearch가 동작하는 방법과,
 요구사항에 맞게, Elasticsearch를 동작시키는 방법을 이해해야 한다.
 
 entity 사이의 관계를 다루는 것은 전용 관계형 저장소(RDB)처럼 명확하지 않다.
-관계형 DB의 황금룰(golden rule, 데이터의 정규화)은 Elasticsearch에 적용되지 않는다. 
+관계형 DB의 황금룰(golden rule, 데이터의 정규화)은 Elasticsearch에 적용되지 않는다.
 <<relations>>, <<nested-objects>>, and <<parent-child>>에서 가능한 접근 방식의 장단점에 대해 이야기할 것이다.
 
-그 다음에, <<scale>> 에서, Elasticsearch가 제공하는 빠르고 유연한 scale out 기능에 대해 이야기할 것이다. 
-scale은 범용적(one-size-fits-all)이지 않다. 데이터가 여러분의 시스템에 적용되는 방법에 대해 고민하고, 
+그 다음에, <<scale>> 에서, Elasticsearch가 제공하는 빠르고 유연한 scale out 기능에 대해 이야기할 것이다.
+scale은 범용적(one-size-fits-all)이지 않다. 데이터가 여러분의 시스템에 적용되는 방법에 대해 고민하고,
 그에 따라 model을 설계해야 한다. log나 SNS같은 시간 기반의 데이터는 더 정적인 document의 집합과는 매우 다른 접근 방식이 필요하다.
 
 
-마지막으로 우리는 scale하지 않은 Elasticsearch에 대해 이야기 할 것이다. 
+마지막으로 우리는 scale하지 않은 Elasticsearch에 대해 이야기 할 것이다.
 
 --
 
@@ -33,5 +33,3 @@ include::402_Nested.asciidoc[]
 include::404_Parent_Child.asciidoc[]
 
 include::410_Scaling.asciidoc[]
-
-
