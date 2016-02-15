@@ -1,24 +1,25 @@
 
-=== Cluster Health
+=== Cluster의 상태
 
-An Elasticsearch cluster may consist of a single node with a single index.  Or it((("cluster health")))((("clusters", "administration", "Cluster Health API")))
-may have a hundred data nodes, three dedicated masters, a few dozen client nodes--all operating on a thousand indices (and tens of thousands of shards).
+어떤 Elasticsearch의 cluster는 단일 index를 가진 단일 node로 구성되어 있을 것이다.
+또는 ((("cluster health")))((("clusters", "administration", "Cluster Health API"))) 모두 천 개의 index(그리고, 수천 개의 shard를 가지고 있는)에서 운영되는,
+수백 개의 데이터 node, 3개의 전용 master node, 수십 개의 클라이언트 node 등을 가질 수도 있다.
 
-No matter the scale of the cluster, you'll want a quick way to assess the status
-of your cluster.  The `Cluster Health` API fills that role.  You can think of it
-as a 10,000-foot view of your cluster.  It can reassure you that everything
-is all right, or alert you to a problem somewhere in your cluster.
+Cluster의 규모에 관계없이, Cluster의 상태에 액세스하기 위한 빠른 방법이 필요할 것이다.
+`Cluster Health` API가 그 역할을 한다. 그것을 cluster에 대한 개요(a 10,000-foot view)
+라고 생각할 수 있다. 모든 것이 정상이라는 것을 알 수 있거나 cluster 어딘가의 문제에 대해
+경고할 수도 있다.
 
-Let's execute a `cluster-health` API and see what the response looks like:
+그러면 `cluster-health` API를 실행하고, 응답이 어떤지 살펴보자.
 
 [source,bash]
 ----
 GET _cluster/health
 ----
 
-Like other APIs in Elasticsearch, `cluster-health` will return a JSON response.
-This makes it convenient to parse for automation and alerting.  The response
-contains some critical information about your cluster:
+Elasticsearch의 다른 API와 마찬가지로, `cluster-health` 는 JSON으로 응답을 반환한다.
+자동화 및 경고에 대한 구문 분석에 편리합니다. 응답은 Cluster에 대한 몇 가지 중요한
+정보가 포함되어 있다:
 
 [source,js]
 ----
@@ -36,51 +37,47 @@ contains some critical information about your cluster:
 }
 ----
 
-The most important piece of information in the response is the `status` field.
-The status may be one of three values:
+응답 중 가장 중요한 정보는 `status` field이다.
+이 status는 아래 세가지 값 중 하나를 가진다:
 
 `green`::
-    All primary and replica shards are allocated. Your cluster is 100%
-operational.
+    모든 primary와 replica shard가 할당되었다. cluster가 100% 가동 중이다.
 
 `yellow`::
-    All primary shards are allocated, but at least one replica is missing.
-No data is missing, so search results will still be complete. However,  your 
-high availability is compromised to some degree.  If _more_ shards disappear, you
-might lose data.  Think of `yellow` as a warning that should prompt investigation.
+    모든 primary shard가 할당되었다. 그러나, replica 중 최소한 하나가 누락되었다.
+데이터는 누락되지 않았기 때문에, 검색 결과는 여전히 완벽하다. 그러나, 고 가용성은
+어느 정도 손상되었다. 더 _많은_ shard가 사라질 경우, 데이터가 누락될 수 있다.
+`yellow` 를 확인해 보라는 경고로 간주하자.
 
 `red`::
-    At least one primary shard (and all of its replicas) are missing. This means
-that you are missing data: searches will return partial results, and indexing
-into that shard will return an exception.
+    primary shard 중 최소한 하나가 (그리고, 그것의 replica 모두가) 누락되었다. 즉,
+데이터가 누락되었다라는 의미이다: 검색은 부분적인 결과를 반환할 것이고, 해당 shard에
 
-The `green`/`yellow`/`red` status is a great way to glance at your cluster and understand
-what's going on.  The rest of the metrics give you a general summary of your cluster:
+이 `green`/`yellow`/`red` status는 cluster를 훑어보고, 무슨 일이 벌어지는지 이해하는
+좋은 방법이다. 나머지 정보들은 cluster에 대한 일반적인 요약 정보이다:
 
-- `number_of_nodes` and `number_of_data_nodes` are fairly self-descriptive.
-- `active_primary_shards` indicates the number of primary shards in your cluster. This
-is an aggregate total across all indices.
-- `active_shards` is an aggregate total of _all_ shards across all indices, which
-includes replica shards.
-- `relocating_shards` shows the number of shards that are currently moving from
-one node to another node.  This number is often zero, but can increase when
-Elasticsearch decides a cluster is not properly balanced, a new node is added,
-or a node is taken down, for example.
-- `initializing_shards` is a count of shards that are being freshly created. For 
-example, when you first create an index, the shards will all briefly reside in
-`initializing` state.  This is typically a transient event, and shards shouldn't
-linger in `initializing` too long.  You may also see initializing shards when a 
-node is first restarted: as shards are loaded from disk, they start as `initializing`.
-- `unassigned_shards` are shards that exist in the cluster state, but cannot be
-found in the cluster itself.  A common source of unassigned shards are unassigned
-replicas.  For example, an index with five shards and one replica will have five unassigned
-replicas in a single-node cluster.  Unassigned shards will also be present if your
-cluster is `red` (since primaries are missing).
+- `number_of_nodes` 와 `number_of_data_nodes` 는 자신에 대한 설명이다.
+- `active_primary_shards` 는 cluster에 있는 primary shard의 수이다.
+모든 index에 대한 총합이다.
+- `active_shards` 는 _모든_ index에 대한 replica shard를 포함한 shard의 총합이다.
+- `relocating_shards` 는 현재 어떤 node에서 다른 node로 이동하는 shard의 수를 나타낸다.
+이 수는 흔히 0이다. 그러나, 새로운 node의 추가나 node가 없어지는 경우 등에서,
+Elasticsearch가 cluster의 균형이 적절하지 않다고 판단하는 경우에 증가한다.
+- `initializing_shards` 는 갓 생성된 shard의 수이다. 예를 들면, index를 처음 생성하면,
+shard는 잠시 `initializing` state에 있게 된다. 이것은 일반적으로 일시적인 이벤트이고,
+shard가 너무 오랫동안 `initializing` state에 머무르게 해서는 안 된다. node가 처음
+시작될 때, shard가 디스크에서 로드 되어, `initializing` 으로 시작하면서, shard가
+초기화되는 것을 볼 수 있다.
+- `unassigned_shards` 는 cluster state에는 존재하지만, cluster 자체에서는 발견되지 않는
+shard이다. 할당되지 않은 shard는 일반적으로 할당되지 않은 replica이다. 예를 들어, 5개의
+shard와 1개의 replica를 가지는 index는 단일 node cluster에서 5개의 할당되지 않은 replica를
+가질 것이다. 할당되지 않은 shard는 cluster가 `red` (primary가 누락된 경우)인 경우를
+나타내기도 한다.
 
-==== Drilling Deeper: Finding Problematic Indices
+==== 깊이 들어가기 : 문제가 있는 index를 찾아보자
 
-Imagine something goes wrong one day,((("indices", "problematic, finding"))) and you notice that your cluster health
-looks like this:
+어느 날, 뭔가 문제((("indices", "problematic, finding")))가 발생하였고, cluster
+health는 다음과 같다고 가정해 보자:
 
 [source,js]
 ----
@@ -98,27 +95,26 @@ looks like this:
 }
 ----
 
-OK, so what can we deduce from this health status?  Well, our cluster is `red`,
-which means we are missing data (primary + replicas).  We know our cluster has
-10 nodes, but see only 8 data nodes listed in the health.  Two of our nodes
-have gone missing.  We see that there are 20 unassigned shards.  
+자, 이 health status에서 무엇을 추정할 수 있나? cluster는 데이터(primary + replica)
+누락을 의미하는 `red` 이다. cluster가 10개의 node를 가지고 있다는 것을 알고 있다.
+그러나, health에 나열된 8개의 data node만 보인다. 2개의 node는 누락되었다.
+20개의 할당되지 않은 shard가 있다는 것을 알 수 있다.
 
-That's about all the information we can glean.  The nature of those missing
-shards are still a mystery.  Are we missing 20 indices with 1 primary shard each?
-Or 1 index with 20 primary shards? Or 10 indices with 1 primary + 1 replica?
-Which index? 
+이것이 우리가 얻을 수 있는 모든 정보이다. shard 누락의 본질은 여전히 알 수 없다.
+누락된 것이 어떤 index인가? 각각 하나의 primary를 가진 20개의 index, 20개의 primary
+shard를 가진 1개의 index인가? 아니면 1개의 primary + 1개의 replica를 가진 10개의
+index인가?
 
-To answer these questions, we need to ask `cluster-health` for a little more
-information by using the `level` parameter:
+이 질문에 답하려면, `level` 파라미터를 사용하여 `cluster-health` 에 조금 더 많은 정보를
+요청해야 한다.
 
 [source,bash]
 ----
 GET _cluster/health?level=indices
 ----
 
-This parameter will make the `cluster-health` API add a list of indices in our
-cluster and details about each of those indices (status, number of shards,
-unassigned shards, and so forth):
+이 매개변수는 `cluster-health` API의 응답에 cluster의 index 목록과 해당 index 각각에
+대한 세부사항(status, shard의 수, 할당되지 않은 shard 등)을 추가한다:
 
 [source,js]
 ----
@@ -168,55 +164,53 @@ unassigned shards, and so forth):
    }
 }
 ----
-<1> We can now see that the `v2` index is the index that has made the cluster `red`.
-<2> And it becomes clear that all 20 missing shards are from this index.
+<1> 이제, `v2` index가 cluster를 `red`로 만든 index인 것을 알 수 있다.
+<2> 그리고, 이 index에서 20개의 누락된 shard가 있는 것이 확실해졌다.
 
-Once we ask for the indices output, it becomes immediately clear which index is
-having problems: the `v2` index.  We also see that the index has 10 primary shards
-and one replica, and that all 20 shards are missing.  Presumably these 20 shards
-were on the two nodes that are missing from our cluster.
+index 출력을 요청하면, 어느 index가 문제가 있는지 즉시 알 수 있다: `v2` index.
+그 index가 10개의 primary shard와 하나의 replica를 가지고 있고, 모두 20개의 shard가
+누락되었다는 것도 알 수 있다. 아마도 이 20개의 shard는 cluster에서 누락된 2개의 node에
+있었을 것이다.
 
-The `level` parameter accepts one more option:
+`level` 파라미터는 또 하나의 옵션을 가진다:
 
 [source,bash]
 ----
 GET _cluster/health?level=shards
 ----
 
-The `shards` option will provide a very verbose output, which lists the status 
-and location of every shard inside every index.  This output is sometimes useful,
-but because of the verbosity can be difficult to work with.  Once you know the index
-that is having problems, other APIs that we discuss in this chapter will tend 
-to be more helpful.
+`shards` 옵션은 모든 index내에 있는 모든 shard의 위치와 상태를 나열한 매우 자세한
+출력을 제공한다. 이 출력은 때때로 유용하지만, 너무 상세해 작업하기가 어려울 수 있다.
+index가 문제를 가지고 있다는 것을 알게 되면, 이 장에서 이야기할 다른 API는 더 많은
+도움이 될 것이다.
 
-==== Blocking for Status Changes
+==== 상태 변화에 대한 차단
 
-The `cluster-health` API has another neat trick that is useful when building
-unit and integration tests, or automated scripts that work with Elasticsearch.
-You can specify a `wait_for_status` parameter, which will only return after the status is satisfied.  For example:
+`cluster-health` API는 단위 및 통합 테스트 또는 Elasticsearch에서 동작하는 자동화된
+스크립트를 만들 때 매우 유용한 또 다른 기능을 가지고 있다. 어떤 상태가 될 때까지
+차단하도록 `wait_for_status` 파라미터를 지정할 수 있다. 예를들면 다음과 같다:
 
 [source,bash]
 ----
 GET _cluster/health?wait_for_status=green
 ----
 
-This call will _block_ (not return control to your program) until the `cluster-health` has turned `green`, meaning all primary and replica shards have been allocated.
-This is important for automated scripts and tests.
+이 호출은 `cluster-health` 가 모든 primary, replica shard가 할당되는 것을 의미하는 `green`
+이 될 때까지 차단( _block_ ) (프로그램으로 제어를 반환하지 않는다 등)할 것이다. 이것은
+자동화된 스크립트나 테스트에 매우 중요하다.
 
-If you create an index, Elasticsearch must broadcast the change in cluster state
-to all nodes.  Those nodes must initialize those new shards, and then respond to the
-master that the shards are `Started`.  This process is fast, but because network
-latency may take 10&#x2013;20ms.
+index를 생성하면, Elasticsearch는 cluster state의 변화를 모든 node에 전달한다.
+이들 node는 대응하는 새로운 shard를 초기화한다. 그 다음에 mater에게 그 shard가 `시작되었다고`
+응답한다. 이 프로세스는 매우 빠르지만, 네트워크 대기 시간에 따라 10&#x2013;20 ms 정도 소요된다.
 
-If you have an automated script that (a) creates an index and then (b) immediately
-attempts to index a document, this operation may fail, because the index has not
-been fully initialized yet.  The time between (a) and (b) will likely be less than 1ms--not nearly enough time to account for network latency.
+(a) index를 생성하고, 그 다음에 (b) 즉시 document를 색인 하는 자동화된 스크립트를 가지고
+있다면, index가 아직 완전히 초기화되지 않았다면, 이 작업은 실패할 수도 있다. (a)와 (b)사이의
+시간은 1ms 미만일 것이다. 네트워크 대기 시간으로 설명하기에는 충분한 시간아 아니다.
 
-Rather than sleeping, just have your script/test call `cluster-health` with
-a `wait_for_status` parameter.  As soon as the index is fully created, the `cluster-health` will change to `green`, the call will return control to your script, and you may
-begin indexing.
+기다리기 보다는, 스크립트/테스트는 `wait_for_status` 파라미터를 사용하여 `cluster-health` 를
+호출해야 한다. index가 완전히 완성되자 마자, `cluster-health` 는 `green` 으로 바뀔 것이고,
+그 호출은 해당 스크립트로 제어를 반환할 것이다. 그러면 색인을 시작할 수 있다.
 
-Valid options are `green`, `yellow`, and `red`.  The call will return when the 
-requested status (or one "higher") is reached. For example, if you request `yellow`,
-a status change to `yellow` or `green` will unblock the call.
-
+유효한 옵션은 `green`, `yellow`, 그리고 `red`` 이다. 호출은 요청된 상태(또는 하나 더 "높은")에
+도달하면 반환된다. 예를 들어, `yellow` 를 요청하면, 상태가 `yellow` 나 `green` 이 되면, 그
+호출의 블록을 해제한다.
