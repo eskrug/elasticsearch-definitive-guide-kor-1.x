@@ -360,7 +360,7 @@ Out-of-Memory(OOM) Exception이 발생하는 끔찍한 성능상의 위험에 �
 +
 GC에 걸리는 시간도 역시 중요하다. 예를 들어, garbage의 특정 양은 document를 색인하는
 동안 만들어진다. 이것은 정상이며, 가끔씩 GC가 발생한다. 이러한 GC는 거의 항상 빠르고,
-node에 거의 영향을 미치지 않는다. young generation는 1 ~ 2ms 정도 소요되며,
+node에 거의 영향을 미치지 않는다. young generation는 1&#x2013;2ms 정도 소요되며,
 old generation는 수백 ms 정도 소요된다. 이것은 10-second GCs와는 많이 차이가 난다.
 +
 최선의 충고는 garbage collection의 수와 기간을 주기적으로 수집하고(또는 marvel을 사용),
@@ -474,12 +474,12 @@ queue는 단순히 성능 문제를 숨기고, 실제 데이터 손실의 위험
          },
 ----
 
-- `transport`는 _transport address_에 대한 매우 기본적인 통계를 나타낸다. 이것은
+- `transport` 는 _transport address_ 에 대한 매우 기본적인 통계를 나타낸다. 이것은
 node간 통신(흔히 9300)과 TransportClient 이나 NodeClient 연결에 관한 것이다.
 여기에 많은 연결이 있다고 걱정하지 말자. Elasticsearch는 node 사이에 많은 수의 연결을
 유지한다.
 
-- `http`는 HTTP port(흔히 9200)에 대한 통계를 나타낸다. 끊임없이 증가하는, 아주 큰
+- `http` 는 HTTP port(흔히 9200)에 대한 통계를 나타낸다. 끊임없이 증가하는, 아주 큰
 `total_opened` 수를 본 경우에, 그것은 HTTP 클라이언트 중 하나가 keep-alive 연결을
 사용하지 않는다는 것을 확인하는 신호이다. 지속적인 keep-alive 연결은 성능을 위해
 중요하다. 왜냐하면, 소켓을 구축하고 없애는 것은 비싼 작업이다. (그리고 file
