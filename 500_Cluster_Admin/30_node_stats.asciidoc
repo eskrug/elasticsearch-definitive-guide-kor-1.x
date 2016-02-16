@@ -1,24 +1,22 @@
 
-=== Monitoring Individual Nodes
+=== 개별 node의 모니터링
 
-`Cluster-health` is at one end of the spectrum--a very high-level overview of
-everything in your cluster. ((("clusters", "administration", "monitoring individual nodes")))((("nodes", "monitoring individual nodes"))) The `node-stats` API is at the other end. ((("Node Stats API", id="ix_NodeStats", range="startofrange"))) It provides
-a bewildering array of statistics about each node in your cluster.
+`Cluster-health`는 cluster에서 매우 높은 수준의 개요 부분의 일부분이다.  ((("clusters", "administration", "monitoring individual nodes")))((("nodes", "monitoring individual nodes")))
+`node-stats` API는 또 다른 일부분이다. ((("Node Stats API", id="ix_NodeStats", range="startofrange")))
+이것은 cluster의 각 node에 대한 복잡한 통계의 배열을 제공한다.
 
-`Node-stats` provides so many stats that, until you are accustomed to the output,
-you may be unsure which metrics are most important to keep an eye on.  We'll
-highlight the most important metrics to monitor (but we encourage you to
-log all the metrics provided--or use Marvel--because you'll never know when
-you need one stat or another).
+`Node-stats` 는 출력에 익숙해질 때까지 계속 지켜봐도, 어느 통계가 가장 중요한지 모를 정도로,
+많은 통계를 제공한다. 모니터 해야 하는 가장 중요한 통계를 강조할 것이다.(그러나 어떤 통계가
+필요할지 알 수 없기 때문에, 제공하는 모든 통계를 기록할 것--또는 Marvel 을 사용할 것--을 권장한다.)
 
-The `node-stats` API can be executed with the following:
+`node-stats` API는 다음과 같이 실행할 수 있다:
 
 [source,bash]
 ----
 GET _nodes/stats
 ----
 
-Starting at the top of the output, we see the cluster name and our first node:
+출력의 윗부분부터 시작해 보면, cluster의 이름과 첫 번째 node를 볼 수 있다:
 
 [source,js]
 ----
@@ -37,16 +35,14 @@ Starting at the top of the output, we see the cluster name and our first node:
 ...
 ----
 
-The nodes are listed in a hash, with the key being the UUID of the node.  Some
-information about the node's network properties are displayed (such as transport address,
-and host). These values are useful for debugging discovery problems, where
-nodes won't join the cluster. Often you'll see that the port being used is wrong,
-or the node is binding to the wrong IP address/interface.
+node는 node의 UUID를 key로 해서 hash에 나열되어 있다. node의 네트워크 속성에 대한 일부
+정보(transport address, host 등)가 표시된다. 이들 정보는 cluster에 가입되지 않은 node를
+발견하는 문제를 디버깅하는데 유용하다. 가끔씩, 사용된 port가 올바르지 않거나 node가 올바르지
+않은 IP address/interface에 바인딩 되어 있는 것을 알 수 있다.
 
-==== indices Section
+==== indices 섹션
 
-The `indices` section lists aggregate statistics((("indices", "indices section in Node Stats API"))) for all the indices that reside
-on this particular node:
+`indices` 섹션은 특정 node에 있는 모든 index에 대한 집계 통계를 나열한다: ((("indices", "indices section in Node Stats API")))
 
 [source,js]
 ----
@@ -61,16 +57,13 @@ on this particular node:
         },
 ----
 
-The returned statistics are grouped into the following sections:
+응답합 상태들은 다음 섹션안에 묶여져 있다:
+- `docs` 는 이 node에 있는 document의 수와 아직 segment에서 제거되지 않은
+삭제된(deleted) document의 수를 나타낸다.
 
-- `docs` shows how many documents reside on
-this node, as well as the number of deleted docs that haven't been purged
-from segments yet.
-
-- The `store` portion indicates how much physical storage is consumed by the node.
-This metric includes both primary and replica shards.  If the throttle time is
-large, it may be an indicator that your disk throttling is set too low
-(discussed in <<segments-and-merging>>).
+- `store`는 node에 의해 사용된 물리적 저장소의 크기를 가리킨다. 이 통계는 primary와
+replica shard 모두를 포함한다. 만약 throttle time이 너무 크면, 그것은 디스크 throttling(조절)
+이 너무 낮게 설정되어 있다는 것을 나타내는 지표이다. ( <<segments-and-merging>>에서 언급할 것이다.)
 
 [source,js]
 ----
@@ -111,36 +104,34 @@ large, it may be an indicator that your disk throttling is set too low
         },
 ----
 
-- `indexing` shows the number of docs that have been indexed.  This value is a monotonically
-increasing counter; it doesn't decrease when docs are deleted.  Also note that it
-is incremented anytime an _index_ operation happens internally, which includes
-things like updates.
+- `indexing` 은 색인된 document의 수를 나타낸다. 이 값은 단순하게 증가하는 counter이고;
+docs가 삭제되어도 감소하지 않는다. 그것은 업데이트 같은 것을 포함하여, 내부적으로 발생하는
+_index_ 연산에도 항상 증가한다.
 +
-Also listed are times for indexing, the number of docs currently being indexed,
-and similar statistics for deletes.
+또한, 색인 횟수, 현재 색인된 document의 수, 그리고 삭제에 대한 유사한 통계가 나열된다.
 
-- `get` shows statistics about get-by-ID statistics.  This includes `GET` and
-`HEAD` requests for a single document.
+- `get` 는 ID로 GET하는(get-by-ID) 통계에 대한 통계를 나타낸다. 이것은 단일 document에
+ 대한 `GET` 과 `HEAD` 요청을 포함한다.
 
-- `search` describes the number of active searches (`open_contexts`), number of
-queries total, and the amount of time spent on queries since the node was
-started.  The ratio between `query_time_in_millis / query_total` can be used as a
-rough indicator for how efficient your queries are.  The larger the ratio,
-the more time each query is taking, and you should consider tuning or optimization.
+- `search` 는 node가 시작되고 나서, 활성화된 검색(`open_contexts`)의 수, 총 query의 수,
+ query에 소요된 시간을 나타낸다. `query_time_in_millis / query_total` 의 비율은 query의
+효율성을 나타내는 지표로 사용된다. 비율이 클수록, 각 query에는 더 많은 시간이 소요되고,
+조정이나 최적화를 고려해야 한다.
 +
-The fetch statistics detail the second half of the query process (the _fetch_ in
-query-then-fetch).  If more time is spent in fetch than query, this can be an
-indicator of slow disks or very large documents being fetched, or
-potentially search requests with paginations that are too large (for example, `size: 10000`).
+fetch 통계는 query 프로세스(query-then-fetch의 _fetch_)의 후반부에 대한 세부사항이다.
+만약 fetch가 query보다 더 많은 시간이 소요된다면, 이것은 느린 디스크, 가져올 document가
+매우 많다거나 잠재적으로 페이지를 계산하기에 너무 큰(예를 들면 `size: 10000`) 검색
+결과라는 것을 나타내는 지표가 될 수 있다.
 
-- `merges` contains information about Lucene segment merges.  It will tell you
-the number of merges that are currently active, the number of docs involved, the cumulative
-size of segments being merged, and the amount of time spent on merges in total.
+- `merges` 는 Lucene segment 병합에 대한 정보를 포함하고 있다. 현재 활성화된 병합의 수,
+포함된 document의 수, 병합될 segment의 누적 크기, 병합에 소요된 총 시간을 나타낸다.
 +
-Merge statistics can be important if your cluster is write heavy.  Merging consumes
-a large amount of disk I/O and CPU resources.  If your index is write heavy and
-you see large merge numbers, be sure to read <<indexing-performance>>.
+merge 통계는 cluster가 쓰는 동작에 부하가 많은 경우 중요할 수 있다. 병합은 많은 양의
+디스크 I/O와 CPU 자원을 소모한다. index가 쓰는 동작에 부하가 많고 큰 병합 수를 봤다면,
+<<indexing-performance>>를 읽어 보자.
 +
+Note: 업데이트와 삭제는 병합 수를 너무 많이 늘리는데 한다. 왜냐하면 그것이
+결국에는 병합되어야 하는 segment의 단편화( _fragmentation_ )를 발생시키기 때문이다.
 Note: updates and deletes will contribute to large merge numbers too, since they
 cause segment _fragmentation_ that needs to be merged out eventually.
 
@@ -164,57 +155,52 @@ cause segment _fragmentation_ that needs to be merged out eventually.
         ...
 ----
 
-- `filter_cache` indicates the amount of memory used by the cached filter bitsets,
-and the number of times a filter has been evicted.  A large number of evictions
-_could_ indicate that you need to increase the filter cache size, or that
-your filters are not caching well (for example, they are churning heavily because of high cardinality,
-such as caching `now` date expressions).
+- `filter_cache` 는 cached filter bitset에 사용된 메모리의 양과 filter가 축출된 횟수를
+나타낸다. evictions이 크다는 것은 filter cache 크기를 증가시켜야 하거나, filter가 잘
+caching되지 않는다(data 표현인 `now` 로 caching하는 것처럼, 높은 cardinality 때문에)는
+것을 _가리킬 수 있다_.
 +
-However, evictions are a difficult metric to evaluate.  Filters are cached on a
-per-segment basis, and evicting a filter from a small segment is much less
-expensive than evicting a filter from a large segment.  It's possible that you have many evictions, but they all occur on small segments, which means they have
-little impact on query performance.
+그러나, evictions은 측정하기 어려운 통계이다. filter는 기본적으로 segment별로 cache된다.
+그리고, filter를 작은 segment에서 축출하는 것은 큰 segment보다 훨씬 적은 비용이 소모된다.
+다수의 추출도 가능하지만, 그것은 query의 성능에 거의 영향을 미치지 않는 작은 segment에서
+발생한다.
 +
-Use the eviction metric as a rough guideline.  If you see a large number, investigate
-your filters to make sure they are caching well.  Filters that constantly evict,
-even on small segments, will be much less effective than properly cached filters.
+evictions 통계를 대략적인 지침으로 사용하자. 큰 숫자를 봤다면, filter가 잘 caching되고
+있는지 filter를 확인해 보자. 작은 segment에서조차, 계속 축출되는 filter는 적절한 cache된
+filter보다 훨씬 덜 효과적이다.
 
-- `id_cache` shows the memory usage by parent/child mappings.  When you use
-parent/children, the `id_cache` maintains an in-memory join table that maintains
-the relationship.  This statistic will show you how much memory is being used.
-There is little you can do to affect this memory usage, since it has a fairly linear
-relationship with the number of parent/child docs.  It is heap-resident, however,
-so it's a good idea to keep an eye on it.
+- `id_cache`는 부모-자식 mapping에 의해 사용된 메모리의 양을 나타낸다. 부모-자식을
+사용하면, `id_cache` 는 그 관계를 유지하기 위해 메모리에 조인(in-memory-join) 테이블을
+유지한다. 이 통계는 사용된 메모리의 양을 나타낸다. parent/child docs의 수는 명백한
+선형관계이기 때문에, 이 메모리 사용량에 거의 영향을 줄 수 없다. 그러나, 그것은 heap에 존재한다.
+따라서, 그것을 계속 지켜보는 것이 좋다.
 
-- `field_data` displays the memory used by fielddata,((("fielddata", "statistics on"))) which is used for aggregations,
-sorting, and more.  There is also an eviction count.  Unlike `filter_cache`, the eviction
-count here is useful:  it should be zero or very close.  Since field data
-is not a cache, any eviction is costly and should be avoided.  If you see
-evictions here, you need to reevaluate your memory situation, fielddata limits,
-queries, or all three.
+- `field_data` 는 fielddata ((("fielddata", "statistics on"))) 에 의해 사용된 메모리를 나타낸다.
+이것은 집계, 정렬 등에 사용된다. evictions의 수도 있다. `filter_cache`와 달리, 여기에서 evictions
+수는 매우 유용하다. 그것은 0이거나 0에 매우 근접해야 한다. field data는 cache가 아니기 때문에, 모든
+evictions은 매우 비싸고, 피해야 한다. 여기에서 evictions을 본다면, 메모리 환경, fielddata limits,
+query나 이것 모두를 다시 검토해야 한다.
 
-- `segments` will tell you the number of Lucene segments this node currently serves.((("segments", "number served by a node")))
-This can be an important number.  Most indices should have around 50&#x2013;150 segments,
-even if they are terabytes in size with billions of documents.  Large numbers
-of segments can indicate a problem with merging (for example, merging is not keeping up
-with segment creation).  Note that this statistic is the aggregate total of all
-indices on the node, so keep that in mind.
+- `segments`는 이 node에서 현재 제공되는 Lucene segment가 몇 개인지를 나타낸다. ((("segments", "number served by a node")))
+이것은 중요한 숫자가 될 수 있다. 대부분의 index는 수십억 개의 document를 가진 크기가
+수 TB(terrabyte)일지라도, 50&#x2013;150개 정도의 segment를 가진다. 많은 segment는 병합에
+문제(예를 들어, 병합이 segment 생성을 알지 못함)가 있음을 나타낼 수 있다.
+이 통계는 node에 있는 모든 index의 총 합이라는 것을 알아두자.
 +
-The `memory` statistic gives you an idea of the amount of memory being used by the
-Lucene segments themselves.((("memory", "statistics on")))  This includes low-level data structures such as
-posting lists, dictionaries, and bloom filters.  A very large number of segments
-will increase the amount of overhead lost to these data structures, and the memory
-usage can be a handy metric to gauge that overhead.
+`memory` 통계는 Lucene segment 자체에 사용되는 메모리의 양을 나타낸다.((("memory", "statistics on")))
+이것은 posting lists, dictionaries, bloom filters 같은 낮은 수준의 데이터 구조를 포함한다.
+매우 많은 segment는 이러한 데이터 구조에 대한 오버헤드 손실의 양이 증가할 것이다.
+그리고 메모리 사용량은 해당 오버헤드를 측정하는 편리한 통계일 수 있다.
 
-==== OS and Process Sections
+==== OS와 Process 섹션
 
-The `OS` and `Process` sections are fairly self-explanatory and won't be covered
-in great detail.((("operating system (OS), statistics on")))  They list basic resource statistics such as CPU and load.((("process (Elasticsearch JVM), statistics on")))  The
-`OS` section describes it for the entire `OS`, while the `Process` section shows just
-what the Elasticsearch JVM process is using.
+`OS` and `Process` 는 사실 따로 설명할 필요가 없어, 자세히 설명하지 않을 것이다. ((("operating system (OS), statistics on")))
+CPU와 부하 같은 기본적인 자원 통계를 나열한다. ((("process (Elasticsearch JVM), statistics on"))) `Process` 섹션은
+Elasticsearch의 JVM 프로세스가 사용하는 것만을 보여주는 반면에,
+`OS` 섹션은 전체 `OS`를 나타낸다.
 
-These are obviously useful metrics, but are often being measured elsewhere in your
-monitoring stack. Some stats include the following:
+이것은 분명히 유용한 통계이지만, 모니터링의 다른 곳에서도 흔히 측정된다.
+일부 통계는 다음을 포함 한다:
 
 - CPU
 - Load
@@ -222,76 +208,71 @@ monitoring stack. Some stats include the following:
 - Swap usage
 - Open file descriptors
 
-==== JVM Section
+==== JVM 섹션
 
-The `jvm` section contains some critical information about the JVM process that
-is running Elasticsearch.((("JVM (Java Virtual Machine)", "statistics on")))  Most important, it contains garbage collection details,
-which have a large impact on the stability of your Elasticsearch cluster.
+`jvm` 섹션은 Elasticsearch를 실행하는 JVM 프로세스에 대한 몇 가지 중요한 정보를 포함하고
+있다. ((("JVM (Java Virtual Machine)", "statistics on"))) 가장 중요한, Elasticsearch의 cluster의 안정성에 큰 영향을 미칠 garbage collection
+의 세부 사항을 포함하고 있다.
 
 [[garbage_collector_primer]]
 .Garbage Collection Primer
 **********************************
-Before we describe the stats, it is useful to give a crash course in garbage
-collection and its impact on Elasticsearch.((("garbage collection")))  If you are familar with garbage
-collection in the JVM, feel free to skip down.
+통계를 설명하기 전에, garbage collection의 충돌 과정을 설명하는 것은 유용하며,
+그것은 Elasticsearch에 영향을 미친다. ((("garbage collection"))) JVM의 garbage collection에 익숙하다면,
+아래로 넘어가도 무방하다.
 
-Java is a _garbage-collected_ language, which means that the programmer does
-not manually manage memory allocation and deallocation.  The programmer simply
-writes code, and the Java Virtual Machine (JVM) manages the process of allocating
-memory as needed, and then later cleaning up that memory when no longer needed.
+Java는 프로그래머가 메모리의 할당과 해제를 직접 관리하지 않는다는 것을 의미하는
+_garbage-collected_ 언어이다. 프로그래머는 단순하게 코드를 작성하고,
+JVM(Java Virtual Machine)은 필요한 메모리의 할당하고, 나중에 더 이상 필요하지 않을 때
+해당 메모리를 정리하는 과정을 관리한다.
 
-When memory is allocated to a JVM process, it is allocated in a big chunk called
-the _heap_.  The JVM then breaks the heap into two groups, referred to as
-_generations_:
+메모리가 JVM 프로세스에 할당될 때,  _heap_ 이라는 커다란 덩어리(chunk)에 할당된다.
+그 다음에 JVM은 heap을 _generations_ 라 불리는 2개의 다른 그룹으로 나눈다:
 
 Young (or Eden)::
-    The space where newly instantiated objects are allocated. The
-young generation space is often quite small, usually 100 MB&#x2013;500 MB.  The young-gen
-also contains two _survivor_ spaces.
+    새로이 초기화된 오브젝트가 할당되는 공간. young-gen은 보통 100 MB&#x2013;500 MB로
+아주 작다. young-gen은 또한 두 개의 _survivor_ 공간을 포함한다.
 
 Old::
-    The space where older objects are stored.  These objects are expected to be long-lived
-and persist for a long time.  The old-gen is often much larger than the young-gen,
-and Elasticsearch nodes can see old-gens as large as 30 GB.
+    오래된 오브젝트가 저장되는 공간. 긴 시간 존재하고 있는 이들 오브젝트는 오랫동안 지속된다.
+old-gen은 일반적으로 young-gen보다 매우 크다. 그리고 Elasticsearch의 node는 30GB나
+되는 old-gen을 볼 수 있다.
 
-When an object is instantiated, it is placed into young-gen.  When the young
-generation space is full, a young-gen garbage collection (GC) is started.  Objects that are still
-"alive" are moved into one of the survivor spaces, and "dead" objects are removed.
-If an object has survived several young-gen GCs, it will be "tenured" into the
-old generation.
+오브젝트가 인스턴스화 될 때, 그것은 young-gen에 배치된다. young-gen이 가득 차면,
+young-gen의 garbage collection(GC)이 시작된다. 아직 “살아있는” 오브젝트는 survivor 공간
+중의 하나로 이동한다. 그리고 “죽은” 오브젝트는 제거된다. 어떤 오브젝트가 young-gen의
+garbage collection에서 여러 번 살아남으면, old-gen에서 “tenured(거주)”하게 된다.
 
-A similar process happens in the old generation:  when the space becomes full, a
-garbage collection is started and dead objects are removed.
+old-gen에서도 유사한 프로세스가 일어난다: 공간이 가득 차면, garbage collection이 시작되고,
+“죽은” 오브젝트는 제거된다
 
-Nothing comes for free, however.  Both the young- and old-generation garbage collectors
-have phases that "stop the world."  During this time, the JVM literally halts
-execution of the program so it can trace the object graph and collect dead
-objects. During this stop-the-world phase, nothing happens.  Requests are not serviced,
-pings are not responded to, shards are not relocated.  The world quite literally
-stops.
+공짜는 없다. 그러나 young-gen과 old-gen의 GC는 “stop the world”라는 단계를 가진다.
+이 시간 동안, JVM은 오브젝트 그래프를 추적하고, “죽은” 오브젝트를 수집할 수 있도록,
+말 그대로, 프로그램의 실행을 멈춘다. 이 “stop the world” 단계에서는 아무런 일도 발생하지
+않는다. 요청은 서비스되지 않고, ping은 응답하지 않고, shard는 재할당되지 않는다.
+말 그대로 세상이 멈춘다.
 
-This isn't a big deal for the young generation; its small size means GCs execute
-quickly.  But the old-gen is quite a bit larger, and a slow GC here could mean
-1s or even 15s of pausing--which is unacceptable for server software.
+이것은 young-gen에서는 큰 문제가 아니다. 작은 크기는 garbage collection가 빠르게 실행된다는
+것을 의미한다. 그러나, old-gen는 꽤 크고, 여기에서 느린 GC는 1초, 또는 심지어 15초의 정지
+(서버 S/W로서는 받아들일 수 없는)를 의미한다.
 
-The garbage collectors in the JVM are _very_ sophisticated algorithms and do
-a great job minimizing pauses.  And Elasticsearch tries very hard to be _garbage-collection friendly_, by intelligently reusing objects internally, reusing network
-buffers, and offering features like <<doc-values>>.  But ultimately,
-GC frequency and duration is a metric that needs to be watched by you, since it
-is the number one culprit for cluster instability.
+JVM의 garbage collection는 _매우_ 정교한 알고리즘이며, 정지를 최소화하며 훌륭하게 작업을
+하고 있다. 그리고, Elasticsearch는 지능적으로, 내부적으로 오브젝트를 재사용하고, 네트워크
+버퍼를 재사용하고, <<doc-values>> 같은 기능을 제공함으로써, _garbage-collection 친화적_
+이기 위해 매우 열심히 노력한다. 하지만 궁극적으로는, garbage collection의 빈도와
+기간은 지켜봐야 할 통계 중 하나이다. 왜냐하면, 그것이 cluster 불안정성의 주범이기 때문이다.
 
-A cluster that is frequently experiencing long GC will be a cluster that is under
-heavy load with not enough memory.  These long GCs will make nodes drop off the
-cluster for brief periods.  This instability causes shards to relocate frequently
-as Elasticsearch tries to keep the cluster balanced and enough replicas available.  This in
-turn increases network traffic and disk I/O, all while your cluster is attempting
-to service the normal indexing and query load.
+긴 garbage collection를 자주 경험하는 cluster는 메모리가 충분하지 않은 부하가 많은
+cluster일 것이다. 이러한 긴 garbage collection로 cluster에서 node가 잠시 동안 빠질 것이다.
+이 불안정성은 Elasticsearch가 cluster의 균형을 맞추고 replica를 충분히 활용하기 위해,
+shard를 빈번히 재배치하는 원인이 된다. 이것은 결국 네트워크 트래픽과 디스크 I/O를 증가시킨다.
+동시에, cluster는 정상적인 색인과 query를 서비스하기 위해 시도하면서 부하를 증가시킨다.
 
-In short, long GCs are bad and need to be minimized as much as possible.
+짧게 이야기 하면, 긴 GCs는 좋지 않다. 그리고 가능한 한 최소화되어야 한다.
 **********************************
 
-Because garbage collection is so critical to Elasticsearch, you should become intimately
-familiar with this section of the `node-stats` API:
+garbage collection은 Elasticsearch에 너무나 중요하기 때문에, `node-stats` API의 부분을
+속속들이 알고 있어야 한다:
 
 [source,js]
 ----
@@ -308,21 +289,20 @@ familiar with this section of the `node-stats` API:
 
 ----
 
-- The `jvm` section first lists some general stats about heap memory usage.  You
-can see how much of the heap is being used, how much is committed (actually allocated
-to the process), and the max size the heap is allowed to grow to.  Ideally,
-`heap_committed_in_bytes` should be identical to `heap_max_in_bytes`.  If the
-committed size is smaller, the JVM will have to resize the heap eventually--and this is a very expensive process.  If your numbers are not identical, see
-<<heap-sizing>> for how to configure it correctly.
+- `jvm` 섹션은 먼저, heap 메모리 사용에 대한 몇 가지 일반적인 통계를 나열한다.
+사용된 heap의 양, commit된(실제로 프로세스에 할당된) 양, 커질 수 있는 heap의 최대 크기를
+알 수 있다. 이상적으로, `heap_committed_in_bytes` 는 `heap_max_in_bytes` 와 동일해야 한다.
+commit된 크기가 더 작다면, JVM은 결국 heap의 크기를 조정해야 한다. 그리고, 그것은 매우
+비싼 프로세스다. 숫자가 동일하지 않다면, 그것을 올바르게 구성하는 방법에 대한 <<heap-sizing>>
+을 참조하자.
 +
-The `heap_used_percent` metric is a useful number to keep an eye on.  Elasticsearch
-is configured to initiate GCs when the heap reaches 75% full.  If your node is
-consistently >= 75%, your node is experiencing _memory pressure_.
-This is a warning sign that slow GCs may be in your near future.
+`heap_used_percent` 통계는 계속 지켜봐야 할 유용한 숫자이다. Elasticsearch는 heap이
+전체의 75%에 도달할 때, GC들을 시작하도록 구성되어 있다. node가 지속적으로
+75% 이상이면, node는 _메모리 압박_ 을 경험하게 된다. 조만간 느린 GC들이 나타난다는 경고이다.
 +
-If the heap usage is consistently >=85%, you are in trouble.  Heaps over 90&#x2013;95%
-are in risk of horrible performance with long 10&#x2013;30s GCs at best, and out-of-memory
-(OOM) exceptions at worst.
+heap의 사용량이 지속적으로 85% 이상이면, 문제가 발생한 것이다. heap이 90&#x2013;95% 이상이면
+낙관적으로 보더라도 10&#x2013;30 동안의 긴 GC들이 일어나고 있고, 최악의 경우에는
+Out-of-Memory(OOM) Exception이 발생하는 끔찍한 성능상의 위험에 빠진 것이다.
 
 [source,js]
 ----
@@ -349,9 +329,9 @@ are in risk of horrible performance with long 10&#x2013;30s GCs at best, and out
 },
 ----
 
-- The `young`, `survivor`, and `old` sections will give you a breakdown of memory
-usage of each generation in the GC.  These stats are handy for keeping an eye on
-relative sizes, but are often not overly important when debugging problems.
+- `young`, `survivor`, 그리고 `old` 섹션은 GC에 있는 각 generations안의 메모리
+사용량에 대한 고장을 제공한다. 이러한 통계는 상대적인 크기를 계속 지켜보기에 편리하지만,
+문제점을 디버깅하는 경우에는 그렇게 중요하지 않다.
 
 [source,js]
 ----
@@ -369,36 +349,32 @@ relative sizes, but are often not overly important when debugging problems.
 }
 ----
 
-- `gc` section shows the garbage collection counts and cumulative time for both
-young and old generations.  You can safely ignore the young generation counts
-for the most part:  this number will usually be large.  That is perfectly
-normal.
+- `gc` 섹션은 GC의 수와 young과 old generations 양쪽 모두에 대한 누적 시간을 나타낸다.
+대부분의 경우 young generation의 수는 무시할 수 있다: 이 숫자는 일반적으로 매우 큰데,
+그것은 완벽하게 정상이다.
 +
-In contrast, the old generation collection count should remain small, and
-have a small `collection_time_in_millis`.  These are cumulative counts, so it is
-hard to give an exact number when you should start worrying (for example, a node with a
-one-year uptime will have a large count even if it is healthy). This is one of the
-reasons that tools such as Marvel are so helpful.  GC counts _over time_ are the
-important consideration.
+이와 반대로, old generation의 수는 매우 작게 유지되어야 하고, 작은 `collection_time_in_millis`
+을 가져야 한다. 이것은 누적된 수이다. 따라서, 주의하기 시작할 정확한 숫자를 제공하기가 어렵다.
+예를 들어 1년 동안 가동된 node일 경우, 그 node가 이상이 없더라도 매우 큰 숫자를 가진다.
+이것이 marvel 같은 tool이 유용한 이유 중의 하나이다. _시간 별_ GC들의 수는 중요한 고려 사항이다.
 +
-Time spent GC'ing is also important.  For example, a certain amount of garbage
-is generated while indexing documents.  This is normal and causes a GC every
-now and then. These GCs are almost always fast and have little effect on the
-node: young generation takes a millisecond or two, and old generation takes
-a few hundred milliseconds.  This is much different from 10-second GCs.
+GC에 걸리는 시간도 역시 중요하다. 예를 들어, garbage의 특정 양은 document를 색인하는
+동안 만들어진다. 이것은 정상이며, 가끔씩 GC가 발생한다. 이러한 GC는 거의 항상 빠르고,
+node에 거의 영향을 미치지 않는다. young generation는 1 ~ 2ms 정도 소요되며,
+old generation는 수백 ms 정도 소요된다. 이것은 10-second GCs와는 많이 차이가 난다.
 +
-Our best advice is to collect collection counts and duration periodically (or use Marvel)
-and keep an eye out for frequent GCs.  You can also enable slow-GC logging,
-discussed in <<logging>>.
+최선의 충고는 garbage collection의 수와 기간을 주기적으로 수집하고(또는 marvel을 사용),
+빈번한 GC들를 주의해야 한다는 것이다. 느린 GC에 대한 기록을 활성화할 수 있다. <<logging>>
+에서 이야기하자.
 
-==== Threadpool Section
+==== Threadpool 섹션
 
-Elasticsearch maintains threadpools internally. ((("threadpools", "statistics on"))) These threadpools
-cooperate to get work done, passing work between each other as necessary. In
-general, you don't need to configure or tune the threadpools, but it is sometimes
-useful to see their stats so you can gain insight into how your cluster is behaving.
+Elasticsearch는 내부적으로 threadpool의 번호를 유지한다. ((("threadpools", "statistics on"))) 이들 threadpool 은 필요에 따라
+서로 간에 작업을 전달하며, 작업을 끝내기 위해 협력한다. 일반적으로, threadpool 을 구성하거나
+조정할 필요가 없다. 하지만, cluster가 어떻게 동작하고 있는지를 알아보기 위해, threadpool의
+통계를 알아보는 것은 유용하다.
 
-There are about a dozen threadpools, but they all share the same format:
+약 12개의 threadpool이 있다. 그러나 그들은 모두 동일한 형식을 공유한다.
 
 [source,js]
 ----
@@ -412,84 +388,76 @@ There are about a dozen threadpools, but they all share the same format:
   }
 ----
 
-Each threadpool lists the number of threads that are configured (`threads`),
-how many of those threads are actively processing some work (`active`), and how
-many work units are sitting in a queue (`queue`).
+각 threadpool은 구성된 thread의 수(`threads`), 그 thread 중 실제로 어떤 작업을 처리하고
+있는 thread의 수(`active`), queue에 있는 작업 단위의 수(`queue`)를 나열한다.
 
-If the queue fills up to its limit, new work units will begin to be rejected, and
-you will see that reflected in the `rejected` statistic.  This is often a sign
-that your cluster is starting to bottleneck on some resources, since a full
-queue means your node/cluster is processing at maximum speed but unable to keep
-up with the influx of work.
+queue가 그것의 한계까지 차면, 새로운 작업은 거부되기 시작하고, `rejected` 통계에서 거부된 것을
+볼 수 있다. 이것은 cluster에서 어떤 자원에 대한 병목 현상이 시작되었다고 자주 나타나는 신호이다.
+왜냐하면 가득 찬 queue는 node/cluster가 최대한의 속도로 처리하고 있지만, 들어오는 작업에
+맞출 수가 없다는 것을 의미하기 때문이다.
 
-.Bulk Rejections
+.Bulk 거부
 ****
-If you are going to encounter queue rejections, it will most likely be caused
-by bulk indexing requests.((("bulk API", "rejections of bulk requests")))  It is easy to send many bulk requests to Elasticsearch
-by using concurrent import processes.  More is better, right?
+queue 거부가 발생하고 있다면, 그것은 아마도 bulk 색인 요청 때문일 것이다. ((("bulk API", "rejections of bulk requests")))
+동시 import 프로세스를 사용하여, Elasticsearch에 많은 bulk 요청을 보내는 것은 쉽다.
+많을수록 더 좋다. 정말?
 
-In reality, each cluster has a certain limit at which it can not keep up with
-ingestion.  Once this threshold is crossed, the queue will quickly fill up, and
-new bulks will be rejected.
+실제로는, 각 cluster는 받아들이는데 특정 제한이 있다. 이 제한에 걸리면, queue는 채워지고,
+bulk는 거부된다.
 
-This is a _good thing_.  Queue rejections are a useful form of back pressure.  They
-let you know that your cluster is at maximum capacity, which is much better than
-sticking data into an in-memory queue.  Increasing the queue size doesn't increase
-performance; it just hides the problem.  If your cluster can process only 10,000
-docs per second, it doesn't matter whether the queue is 100 or 10,000,000--your cluster can
-still process only 10,000 docs per second.
+이것은 _좋은 일_ 이다. queue 거부는 배압(back-pressure)의 유용한 형태이다. 그것으로
+cluster가 최대 용량에 있다는 것을 알 수 있다. 그리고 메모리에 있는 queue에 데이터를 계속
+넣는 것보다 훨씬 났다. queue의 크기를 증가시키는 것이 성능을 향상시키는 것이 아니고 단지
+문제를 숨길 뿐이다. cluster가 초당 10,000개의 document를 처리할 수 있다면, queue의 크기가
+100 또는 10,000,000이든 관계없이, cluster는 여전히 초당 10,000개의 document를 처리할 수
+있을 뿐이다.
 
-The queue simply hides the performance problem and carries a real risk of data-loss.
-Anything sitting in a queue is by definition not processed yet.  If the node
-goes down, all those requests are lost forever.  Furthermore, the queue eats
-up a lot of memory, which is not ideal.
+queue는 단순히 성능 문제를 숨기고, 실제 데이터 손실의 위험을 가지고 있을 뿐이다. queue에
+있는 모든 것은 의미상으로 아직 처리되지 않은 것이다. node가 다운되면, 모든 요청은 영원히
+사라진다. 게다가 queue는 많은 메모리를 잡아먹는기에 이상적이지 않다.
 
-It is much better to handle queuing in your application by gracefully handling
-the back pressure from a full queue.  When you receive bulk rejections, you should take these steps:
+전체 queue로부터 배압(back-pressure)을 처리하여, 응용프로그램에서 queue를 처리하는 것이
+훨씬 더 낫다. bulk 거부가 발생했을 때, 아래와 같이 할 수 있다:
 
-1. Pause the import thread for 3&#x2013;5 seconds.
-2. Extract the rejected actions from the bulk response, since it is probable that
-many of the actions were successful. The bulk response will tell you which succeeded
-and which were rejected.
-3. Send a new bulk request with just the rejected actions.
-4. Repeat from step 1 if rejections are encountered again.
+1. import thread를 3&#x2013;5초 정도 멈춘다.
+2. bulk 응답에서 거부된 작업을 뽑아낸다. 왜냐하면, 대부분의 작업은 성공했을 가능성이 있기
+때문이다. bulk 응답은 어느 것이 성공했는지 거부됐는지를 알려준다.
+3. 거부된 작업만을 가진 새로운 bulk 요청을 보낸다.
+4. 만약 다시 거부되면, 1단계부터 반복한다.
 
-Using this procedure, your code naturally adapts to the load of your cluster and
-naturally backs off.
+이 절차를 사용하면, 코드는 자연스럽게 cluster의 부하에 적응한다.
 
-Rejections are not errors: they just mean you should try again later.
+거부는 에러가 아니다. 나중에 다시 시도하라는 듯이다.
 ****
 
-There are a dozen threadpools.  Most you can safely ignore, but a few
-are good to keep an eye on:
+12개의 다른 threadpool이 있다. 대부분은 무시할 수 있지만, 몇 개는 계속 지켜보는 것이 좋다:
 
 `indexing`::
-    Threadpool for normal indexing requests
+    정상적인 색인 요청을 위한 threadpool
 
 `bulk`::
-    Bulk requests, which are distinct from the nonbulk indexing requests
+    bulk 요청이 아닌 색인 요청과 구분되는 bulk 요청
 
 `get`::
-    Get-by-ID operations
+    별 Get (Get-by-ID) 연산
 
 `search`::
-    All search and query requests
+    모든 검색과 query 요청
 
 `merging`::
-    Threadpool dedicated to managing Lucene merges
+    Lucene의 병합을 관리하는 전용 threadpool
 
-==== FS and Network Sections
+==== FS and Network 섹션
 
-Continuing down the `node-stats` API, you'll see a((("filesystem, statistics on"))) bunch of statistics about your
-filesystem:  free space, data directory paths, disk I/O stats, and more.  If you are
-not monitoring free disk space, you can get those stats here.  The disk I/O stats
-are also handy, but often more specialized command-line tools (`iostat`, for example)
-are more useful.
+`node-stats` API를 계속 내려보면, filesystem에 대한 통계를 볼 수 있다((("filesystem, statistics on"))):
+여유 공간, 데이터 디렉토리 경로, 디스크 I/O 상태, 그 밖에 것. 만일 디스크 여유 공간을
+모니터링하지 않는다면, 여기에서 해당 통계를 얻을 수 있다. 디스크 I/O 통계도 편리하지만,
+때로는 전문화된 command-line tool (예를 들어 `iostat`)이 더 유용하다.
 
-Obviously, Elasticsearch has a difficult time functioning if you run out of disk
-space--so make sure you don't.
+명백히, 디스크 공간이 부족하면, Elasticsearch는 동작하는데 어려움이 있다. 따라서
+그렇지 않는가 확인해야 한다.
 
-There are also two sections on ((("network", "statistics on")))network statistics:
+네트워크 통계에도 역시 두 섹션 ((("network", "statistics on")))이 있다:
 
 [source,js]
 ----
@@ -506,22 +474,21 @@ There are also two sections on ((("network", "statistics on")))network statistic
          },
 ----
 
-- `transport` shows some basic stats about the _transport address_.  This
-relates to inter-node communication (often on port 9300) and any transport client
-or node client connections.  Don't worry if you see many connections here;
-Elasticsearch maintains a large number of connections between nodes.
+- `transport`는 _transport address_에 대한 매우 기본적인 통계를 나타낸다. 이것은
+node간 통신(흔히 9300)과 TransportClient 이나 NodeClient 연결에 관한 것이다.
+여기에 많은 연결이 있다고 걱정하지 말자. Elasticsearch는 node 사이에 많은 수의 연결을
+유지한다.
 
-- `http` represents stats about the HTTP port (often 9200).  If you see a very
-large `total_opened` number that is constantly increasing, that is a sure sign
-that one of your HTTP clients is not using keep-alive connections.  Persistent,
-keep-alive connections are important for performance, since building up and tearing
-down sockets is expensive (and wastes file descriptors).  Make sure your clients
-are configured appropriately.
+- `http`는 HTTP port(흔히 9200)에 대한 통계를 나타낸다. 끊임없이 증가하는, 아주 큰
+`total_opened` 수를 본 경우에, 그것은 HTTP 클라이언트 중 하나가 keep-alive 연결을
+사용하지 않는다는 것을 확인하는 신호이다. 지속적인 keep-alive 연결은 성능을 위해
+중요하다. 왜냐하면, 소켓을 구축하고 없애는 것은 비싼 작업이다. (그리고 file
+descriptors의 낭비이다.) 클라이언트가 적절하게 구성되어 있는지 확인하자.
 
 ==== Circuit Breaker
 
-Finally, we come to the last section: stats about the((("fielddata circuit breaker"))) fielddata circuit breaker
-(introduced in <<circuit-breaker>>):
+끝으로, 마직막 섹션: ((("fielddata circuit breaker"))) field data의 circuit breaker
+( <<circuit-breaker>>에서 소개하였다.)에 대한 상태이다.
 
 [role="pagebreak-before"]
 [source,js]
@@ -536,16 +503,11 @@ Finally, we come to the last section: stats about the((("fielddata circuit break
          }
 ----
 
-Here, you can determine the maximum circuit-breaker size (for example, at what
-size the circuit breaker will trip if a query attempts to use more memory).  This section
-will also let you know the number of times the circuit breaker has been tripped, and
-the currently configured overhead.  The overhead is used to pad estimates, because some queries are more difficult to estimate than others.
+여기에서 circuit breaker의 최대 크기를 확인할 수 있다. (예를들어 query가 더 많은
+메모리를 사용하려 하는 경우에, circuit breaker가 동작하는 크기는 얼마인가) 또한,
+circuit breaker가 동작한 횟수와 현재 설정된 “overhead”를 알 수 있다. 일부 query는
+다른 것보다 추정하기가 어렵기 때문에, overhead는 추정치를 추가하는데 사용된다.
 
-The main thing to watch is the `tripped` metric.  If this number is large or
-consistently increasing, it's a sign that your queries may need to be optimized
-or that you may need to obtain more memory (either per box or by adding more
-nodes).((("Node Stats API", range="endofrange", startref="ix_NodeStats")))
-
-
-
-
+중요한 것은 `tripped` 단가이다. 이 숫자가 크거나 지속적으로 증가하면, query를
+최적화하거나 더 많은 메모리를 확보(박스 별로, 또는 더 많은 node를 추가)해야 한다는
+신호이다.((("Node Stats API", range="endofrange", startref="ix_NodeStats")))
