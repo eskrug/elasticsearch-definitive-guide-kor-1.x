@@ -1,36 +1,32 @@
 
-=== Cluster Stats
+=== cluster 상태
 
-The `cluster-stats` API provides similar output to the `node-stats`.((("clusters", "administration", "Cluster Stats API")))  There
-is one crucial difference: Node Stats shows you statistics per node, while
-`cluster-stats` shows you the sum total of all nodes in a single metric.
+`cluster-stats` API는 `node-stats` 와 매우 유사한 출력을 제공한다. ((("clusters", "administration", "Cluster Stats API"))) 한가지 중요한 차이가 있다: node 상태는 node 별
+상태를 보여주는 반면에, `cluster-stats` 는 모든 node의 총 합을 하나의 상태로 보여준다.
 
-This provides some useful stats to glance at.  You can see for example, that your entire cluster
-is using 50% of the available heap or that filter cache is not evicting heavily.  Its
-main use is to provide a quick summary that is more extensive than
-the `cluster-health`, but less detailed than `node-stats`. It is also useful for
-clusters that are very large, which makes `node-stats` output difficult
-to read.
+이것은 몇 가지 유용한 상태를 제공한다. 전체 cluster는 이용 가능한 heap의 50%를
+사용 중이고, filter cache는 심하게 축출되지 않는다는 것을 예로 볼 수 있다.
+`node-stats` 보다 자세하지 않고 `cluster-health` 보다 더 광범위한 요약
+정보를 제공하는 것이 주요 용도이다. cluster가 너무 클 경우, `node-stats`
+의 출력은 읽기가 쉽지 않기 때문에, 유용하게 쓸 수 있다.
 
-The API may be invoked as follows:
+API는 아래와 같이 사용한다:
 
 [source,js]
 ----
 GET _cluster/stats
 ----
 
-=== Index Stats
+=== Index 상태
 
-So far, we have been looking at _node-centric_ statistics:((("indices", "index statistics")))((("clusters", "administration", "index stats")))  How much memory does 
-this node have?  How much CPU is being used?  How many searches is this node
-servicing?
+지금까지, _node 중심의_ 통계를 살펴봤다:((("indices", "index statistics")))((("clusters", "administration", "index stats"))) 이 node가 가진 메모리가 얼마인지?
+CPU가 얼마나 사용되고 있는지? 이 node가 서비스하고 있는 검색은 얼마나 많은지?
 
-Sometimes it is useful to look at statistics from an _index-centric_ perspective:
-How many search requests is _this index_ receiving?  How much time is spent fetching
-docs in _that index_?
+때로는, _index 중심의_ 통계를 살펴보는 것도 유용하다. _이 index_ 가 받은 검색 요청은
+얼마나 많은가? _그 index_ 에서 document를 가져오는데 소요되는 시간은?
 
-To do this, select the index (or indices) that you are interested in and 
-execute an Index `stats` API:
+이를 위해, 관심 있는 그리고 Index `stats` API를 실행할 index(또는 indix들을)
+를 선택해야 한다.
 
 [source,js]
 ----
@@ -40,38 +36,44 @@ GET my_index,another_index/_stats <2>
 
 GET _all/_stats <3>
 ----
-<1> Stats for `my_index`.
-<2> Stats for multiple indices can be requested by separating their names with a comma.
-<3> Stats indices can be requested using the special `_all` index name.
+<1> `my_index` 에 대한 상태.
+<2> index의 이름을 콤마(,)로 구분하여 요청할 수 있는 다수 index에 대한 상태.
+<3> index 이름으로 특별한 `_all` 을 사용하여 요청한 indices 통계
 
-The stats returned will be familar to the `node-stats` output: `search` `fetch` `get`
+이 상태의 응답은 `node-stats` 출력과 유사하다: `search` `fetch` `get`
 `index` `bulk` `segment counts` and so forth
 
+index 중심의 통계는 cluster 내부의 “hot” index를 확인하고 검증하는데 유용하다.  또는 어떤 index가 다른 index에 비해 빠르거나 느린지를 알아낼 수 있다.
 Index-centric stats can be useful for identifying or verifying _hot_ indices
 inside your cluster, or trying to determine why some indices are faster/slower
 than others.
 
+그러나, 실제로는 node 중심의 통계가 더 유용한 경향이 있다. node 전체는 병목 현상이 있을 수 있지만, 개별 index는 아니다. 그리고, index는 일반적으로 다수의 node에 분산되어 있기 때문에, index 중심의 통계는 일반적으로 그리 도움이 되지 않는다. 왜냐하면, 다른 환경에서 동작하는 다른 물리적 machine을 집계하기 때문이다.
 In practice, however, node-centric statistics tend to be more useful.  Entire
 nodes tend to bottleneck, not individual indices.  And because indices
 are usually spread across multiple nodes, index-centric statistics
 are usually not very helpful because they aggregate data from different physical machines
 operating in different environments.
 
+index 중심의 통계는 유용한 도구이긴 하지만, 자주 이용하는 도구는 아니다.
 Index-centric stats are a useful tool to keep in your repertoire, but are not usually
 the first tool to reach for.
 
 === Pending Tasks
 
+새로운 index를 생성하거나, cluster에서 shard의 이동처럼, master만이 할 수 있는 특정 작업이 있다. cluster는 오직 하나의 master만을 가질 수 있기 때문에, 하나의 node만이 cluster 수준의 metadata 변경을 처리할 수 있다. metadata 변경 queue는 기본적으로 비어 있다.
 There are certain tasks that only the master can perform, such as creating a new ((("clusters", "administration", "Pending Tasks API")))
 index or moving shards around the cluster.  Since a cluster can have only one
-master, only one node can ever process cluster-level metadata changes.  For 
+master, only one node can ever process cluster-level metadata changes.  For
 99.9999% of the time, this is never a problem.  The queue of metadata changes
 remains essentially zero.
 
+어떤 cluster에서는 metadata 변경 작업은 mater가 그것을 처리하는 것보다 더 빨리 발생한다. 이로 인해, queue에 들어가 대기 작업 열을 만들게 된다.
 In some _rare_ clusters, the number of metadata changes occurs faster than
 the master can process them.  This leads to a buildup of pending actions that
 are queued.
 
+pending_tasks API는 queue에 대기하고 있는 cluster 수준의 metadata 변경 작업이 무엇인지(있는지)를 보여준다.
 The `pending-tasks` API ((("Pending Tasks API")))will show you what (if any) cluster-level metadata changes
 are pending in the queue:
 
@@ -80,6 +82,7 @@ are pending in the queue:
 GET _cluster/pending_tasks
 ----
 
+일반적으로, 응답은 다음과 같이 비어 있다
 Usually, the response will look like this:
 
 [source,js]
@@ -89,6 +92,7 @@ Usually, the response will look like this:
 }
 ----
 
+대기 작업이 없다는 것을 의미한다. master node에 병목현상이 있는 희귀한 cluster를 가지고 있다면, 대기 작업은 아래와 같이 나열될 것이다.
 This means there are no pending tasks.  If you have one of the rare clusters that
 bottlenecks on the master node, your pending task list may look like this:
 
@@ -106,7 +110,7 @@ bottlenecks on the master node, your pending task list may look like this:
       {
          "insert_order": 46,
          "priority": "HIGH",
-         "source": "shard-started ([foo_2][1], node[tMTocMvQQgGCkj7QDHl3OA], [P], 
+         "source": "shard-started ([foo_2][1], node[tMTocMvQQgGCkj7QDHl3OA], [P],
          s[INITIALIZING]), reason [after recovery from gateway]",
          "time_in_queue_millis": 842,
          "time_in_queue": "842ms"
@@ -114,7 +118,7 @@ bottlenecks on the master node, your pending task list may look like this:
       {
          "insert_order": 45,
          "priority": "HIGH",
-         "source": "shard-started ([foo_2][0], node[tMTocMvQQgGCkj7QDHl3OA], [P], 
+         "source": "shard-started ([foo_2][0], node[tMTocMvQQgGCkj7QDHl3OA], [P],
          s[INITIALIZING]), reason [after recovery from gateway]",
          "time_in_queue_millis": 858,
          "time_in_queue": "858ms"
@@ -123,52 +127,58 @@ bottlenecks on the master node, your pending task list may look like this:
 }
 ----
 
+우선 순위가 할당(URGENT는 HIGH보다 먼저 처리 등)된 작업, 입력된 순서, 작업의 대기 시간, 작업이 수행하려는 것을 볼 수 있다. 위의 목록에서, create-index 작업, 두 개의 shard-started 작업이 대기 중이다.
 You can see that tasks are assigned a priority (`URGENT` is processed before `HIGH`,
 for example), the order it was inserted, how long the action has been queued and
 what the action is trying to perform.  In the preceding list, there is a `create-index`
 action and two `shard-started` actions pending.
 
-.When Should I Worry About Pending Tasks?
+.언제 대기중인 작업에 대해 관심을 가져야 하는가?
 ****
+언급한 바와 같이, master node는 cluster에서 거의 병목현상이 없다. cluster 상태가 매우 크고, 업데이트가 빈번한 경우에 잠재적으로 병목현상이 있을 수 있는 유일한 시간이다.
 As mentioned, the master node is rarely the bottleneck for clusters.  The only
-time it could bottleneck is if the cluster state is both very large 
+time it could bottleneck is if the cluster state is both very large
 _and_ updated frequently.
 
+예를 들어, 고객이 마음대로 동적 field를 많이 생성할 수 있고 각 고객이 매일 유일한 index를 생성한다면, cluster state는 매우 커질 것이다. cluster state는 모든 index의 목록, 그것의 type, 그리고 각 index에 대한 field를 포함한다.
 For example, if you allow customers to create as many dynamic fields as they wish,
 and have a unique index for each customer every day, your cluster state will grow
 very large.  The cluster state includes (among other things) a list of all indices,
 their types, and the fields for each index.
 
+100,000명의 고객이 있고, 각 고객이 평균 1,000개의 field, 90일 동안 있었다면, cluster state에는 90억개의 field가 있다. 이것이 변경될 때마다, node에 알려줘야 한다.
 So if you have 100,000 customers, and each customer averages 1,000 fields and 90
 days of retention--that's nine billion fields to keep in the cluster state.
-Whenever this changes, the nodes must be notified.  
+Whenever this changes, the nodes must be notified.
 
+master는 이런 변경을 반드시 처리해야 한다. 하지만, 모든 node에 cluster state를 업데이트하기 위해, 적지 않은 CPU 오버헤드, 추가로 네트워크 오버헤드가 필요하다.
 The master must process these changes, which requires nontrivial CPU overhead,
 plus the network overhead of pushing the updated cluster state to all nodes.
 
+cluster state 작업이 queue에 쌓이는 것이 보이기 시작하는 cluster이다. 이 문제에 대한 쉬운 해결책은 없다. 그러나, 세 가지 옵션이 있다.
 It is these clusters that may begin to see cluster-state actions queuing up.
 There is no easy solution to this problem, however.  You have three options:
 
-- Obtain a beefier master node.  Vertical scaling just delays the inevitable, 
-unfortunately. 
-- Restrict the dynamic nature of the documents in some way, so as to limit the 
-cluster-state size.  
-- Spin up another cluster after a certain threshold has been crossed.
+- 비대해진 master node를 구해 보자. 불행하게도, 수직확장은 불가피하다.
+Obtain a beefier master node.  Vertical scaling just delays the inevitable,
+unfortunately.
+- cluster state의 크기를 제한하기 위하여, 어떻게 해서든, document의 동적 특성을 제한하자.
+Restrict the dynamic nature of the documents in some way, so as to limit the
+cluster-state size.
+- 	특정 임계 값에 이르게 되면, 다른 cluster로 전환하자.
+Spin up another cluster after a certain threshold has been crossed.
 ****
 
 === cat API
 
-If you work from the command line often, the `cat` APIs will be helpful
-to you.((("Cat API")))((("clusters", "administration", "Cat API")))  Named after the linux `cat` command, these APIs are designed to
-work like *nix command-line tools.
+command line에서 작업하는 경우, `cat` API들은 매우 유용하다. ((("Cat API")))((("clusters", "administration", "Cat API"))) linux의 `cat`
+명령어에서 이름을 딴, 이 API는 *nix의 command line tool처럼 동작하도록 설계되었다.
 
-They provide statistics that are identical to all the previously discussed APIs
-(Health, `node-stats`, and so forth), but present the output in tabular form instead of 
-JSON.  This is _very_ convenient for a system administrator, and you just want
-to glance over your cluster or find nodes with high memory usage.
+이전에 언급했던 API(health, `node-stats` 등) 모두와 동일한 통계를 제공한다. 하지만,
+JSON 대신 표 형식으로 출력을 나타낸다. 이것은 시스템 관리자에게, cluster를 한 눈에
+살펴보거나, 메모리를 많이 사용하는 node를 찾을 때 _매우_ 편리하다.
 
-Executing a plain `GET` against the `cat` endpoint will show you all available 
-APIs:
+`GET` 의 마지막에 `cat` 를 넣어 실행하면, 이용 가능한 모든 API들을 보여준다:
 
 [source,bash]
 ----
@@ -198,170 +208,160 @@ GET /_cat
 /_cat/fielddata/{fields}
 ----
 
-Many of these APIs should look familiar to you (and yes, that's a cat at the top 
-:) ).  Let's take a look at the Cat Health API:
+이 API들 중 대부분은 당신에게 친숙할 것이다.(맞다, 앞에 cat이 있다:) ).
+그러면 Cat Health API에 대해 살펴보자:
 
 [source,bash]
 ----
 GET /_cat/health
 
-1408723713 12:08:33 elasticsearch_zach yellow 1 1 114 114 0 0 114 
+1408723713 12:08:33 elasticsearch_zach yellow 1 1 114 114 0 0 114
 ----
 
-The first thing you'll notice is that the response is plain text in tabular form,
-not JSON.  The second thing you'll notice is that there are no column headers
-enabled by default.  This is designed to emulate *nix tools, since it is assumed
-that once you become familiar with the output, you no longer want to see
-the headers.
+첫 번째는 응답이 평범한 JSON이 아니라 표 형식에 일반 텍스트이다. 두 번째는 기본적으로
+활성화된 칼럼 header가 없다. header가 없는 출력에 익숙하다고 가정했기 때문에,
+*nix tool을 모방하여 설계되었다.
 
-To enable headers, add the `?v` parameter:
+headers를 활성화하려면, `?v` 파라미터를 추가하자:
 
 [source,bash]
 ----
 GET /_cat/health?v
 
-epoch   time    cluster status node.total node.data shards pri relo init  
-1408[..] 12[..] el[..]  1         1         114 114    0    0     114 
+epoch   time    cluster status node.total node.data shards pri relo init
+1408[..] 12[..] el[..]  1         1         114 114    0    0     114
 unassign
 ----
 
-Ah, much better.  We now see the timestamp, cluster name, status, the number of 
-nodes in the cluster, and more--all the same information as the `cluster-health`
-API.
+와, 훨씬 낫다. 이제, timestamp, cluster 이름, status, cluster의 node 수 등을 볼 수
+있다. -- `cluster-health` API와 모두 동일한 정보이다.
 
-Let's look at `node-stats` in the `cat` API:
+`cat` API에서 `node-stats` 를 살펴보자.
 
 [source,bash]
 ----
 GET /_cat/nodes?v
 
-host         ip            heap.percent ram.percent load node.role master name 
-zacharys-air 192.168.1.131           45          72 1.85 d         *      Zach 
+host         ip            heap.percent ram.percent load node.role master name
+zacharys-air 192.168.1.131           45          72 1.85 d         *      Zach
 ----
 
-We see some stats about the nodes in our cluster, but the output is basic compared
-to the full `node-stats` output. You can
-include many additional metrics, but rather than consulting the documentation, let's just ask the `cat`
-API what is available.
+cluster의 node에 대한 몇 가지 통계를 볼 수 있지만, 전체  `node-stats` 출력과 비교하면,
+아주 기본적인 것이다. 거기에 포함할 수 있는 많은 추가 통계가 있지만, 참조 문서를
+참고하는 것보다, 이용할 수 있는 것을 `cat` API에게 물어보자.
 
-You can do this by adding `?help` to any API:
+어떤 API에도 `?help`를 추가할 수 있다:
 
 [source,bash]
 ----
 GET /_cat/nodes?help
 
-id               | id,nodeId               | unique node id                          
-pid              | p                       | process id                              
-host             | h                       | host name                               
-ip               | i                       | ip address                              
-port             | po                      | bound transport port                    
-version          | v                       | es version                              
-build            | b                       | es build hash                           
-jdk              | j                       | jdk version                             
-disk.avail       | d,disk,diskAvail        | available disk space                    
-heap.percent     | hp,heapPercent          | used heap ratio                         
-heap.max         | hm,heapMax              | max configured heap                     
-ram.percent      | rp,ramPercent           | used machine memory ratio               
-ram.max          | rm,ramMax               | total machine memory                    
-load             | l                       | most recent load avg                    
-uptime           | u                       | node uptime                             
-node.role        | r,role,dc,nodeRole      | d:data node, c:client node              
-master           | m                       | m:master-eligible, *:current master  
+id               | id,nodeId               | unique node id
+pid              | p                       | process id
+host             | h                       | host name
+ip               | i                       | ip address
+port             | po                      | bound transport port
+version          | v                       | es version
+build            | b                       | es build hash
+jdk              | j                       | jdk version
+disk.avail       | d,disk,diskAvail        | available disk space
+heap.percent     | hp,heapPercent          | used heap ratio
+heap.max         | hm,heapMax              | max configured heap
+ram.percent      | rp,ramPercent           | used machine memory ratio
+ram.max          | rm,ramMax               | total machine memory
+load             | l                       | most recent load avg
+uptime           | u                       | node uptime
+node.role        | r,role,dc,nodeRole      | d:data node, c:client node
+master           | m                       | m:master-eligible, *:current master
 ...
 ...
 ----
-(Note that the output has been truncated for brevity).
+(출력은 간략하게 표현하기 위해서 생략하였습니다.)
 
-The first column shows the full name, the second column shows the short name,
-and the third column offers a brief description about the parameter. Now that
-we know some column names, we can ask for those explicitly by using the `?h`
-parameter:
+첫 번째 칼럼은 fullname을, 두 번째는 short name을, 그리고 세 번째는 매개변수에 대한
+짧은 설명을 제공한다. 이제 몇 개의 칼럼 이름을 알았고, `?h` 파라미터를 사용하여,
+명시적으로 통계를 요청할 수 있다.
 
 [source,bash]
 ----
 GET /_cat/nodes?v&h=ip,port,heapPercent,heapMax
 
-ip            port heapPercent heapMax 
-192.168.1.131 9300          53 990.7mb 
+ip            port heapPercent heapMax
+192.168.1.131 9300          53 990.7mb
 ----
 
-Because the `cat` API tries to behave like *nix utilities, you can pipe the output
-to other tools such as `sort` `grep` or `awk`.  For example, we can find the largest
-index in our cluster by using the following:
+`cat` API는 *nix 유틸리티처럼 동작하려 하기 때문에, `sort` `grep` 나 `awk`처럼,
+다른 tool로 출력을 보낼 수 있다. 예를 들어, 아래처럼 사용하여, cluster에서 가장
+큰 index를 찾을 수 있다:
 
 [source,bash]
 ----
 % curl 'localhost:9200/_cat/indices?bytes=b' | sort -rnk8
 
-yellow test_names         5 1 3476004 0 376324705 376324705 
-yellow .marvel-2014.08.19 1 1  263878 0 160777194 160777194 
-yellow .marvel-2014.08.15 1 1  234482 0 143020770 143020770 
-yellow .marvel-2014.08.09 1 1  222532 0 138177271 138177271 
-yellow .marvel-2014.08.18 1 1  225921 0 138116185 138116185 
-yellow .marvel-2014.07.26 1 1  173423 0 132031505 132031505 
-yellow .marvel-2014.08.21 1 1  219857 0 128414798 128414798 
-yellow .marvel-2014.07.27 1 1   75202 0  56320862  56320862 
-yellow wavelet            5 1    5979 0  54815185  54815185 
-yellow .marvel-2014.07.28 1 1   57483 0  43006141  43006141 
-yellow .marvel-2014.07.21 1 1   31134 0  27558507  27558507 
-yellow .marvel-2014.08.01 1 1   41100 0  27000476  27000476 
-yellow kibana-int         5 1       2 0     17791     17791 
-yellow t                  5 1       7 0     15280     15280 
-yellow website            5 1      12 0     12631     12631 
-yellow agg_analysis       5 1       5 0      5804      5804 
-yellow v2                 5 1       2 0      5410      5410 
-yellow v1                 5 1       2 0      5367      5367 
-yellow bank               1 1      16 0      4303      4303 
-yellow v                  5 1       1 0      2954      2954 
-yellow p                  5 1       2 0      2939      2939 
-yellow b0001_072320141238 5 1       1 0      2923      2923 
-yellow ipaddr             5 1       1 0      2917      2917 
-yellow v2a                5 1       1 0      2895      2895 
-yellow movies             5 1       1 0      2738      2738 
-yellow cars               5 1       0 0      1249      1249 
-yellow wavelet2           5 1       0 0       615       615 
+yellow test_names         5 1 3476004 0 376324705 376324705
+yellow .marvel-2014.08.19 1 1  263878 0 160777194 160777194
+yellow .marvel-2014.08.15 1 1  234482 0 143020770 143020770
+yellow .marvel-2014.08.09 1 1  222532 0 138177271 138177271
+yellow .marvel-2014.08.18 1 1  225921 0 138116185 138116185
+yellow .marvel-2014.07.26 1 1  173423 0 132031505 132031505
+yellow .marvel-2014.08.21 1 1  219857 0 128414798 128414798
+yellow .marvel-2014.07.27 1 1   75202 0  56320862  56320862
+yellow wavelet            5 1    5979 0  54815185  54815185
+yellow .marvel-2014.07.28 1 1   57483 0  43006141  43006141
+yellow .marvel-2014.07.21 1 1   31134 0  27558507  27558507
+yellow .marvel-2014.08.01 1 1   41100 0  27000476  27000476
+yellow kibana-int         5 1       2 0     17791     17791
+yellow t                  5 1       7 0     15280     15280
+yellow website            5 1      12 0     12631     12631
+yellow agg_analysis       5 1       5 0      5804      5804
+yellow v2                 5 1       2 0      5410      5410
+yellow v1                 5 1       2 0      5367      5367
+yellow bank               1 1      16 0      4303      4303
+yellow v                  5 1       1 0      2954      2954
+yellow p                  5 1       2 0      2939      2939
+yellow b0001_072320141238 5 1       1 0      2923      2923
+yellow ipaddr             5 1       1 0      2917      2917
+yellow v2a                5 1       1 0      2895      2895
+yellow movies             5 1       1 0      2738      2738
+yellow cars               5 1       0 0      1249      1249
+yellow wavelet2           5 1       0 0       615       615
 ----
 
-By adding `?bytes=b`, we disable the human-readable formatting on numbers and
-force them to be listed as bytes.  This output is then piped into `sort` so that
-our indices are ranked according to size (the eighth column).
+`?bytes=b` 를 추가하여, 숫자를 사람이 읽을 수 있는 형식으로 표시하는 것을
+비활성화하고, 강제로 byte로 표시한다. index를 크기에 따라 정렬하기 위해,
+이 출력은 `sort` 로 전달된다.(8번째 column)
 
-Unfortunately, you'll notice that the Marvel indices are clogging up the results,
-and we don't really care about those indices right now.  Let's pipe the output
-through `grep` and remove anything mentioning Marvel:
+불행히도, Marvel Index들이 출력을 가득 채운 것을 알 수 있는데, 지금은 해당
+index에 대해 관심이 없다. 파이프로 `grep` 해서 출력해, Marvel이 언급된 모든 것을
+제거하자:
 
 [source,bash]
 ----
 % curl 'localhost:9200/_cat/indices?bytes=b' | sort -rnk8 | grep -v marvel
 
-yellow test_names         5 1 3476004 0 376324705 376324705 
-yellow wavelet            5 1    5979 0  54815185  54815185 
-yellow kibana-int         5 1       2 0     17791     17791 
-yellow t                  5 1       7 0     15280     15280 
-yellow website            5 1      12 0     12631     12631 
-yellow agg_analysis       5 1       5 0      5804      5804 
-yellow v2                 5 1       2 0      5410      5410 
-yellow v1                 5 1       2 0      5367      5367 
-yellow bank               1 1      16 0      4303      4303 
-yellow v                  5 1       1 0      2954      2954 
-yellow p                  5 1       2 0      2939      2939 
-yellow b0001_072320141238 5 1       1 0      2923      2923 
-yellow ipaddr             5 1       1 0      2917      2917 
-yellow v2a                5 1       1 0      2895      2895 
-yellow movies             5 1       1 0      2738      2738 
-yellow cars               5 1       0 0      1249      1249 
-yellow wavelet2           5 1       0 0       615       615 
+yellow test_names         5 1 3476004 0 376324705 376324705
+yellow wavelet            5 1    5979 0  54815185  54815185
+yellow kibana-int         5 1       2 0     17791     17791
+yellow t                  5 1       7 0     15280     15280
+yellow website            5 1      12 0     12631     12631
+yellow agg_analysis       5 1       5 0      5804      5804
+yellow v2                 5 1       2 0      5410      5410
+yellow v1                 5 1       2 0      5367      5367
+yellow bank               1 1      16 0      4303      4303
+yellow v                  5 1       1 0      2954      2954
+yellow p                  5 1       2 0      2939      2939
+yellow b0001_072320141238 5 1       1 0      2923      2923
+yellow ipaddr             5 1       1 0      2917      2917
+yellow v2a                5 1       1 0      2895      2895
+yellow movies             5 1       1 0      2738      2738
+yellow cars               5 1       0 0      1249      1249
+yellow wavelet2           5 1       0 0       615       615
 ----
 
-Voila!  After piping through `grep` (with `-v` to invert the matches), we get
-a sorted list of indices without Marvel cluttering it up.
+짜잔! grep으로 보낸( `-v` 로 일치하지 않게 한) 후에, Marvel이 잘린 것 없이 index의
+정렬된 목록을 얻었다.
 
-This is just a simple example of the flexibility of `cat` at the command line.
-Once you get used to using `cat`, you'll see it like any other *nix tool and start
-going crazy with piping, sorting, and grepping.  If you are a system admin and spend
-any time SSH'd into boxes, definitely spend some time getting familiar
-with the `cat` API.
-
-
-
-
+이것은 command line에서 `cat` 의 유연성에 대한 간단한 예제이다. `cat` 사용에
+익숙해지면, 그것을 *nix tool처럼 보게 되고, pipe, sort, grep와 함께 미친 듯이
+시작할 것이다. 당신이 시스템 관리자이고, 박스 안에 있는 SSH'd과 많은 시간을 보낸다면,
+확실히 `cat` API에 익숙해질 필요가 있다.
