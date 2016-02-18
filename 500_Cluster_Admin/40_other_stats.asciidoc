@@ -1,10 +1,10 @@
 
-=== cluster 상태
+=== cluster 통계
 
-`cluster-stats` API는 `node-stats` 와 매우 유사한 출력을 제공한다. ((("clusters", "administration", "Cluster Stats API"))) 한가지 중요한 차이가 있다: node 상태는 node 별
-상태를 보여주는 반면에, `cluster-stats` 는 모든 node의 총 합을 하나의 상태로 보여준다.
+`cluster-stats` API는 `node-stats` 와 매우 유사한 출력을 제공한다. ((("clusters", "administration", "Cluster Stats API"))) 한가지 중요한 차이가 있다: node 통계는 node 별
+통계를 보여주는 반면에, `cluster-stats` 는 모든 node의 총 합을 하나의 통계로 보여준다.
 
-이것은 몇 가지 유용한 상태를 제공한다. 전체 cluster는 이용 가능한 heap의 50%를
+이것은 몇 가지 유용한 통계를 제공한다. 전체 cluster는 이용 가능한 heap의 50%를
 사용 중이고, filter cache는 심하게 축출되지 않는다는 것을 예로 볼 수 있다.
 `node-stats` 보다 자세하지 않고 `cluster-health` 보다 더 광범위한 요약
 정보를 제공하는 것이 주요 용도이다. cluster가 너무 클 경우, `node-stats`
@@ -17,7 +17,7 @@ API는 아래와 같이 사용한다:
 GET _cluster/stats
 ----
 
-=== Index 상태
+=== Index 통계
 
 지금까지, _node 중심의_ 통계를 살펴봤다:((("indices", "index statistics")))((("clusters", "administration", "index stats"))) 이 node가 가진 메모리가 얼마인지?
 CPU가 얼마나 사용되고 있는지? 이 node가 서비스하고 있는 검색은 얼마나 많은지?
@@ -36,54 +36,42 @@ GET my_index,another_index/_stats <2>
 
 GET _all/_stats <3>
 ----
-<1> `my_index` 에 대한 상태.
-<2> index의 이름을 콤마(,)로 구분하여 요청할 수 있는 다수 index에 대한 상태.
+<1> `my_index` 에 대한 통계.
+<2> index의 이름을 콤마(,)로 구분하여 요청할 수 있는 다수 index에 대한 통계.
 <3> index 이름으로 특별한 `_all` 을 사용하여 요청한 indices 통계
 
-이 상태의 응답은 `node-stats` 출력과 유사하다: `search` `fetch` `get`
+이 통계의 응답은 `node-stats` 출력과 유사하다: `search` `fetch` `get`
 `index` `bulk` `segment counts` and so forth
 
-index 중심의 통계는 cluster 내부의 “hot” index를 확인하고 검증하는데 유용하다.  또는 어떤 index가 다른 index에 비해 빠르거나 느린지를 알아낼 수 있다.
-Index-centric stats can be useful for identifying or verifying _hot_ indices
-inside your cluster, or trying to determine why some indices are faster/slower
-than others.
+index 중심의 통계는 cluster 내부의 _hot_ index를 확인하고 검증하는데 유용하다.
+또는 어떤 index가 다른 index에 비해 빠르거나 느린지를 알아낼 수 있다.
 
-그러나, 실제로는 node 중심의 통계가 더 유용한 경향이 있다. node 전체는 병목 현상이 있을 수 있지만, 개별 index는 아니다. 그리고, index는 일반적으로 다수의 node에 분산되어 있기 때문에, index 중심의 통계는 일반적으로 그리 도움이 되지 않는다. 왜냐하면, 다른 환경에서 동작하는 다른 물리적 machine을 집계하기 때문이다.
-In practice, however, node-centric statistics tend to be more useful.  Entire
-nodes tend to bottleneck, not individual indices.  And because indices
-are usually spread across multiple nodes, index-centric statistics
-are usually not very helpful because they aggregate data from different physical machines
-operating in different environments.
+그러나, 실제로는 node 중심의 통계가 더 유용한 경향이 있다. node 전체는 병목 현상이
+을 수 있지만, 개별 index는 아니다. 그리고, index는 일반적으로 다수의 node에 분산되어
+있기 때문에, index 중심의 통계는 일반적으로 그리 도움이 되지 않는다. 왜냐하면, 다른
+환경에서 동작하는 다른 물리적 machine을 집계하기 때문이다.
 
 index 중심의 통계는 유용한 도구이긴 하지만, 자주 이용하는 도구는 아니다.
-Index-centric stats are a useful tool to keep in your repertoire, but are not usually
-the first tool to reach for.
 
 === Pending Tasks
 
-새로운 index를 생성하거나, cluster에서 shard의 이동처럼, master만이 할 수 있는 특정 작업이 있다. cluster는 오직 하나의 master만을 가질 수 있기 때문에, 하나의 node만이 cluster 수준의 metadata 변경을 처리할 수 있다. metadata 변경 queue는 기본적으로 비어 있다.
-There are certain tasks that only the master can perform, such as creating a new ((("clusters", "administration", "Pending Tasks API")))
-index or moving shards around the cluster.  Since a cluster can have only one
-master, only one node can ever process cluster-level metadata changes.  For
-99.9999% of the time, this is never a problem.  The queue of metadata changes
-remains essentially zero.
+새로운 ((("clusters", "administration", "Pending Tasks API"))) index를 생성하거나, cluster에서 shard의 이동처럼, master만이 할 수 있는
+특정 작업이 있다. cluster는 오직 하나의 master만을 가질 수 있기 때문에, 하나의 node
+만이 cluster 수준의 metadata 변경을 처리할 수 있다. 대부분 시간의 99.9999%는 ,
+문제 되지 않는다. metadata 변경 queue는 거의 0에 가깝다.
 
-어떤 cluster에서는 metadata 변경 작업은 mater가 그것을 처리하는 것보다 더 빨리 발생한다. 이로 인해, queue에 들어가 대기 작업 열을 만들게 된다.
-In some _rare_ clusters, the number of metadata changes occurs faster than
-the master can process them.  This leads to a buildup of pending actions that
-are queued.
+_드물게_ 어떤 cluster에서의 metadata 변경 작업은 mater가 그것을 처리하는 것보다
+더 빨리 발생한다. 이로 인해, queue에 들어가 대기 작업 열을 만들게 된다.
 
-pending_tasks API는 queue에 대기하고 있는 cluster 수준의 metadata 변경 작업이 무엇인지(있는지)를 보여준다.
-The `pending-tasks` API ((("Pending Tasks API")))will show you what (if any) cluster-level metadata changes
-are pending in the queue:
+`pending-tasks` API ((("Pending Tasks API"))) 는 queue에 대기하고 있는 cluster 수준의 metadata
+변경 작업이 무엇인지(있는지)를 보여준다.
 
 [source,js]
 ----
 GET _cluster/pending_tasks
 ----
 
-일반적으로, 응답은 다음과 같이 비어 있다
-Usually, the response will look like this:
+일반적으로, 응답은 다음과 같이 비어 있다:
 
 [source,js]
 ----
@@ -92,9 +80,8 @@ Usually, the response will look like this:
 }
 ----
 
-대기 작업이 없다는 것을 의미한다. master node에 병목현상이 있는 희귀한 cluster를 가지고 있다면, 대기 작업은 아래와 같이 나열될 것이다.
-This means there are no pending tasks.  If you have one of the rare clusters that
-bottlenecks on the master node, your pending task list may look like this:
+대기 작업이 없다는 것을 의미한다. master node에 병목현상이 있는 희귀한 cluster를
+가지고 있다면, 대기 작업은 아래와 같이 나열될 것이다:
 
 [source,js]
 ----
@@ -127,46 +114,34 @@ bottlenecks on the master node, your pending task list may look like this:
 }
 ----
 
-우선 순위가 할당(URGENT는 HIGH보다 먼저 처리 등)된 작업, 입력된 순서, 작업의 대기 시간, 작업이 수행하려는 것을 볼 수 있다. 위의 목록에서, create-index 작업, 두 개의 shard-started 작업이 대기 중이다.
-You can see that tasks are assigned a priority (`URGENT` is processed before `HIGH`,
-for example), the order it was inserted, how long the action has been queued and
-what the action is trying to perform.  In the preceding list, there is a `create-index`
-action and two `shard-started` actions pending.
+우선 순위가 할당(예를들어, `URGENT` 는 `HIGH` 보다 먼저 처리 등)된 작업, 입력된 순서,
+작업의 대기 시간, 작업이 수행하려는 것을 볼 수 있다. 위의 목록에서, `create-index`
+작업, 두 개의 `shard-started` 작업이 대기 중이다.
 
 .언제 대기중인 작업에 대해 관심을 가져야 하는가?
 ****
-언급한 바와 같이, master node는 cluster에서 거의 병목현상이 없다. cluster 상태가 매우 크고, 업데이트가 빈번한 경우에 잠재적으로 병목현상이 있을 수 있는 유일한 시간이다.
-As mentioned, the master node is rarely the bottleneck for clusters.  The only
-time it could bottleneck is if the cluster state is both very large
-_and_ updated frequently.
+언급한 바와 같이, master node는 cluster에서 거의 병목현상이 없다. cluster 통계가
+매우 크고, _거기에다가_ 업데이트가 빈번한 경우에 잠재적으로 병목현상이 있을 수 있는
+유일한 시간이다.
 
-예를 들어, 고객이 마음대로 동적 field를 많이 생성할 수 있고 각 고객이 매일 유일한 index를 생성한다면, cluster state는 매우 커질 것이다. cluster state는 모든 index의 목록, 그것의 type, 그리고 각 index에 대한 field를 포함한다.
-For example, if you allow customers to create as many dynamic fields as they wish,
-and have a unique index for each customer every day, your cluster state will grow
-very large.  The cluster state includes (among other things) a list of all indices,
-their types, and the fields for each index.
+예를 들어, 고객이 마음대로 동적 field를 많이 생성할 수 있고 각 고객이 매일 유일한
+index를 생성한다면, cluster state는 매우 커질 것이다. cluster state는 (무엇 보다도)
+모든 index의 목록, 그것의 type, 그리고 각 index에 대한 field를 포함한다.
 
-100,000명의 고객이 있고, 각 고객이 평균 1,000개의 field, 90일 동안 있었다면, cluster state에는 90억개의 field가 있다. 이것이 변경될 때마다, node에 알려줘야 한다.
-So if you have 100,000 customers, and each customer averages 1,000 fields and 90
-days of retention--that's nine billion fields to keep in the cluster state.
-Whenever this changes, the nodes must be notified.
+마약 100,000명의 고객이 있고, 각 고객이 평균 1,000개의 field, 90일 동안 있었다면,
+--cluster state에는 90억개의 field가 유지되고 있다. 이것이 변경될 때마다, node에
+반드시 알려줘야 한다.
 
-master는 이런 변경을 반드시 처리해야 한다. 하지만, 모든 node에 cluster state를 업데이트하기 위해, 적지 않은 CPU 오버헤드, 추가로 네트워크 오버헤드가 필요하다.
-The master must process these changes, which requires nontrivial CPU overhead,
-plus the network overhead of pushing the updated cluster state to all nodes.
+master는 이런 변경을 반드시 처리해야 한다. 하지만, 모든 node에 cluster state를
+업데이트하기 위해, 적지 않은 CPU 오버헤드, 추가로 네트워크 오버헤드가 필요하다.
 
-cluster state 작업이 queue에 쌓이는 것이 보이기 시작하는 cluster이다. 이 문제에 대한 쉬운 해결책은 없다. 그러나, 세 가지 옵션이 있다.
-It is these clusters that may begin to see cluster-state actions queuing up.
-There is no easy solution to this problem, however.  You have three options:
+cluster state 작업이 queue에 쌓이는 것이 보이기 시작하는 cluster이다. 이 문제에
+대한 쉬운 해결책은 없다. 그러나, 세 가지 옵션이 있다.
 
 - 비대해진 master node를 구해 보자. 불행하게도, 수직확장은 불가피하다.
-Obtain a beefier master node.  Vertical scaling just delays the inevitable,
-unfortunately.
-- cluster state의 크기를 제한하기 위하여, 어떻게 해서든, document의 동적 특성을 제한하자.
-Restrict the dynamic nature of the documents in some way, so as to limit the
-cluster-state size.
-- 	특정 임계 값에 이르게 되면, 다른 cluster로 전환하자.
-Spin up another cluster after a certain threshold has been crossed.
+- cluster state의 크기를 제한하기 위하여, 어떻게 해서든, document의 동적 특성을
+제한하자.
+- 특정 임계 값에 이르게 되면, 다른 cluster로 전환하자.
 ****
 
 === cat API

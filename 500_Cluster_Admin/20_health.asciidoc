@@ -1,11 +1,11 @@
 
-=== Cluster의 상태
+=== Cluster의 통계
 
 어떤 Elasticsearch의 cluster는 단일 index를 가진 단일 node로 구성되어 있을 것이다.
 또는 ((("cluster health")))((("clusters", "administration", "Cluster Health API"))) 모두 천 개의 index(그리고, 수천 개의 shard를 가지고 있는)에서 운영되는,
 수백 개의 데이터 node, 3개의 전용 master node, 수십 개의 클라이언트 node 등을 가질 수도 있다.
 
-Cluster의 규모에 관계없이, Cluster의 상태에 액세스하기 위한 빠른 방법이 필요할 것이다.
+Cluster의 규모에 관계없이, Cluster의 통계에 액세스하기 위한 빠른 방법이 필요할 것이다.
 `Cluster Health` API가 그 역할을 한다. 그것을 cluster에 대한 개요(a 10,000-foot view)
 라고 생각할 수 있다. 모든 것이 정상이라는 것을 알 수 있거나 cluster 어딘가의 문제에 대해
 경고할 수도 있다.
@@ -179,7 +179,7 @@ index 출력을 요청하면, 어느 index가 문제가 있는지 즉시 알 수
 GET _cluster/health?level=shards
 ----
 
-`shards` 옵션은 모든 index내에 있는 모든 shard의 위치와 상태를 나열한 매우 자세한
+`shards` 옵션은 모든 index내에 있는 모든 shard의 위치와 통계를 나열한 매우 자세한
 출력을 제공한다. 이 출력은 때때로 유용하지만, 너무 상세해 작업하기가 어려울 수 있다.
 index가 문제를 가지고 있다는 것을 알게 되면, 이 장에서 이야기할 다른 API는 더 많은
 도움이 될 것이다.

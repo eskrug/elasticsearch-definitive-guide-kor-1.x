@@ -57,7 +57,7 @@ node는 node의 UUID를 key로 해서 hash에 나열되어 있다. node의 네�
         },
 ----
 
-응답합 상태들은 다음 섹션안에 묶여져 있다:
+응답된 통계들은 다음 섹션안에 묶여져 있다:
 - `docs` 는 이 node에 있는 document의 수와 아직 segment에서 제거되지 않은
 삭제된(deleted) document의 수를 나타낸다.
 
@@ -488,7 +488,7 @@ descriptors의 낭비이다.) 클라이언트가 적절하게 구성되어 있�
 ==== Circuit Breaker
 
 끝으로, 마직막 섹션: ((("fielddata circuit breaker"))) field data의 circuit breaker
-( <<circuit-breaker>>에서 소개하였다.)에 대한 상태이다.
+( <<circuit-breaker>>에서 소개하였다.)에 대한 통계이다.
 
 [role="pagebreak-before"]
 [source,js]
