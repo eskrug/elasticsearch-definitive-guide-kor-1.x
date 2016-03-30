@@ -1,10 +1,11 @@
 [[not-quite-not]]
-=== Not Quite Not
+=== Not Quite Not - 완전히 다르지는 않은
 
-A search on the Internet for ``Apple'' is likely to return results about the
-company, the fruit, ((("relevance", "controlling", "must_not clause in bool query")))((("bool query", "must_not clause")))and various recipes.  We could try to narrow it down to
-just the company by excluding words like `pie`, `tart`, `crumble`, and `tree`,
-using a `must_not` clause in a `bool` query:
+인터넷에서 ``Apple'' 을 검색하면, 회사, 과일 그리고((("relevance", "controlling", "must_not clause in bool query")))
+((("bool query", "must_not clause")))
+다양한 조리법에 대한 결과를 반환할 것이다.
+`bool` query에서 `must_not` 절을 사용하여, `pie`, `tart`, `crumble`, 그리고, `tree` 같은 단어를 제외하고,
+회사만으로 그 결과를 좁히려고 할 것이다:
 
 [source,json]
 -------------------------------
@@ -27,17 +28,15 @@ GET /_search
 }
 -------------------------------
 
-But who is to say that we wouldn't miss a very relevant document about Apple
-the company by excluding `tree` or `crumble`?  Sometimes, `must_not` can be
-too strict.
+그러나, `tree` 나 `crumble` 을 제외함으로써, Apple 이라는 회사에 대한 매우 관련 있는 document 를 놓치지 않을까?
+때로는, `must_not` 은 지나치게 엄격할 수 있다.
 
 [[boosting-query]]
 ==== boosting Query
 
-The  {ref}/query-dsl-boosting-query.html[`boosting` query] solves((("boosting query")))((("relevance", "controlling", "boosting query"))) this problem.
-It allows us to still include results that appear to be about the fruit or
-the pastries, but to downgrade them--to rank them lower than they would
-otherwise be:
+{ref}/query-dsl-boosting-query.html[`boosting` query] 는 이 문제를 해결한다
+((("boosting query")))((("relevance", "controlling", "boosting query"))).
+여전히 과일이나 페이스트리에 대한 결과도 포함한다. 그러나 다른 것들보다 순위를 떨어뜨린다.
 
 [source,json]
 -------------------------------
@@ -61,11 +60,9 @@ GET /_search
 }
 -------------------------------
 
-It accepts a `positive` query and a `negative` query.((("positive query and negative query (in boosting query)")))  Only documents that
-match the `positive` query will be included in the results list, but documents
-that also match the `negative` query will be downgraded by multiplying the
-original `_score` of((("negative_boost"))) the document with the `negative_boost`.
+`positive` query 와 `negative` query 가 있다.((("positive query and negative query (in boosting query)")))
+`positive` query 에 일치하는 document 만 결과 목록에 포함될 것이다.
+그러나, `negative` query 에 일치하는 document 도, document의 원래 `_score` 에 `negative_boost` 를 곱해 순위를 떨어뜨려 일치시킨다.
 
-For this to work, the `negative_boost` must be less than `1.0`.  In this
-example, any documents that contain any of the negative terms will have their
-`_score` cut in half.
+이렇게 동작하려면, `negative_boost` 는 `1.0` 보다 작아야 한다.
+위의 예에서, negative 단어를 포함하는 모든 document 는, `_score` 가 절반이 될 것이다.

@@ -1,13 +1,16 @@
 [[query-scoring]]
-=== Manipulating Relevance with Query Structure
+=== Manipulating Relevance with Query Structure - Query 구조에서 Relevance 조정
 
-The Elasticsearch query DSL is immensely flexible.((("relevance", "controlling", "manipulating relevance with query structure")))((("queries", "manipulating relevance with query structure")))  You can move individual
-query clauses up and down the query hierarchy to make a clause more or less
-important.  For instance, imagine the following query:
+Elasticsearch 의 query DSL 은 매우 유연하다.
+((("relevance", "controlling", "manipulating relevance with query structure")))
+((("queries", "manipulating relevance with query structure")))
+개별 query 절을, 절의 중요도에 따라, query 계층 구조의 위아래로 옮길 수 있다.
+예를 들어, 아래 query 를 가정해 보자:
 
     quick OR brown OR red OR fox
 
-We could write this as a `bool` query with ((("bool query", "manipulating relevance with query structure")))all terms at the same level:
+이것을, ((("bool query", "manipulating relevance with query structure")))
+모든 단어를 동일한 수준으로 하는 `bool` query 를 사용해서, 아래와 같이 작성할 수 있다.
 
 [source,json]
 ------------------------------
@@ -26,18 +29,17 @@ GET /_search
 }
 ------------------------------
 
-But this query might score a document that contains `quick`, `red`, and
-`brown` the same as another document that contains `quick`, `red`, and `fox`.
-_Red_ and _brown_ are synonyms and we probably only need one of them to match.
-Perhaps we really want to express the query as follows:
+그러나, 이 query 는, `quick`, `red`, `brown` 을 포함하는 document 와,
+`quick`, `red`, `fox` 을 포함하는 다른 document 와 score 가 같을 것이다.
+_Red_ 와 _brown_ 은 동의어이고, 둘 중 하나라도 일치하는 document 를 원한다면,
+다음과 같이 query 를 표현할 수 있다.
 
     quick OR (brown OR red) OR fox
 
-According to standard Boolean logic, this is exactly the same as the original
-query, but as we have already seen in <<bool-query,Combining Queries>>, a `bool` query does not concern itself only with whether a document matches, but also with how
-_well_ it matches.
-
-A better way to write this query is as follows:
+표준 boolean logic 에 따르면, 이것은 원래의 query 와 정확히 일치한다.
+그러나, <<bool-query,Combining Queries>> 에서 이미 보았듯이,
+`bool` query는 document 가 일치하느냐 여부뿐만 아니라, 얼마나 _잘_ 일치하는가 에도 관여한다.
+이 query 를 작성하는 더 나은 방법은 아래와 같다.
 
 [source,json]
 ------------------------------
@@ -62,13 +64,10 @@ GET /_search
 }
 ------------------------------
 
-Now, `red` and `brown` compete with each other at their own level, and `quick`,
-`fox`, and `red OR brown` are the top-level competitive terms.
+이제, `red` 와 `brown` 은 그들 자신의 수준에서 비교를 하고,
+`quick`, `fox` 그리고 `red OR brown` 은 최상위의 비교 단어들이다.
 
-We have already discussed how the <<match-query,`match`>>,
-<<multi-match-query,`multi_match`>>, <<term-vs-full-text,`term`>>,
-<<bool-query,`bool`>>, and  <<dis-max-query,`dis_max`>> queries can be used
-to manipulate scoring. In the rest of this chapter, we present
-three other scoring-related queries: the `boosting` query, the
-`constant_score` query, and the `function_score` query.
-
+<<match-query,`match`>>, <<multi-match-query,`multi_match`>>, <<term-vs-full-text,`term`>>,
+<<bool-query,`bool`>> 그리고 <<dis-max-query,`dis_max`>> query 가 score 를 조정하는데 사용될 수 있는 방법에 대해 이야기했었다.
+이 장의 나머지 부분에서, query 에 관련된 다른 3개의 score 계산 (`boosting` query, `constant_score` query,
+`function_score` query) 을 검토해 보자.

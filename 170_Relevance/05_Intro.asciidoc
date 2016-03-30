@@ -1,14 +1,23 @@
 [[controlling-relevance]]
-== Relevance 제어
+== Controlling Relevance - Relevance 제어
 
-오직 구조화된 데이터(date, number, string enum)만을 다루는 데이터베이스는 쉽다. document(RDB에서 row)가 query에 일치하는지 여부만을 확인한다.
+오직 구조화된 데이터(date, number, string enum)만을 다루는 데이터베이스는 쉽다. 
+document (RDB에서 row)가 query 에 일치하는지 여부만을 확인한다.
 
-일치 여부(yes/no)는 full text 검색의 필수적인 부분이나, 그 자체로 충분하지 않다. 대신, 각 document가 query에 얼마나 관련 있는지 알아야 한다. full text 검색 엔진은 일치하는 document를 검색할 뿐만 아니라, relevance에 의해 그들을 정렬한다.
+일치 여부(yes/no)는 full text 검색의 필수적인 부분이나, 그 자체로 충분하지 않다. 
+대신, 각 document 가 query 에 얼마나 관련 있는지 알아야 한다. 
+full text 검색 엔진은 일치하는 document 를 검색할 뿐만 아니라, relevance 에 의해 그들을 정렬한다.
 
-각 document에 대해 하나의 relevance `_score` 를 만들어 내기 위해, full text relevance ((("similarity algorithms")))수식이나 _유사성 알고리즘_ 은 여러 가지 요소를 조합한다. 이 장에서, 다양한 유동적 요소를 확인하고, 그들을 제어할 수 있는 방법에 대해 이야기할 것이다.
+각 document 에 대해 하나의 relevance `_score` 를 만들어 내기 위해, 
+full text relevance ((("similarity algorithms"))) 수식이나 _유사성 알고리즘_ 은 여러 가지 요소를 조합한다. 
+이 장에서, 다양한 유동적 요소를 확인하고, 그들을 제어할 수 있는 방법에 대해 이야기할 것이다.
 
-물론, relevance가 full text query에 대한 것만은 아니다. 구조화된 데이터에서도 고려할 필요가 있다. 에어컨, 바다가 보이는 전망, wifi 등의 특별한 기능을 가진 별장을 찾으려 한다면, 어떤 속성을 가진 기능이 더 많을수록, 더 적절할 것이다. 또는, 최근 방문일, 가격, 인기, 거리 등의 연동 요소를 원한다면, 여전히 full text query의 relevance를 고려해야 한다.
+물론, relevance 가 full text query 에 대한 것만은 아니다. 구조화된 데이터에서도 고려할 필요가 있다. 
+에어컨, 바다가 보이는 전망, wifi 등의 특별한 기능을 가진 별장을 찾으려 한다면, 
+어떤 속성을 가진 기능이 더 많을수록, 더 적절할 것이다. 
+또는, 최근 방문일, 가격, 인기, 거리 등의 연동 요소를 원한다면, 여전히 full text query 의 relevance 를 고려해야 한다.
 
-이 모든 것이, Elasticsearch에서 이용할 수 있는, 강력한 score 계산 구조 때문에 가능하다.
+이 모든 것이, Elasticsearch 에서 이용할 수 있는, 강력한 score 계산 구조 때문에 가능하다.
 
-Lucene이 relevance를 계산하는 방법의 이론적인 부분을 살펴보면서 시작할 것이다. 그리고, 프로세스를 제어할 수 있는 방법의 실제적인 예제로 옮겨갈 것이다.
+Lucene 이 relevance 를 계산하는 방법의 이론적인 부분을 살펴보면서 시작할 것이다. 
+그리고, 프로세스를 제어할 수 있는 방법의 실제적인 예제로 옮겨갈 것이다.

@@ -1,25 +1,21 @@
 [[random-scoring]]
-=== Random Scoring
+=== Random Scoring - 무작위로 score 계산하기
 
-You may have been wondering what _consistently random scoring_ is, or why
-you would ever want to use it.((("consistently random scoring")))((("relevance", "controlling", "random scoring")))  The previous example provides a good use case.
-All results from the previous example would receive a final `_score` of 1, 2,
-3, 4, or 5. Maybe there are only a few homes that score 5, but presumably
-there would be a lot of homes scoring 2 or 3.
+_일관된 무작위 score 계산_ 이 무엇일까, 또는 왜 그것을 사용할까 하고 궁금하게 여길 것이다.
+((("consistently random scoring")))((("relevance", "controlling", "random scoring")))
+이전의 예제가 좋은 사용 예일 것이다. 이전 예제의 모든 결과는 최종 `_score` 가 1, 2, 3, 4 또는 5일 것이다.
+아마 소수의 별장만이 5일 것이고, 많은 별장의 score 가 2, 3일 것이다.
 
-As the owner of the website, you want to give your advertisers as much
-exposure as possible.  With the current query, results with the same `_score`
-would be returned in the same order every time.  It would be good to introduce
-some randomness here, to ensure that all documents in a single score level
-get a similar amount of exposure.
+website 의 소유자 입장에서, 광고가 가능한 한 많이 노출되기를 원할 것이다.
+현재의 query 에서 동일한 `_score` 를 가진 결과는 항상 동일한 순서로 반환될 것이다.
+동일한 score 수준을 가진 모든 document 가, 유사한 노출 빈도를 가지도록 보장하기 위해,
+여기에서 약간은 무작위로 소개되는 것이 좋다.
 
-We want every user to see a different random order, but we want the same user
-to see the same order when clicking on page 2, 3, and so forth.  This is what is
-meant by _consistently random_.
+모든 사용자가 서로 다른 무작위의 순서로 보기를 원한다. 그러나, 동일한 사용자는, page 2, 3 등을 클릭할 때마다,
+동일한 순서로 보기를 원한다. 이것이 _일관된 무작위(consistently random)_ 의 의미이다.
 
-The `random_score` function, which((("function_score query", "random_score function")))((("random_score function"))) outputs a number between 0 and 1, will
-produce consistently random results when it is provided with the same `seed`
-value, such as a user's session ID:
+`random_score` function((("function_score query", "random_score function")))((("random_score function"))) 은 0 ~ 1의 숫자를 출력하며,
+동일한 `seed` 값(사용자의 session ID 등)을 제공하면 일관된 무작위 결과를 생성할 것이다:
 
 [source,json]
 --------------------------------
@@ -54,13 +50,8 @@ GET /_search
   }
 }
 --------------------------------
-<1> The `random_score` clause doesn't have any `filter`, so it will
-    be applied to all documents.
-<2> Pass the user's session ID as the `seed`, to make randomization
-    consistent for that user. The same `seed` will result in the
-    same randomization.
+<1> `random_score` 절은 어떤 `filter` 도 가지지 않는다. 따라서, 모든 document 에 적용된다.
+<2> 해당 사용자에게 일관된 무작위 결과를 만들어 내기 위하여, 사용자의 session ID 를 `seed` 로 넘긴다.
+    동일한 `seed` 는 동일한 무작위 결과로 나타난다.
 
-Of course, if you index new documents that match the query, the order of
-results will change regardless of whether you use consistent randomization or
-not.
-
+물론, query 에 일치하는 새로운 document 를 색인 한다면, 일관된 무작위의 사용 여부에 관계없이, 결과의 순서는 바뀐다.

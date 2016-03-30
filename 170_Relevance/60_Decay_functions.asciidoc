@@ -1,75 +1,68 @@
 [[decay-functions]]
-=== The Closer, The Better
+=== The Closer, The Better - 가까울수록 더 좋다
 
-Many variables could influence the user's choice of vacation
-home.((("relevance", "controlling", "using decay functions")))  Maybe she would like to be close to the center of town, but perhaps
-would be willing to settle for a place that is a bit farther from the
-center if the price is low enough.  Perhaps the reverse is true: she would be
-willing to pay more for the best location.
+사용자의 여름 별장 선택에 영향을 줄 수 있는 많은 변수가 있다.
+((("relevance", "controlling", "using decay functions")))
+마을의 중심에 가깝게 있고 싶겠지만, 가격이 충분히 낮다면, 중심에서 조금 먼 장소를 고를 수도 있다.
+반대로 최고의 위치를 위해 더 많은 비용을 지불할 용의가 있을 수도 있다.
 
-If we were to add a filter that excluded any vacation homes farther than 1
-kilometer from the center, or any vacation homes that cost more than £100 a
-night, we might exclude results that the user would consider to be a good
-compromise.
+마을 중심에서 1km 이상 떨어진 여름 별장이나, 1박에 £100 이상 지불해야 하는 여름 별장을 제외하기 위해,
+filter 를 추가했다면, 사용자가 잘 선택할 수 있도록 결과를 제외할 것이다.
 
-The `function_score` query gives ((("function_score query", "decay functions")))((("decay functions")))us the ability to trade off one sliding scale
-(like location) against another sliding scale (like price), with a group of
-functions known as the _decay functions_.
+`function_score` query ((("function_score query", "decay functions")))((("decay functions"))) 는,
+_decay functions_ 으로 알려진 function 의 그룹으로,
+어떤 차등 요소(위치 같은)가 다른 차등 요소(가격 같은)에 대해 균형을 이룰 수 있도록 할 수 있다.
 
-The three decay functions--called `linear`, `exp`, and `gauss`&#x2014;operate on numeric fields, date fields, or lat/lon geo-points.((("linear function")))((("exp (exponential) function")))((("gauss (Gaussian) function")))  All three take
-the same parameters:
+numeric field, date field, 또는 위경도 위치정보에서 다룰 수 있는,
+`linear`, `exp`, `gauss` 라 불리는 3개의 decay function 이 있다.((("linear function")))
+((("exp (exponential) function")))((("gauss (Gaussian) function")))
+3개 모두 동일한 매개변수를 가진다.
 
 `origin`::
-    The _central point_, or the best possible value for the field.
-    Documents that fall at the `origin` will get a full `_score` of `1.0`.
+    _중심점 (central point)_ 또는 field에 대해 가장 가능성 있는 값.
+    origin 에 해당하는 document 는 `_score` 가 `1.0` 이다.
 
 `scale`::
-    The rate of decay--how quickly the `_score` should drop the further from
-    the `origin` that a document lies (for example, every £10 or every 100 meters).
+    감소(decay) 비율. document 가 위치한 곳이 `origin` 과 떨어져 있어,
+    `_score` 가 얼마나 감소하는지. (예: 매 £10 또는 매 100m)
 
 `decay`::
-    The `_score` that a document at `scale` distance from the `origin` should
-    receive. Defaults to `0.5`.
+    `origin` 으로부터의 거리인 `scale` 에서 document 가 받을 수 있는 `_score`, 기본값은 `0.5`
 
 `offset`::
-    Setting a nonzero `offset` expands the central point to cover a range
-    of values instead of just the single point specified by the `origin`. All
-    values in the range `-offset <= origin <= +offset` will receive the full
-    `_score` of `1.0`.
+    `offset` 을 0 이 아닌 값으로 설정하는 것은, `origin` 에 지정된 한 점(point) 대신에 값의 범위로 대신하기 위해,
+    중심점(central point)을 확장하는 것이다.
+    `-offset <= origin <= +offset` 범위에서 모든 값은 `_score` 가 `1.0` 이다.
 
-The only difference between these three functions is the shape of the decay
-curve. The difference is most easily illustrated with a graph (see <<img-decay-functions>>).
+이들 3가지 function 사이의 유일한 차이점은 decay 곡선의 모양이다.
+차이는 그래프에서 쉽게 볼 수 있다.
 
 [[img-decay-functions]]
 .Decay function curves
-image::images/elas_1705.png["The curves of the decay functions"]
+image::images/elas_1705.png["Decay functions 곡선"]
 
-The curves shown in <<img-decay-functions>> all have their `origin`&#x2014;the
-central point--set to `40`.  The `offset` is `5`, meaning that all values in
-the range `40 - 5 <= value <= 40 + 5` are treated as though they were at the
-`origin`&#x2014;they all get the full score of `1.0`.
+그래프(<<img-decay-functions>>)에서 보여지는 곡선은 모두 40으로 설정된
+그들의 `origin (중심점)` 을 가지고 있다. `offset` 은 `5` 이다.
+이것은, `40 - 5 <= value <= 40 + 5` 범위에 있는 모든 값은 마치 그것들이 `origin` 에 있는 것처럼
+처리되는 것을 의미한다. 그것들은 모두 score 가 `1.0` 이다.
 
-Outside this range, the score starts to decay.  The rate of decay is
-determined by the `scale` (which in this example is set to `5`), and the
-`decay` (which is set to the default of `0.5`). The result is that all three
-curves return a score of `0.5` at `origin +/- (offset + scale)`, or at points
-`30` and `50`.
+이 범위 바깥에 있으면, score 는 감소하기 시작한다. 감소 비율은 `scale` 에 의해 결정되는데,
+이 예에서는 `5` 로 설정되어 있다. 그리고, `decay` 는 기본값인 `0.5` 로 설정되었다.
+결과적으로, 3개의 곡선 모두는 `origin +/- (offset + scale)` 에서 또는 `30 ~ 50` 사이에서,
+score `0.5` 를 반환한다.
 
-The difference between `linear`, `exp`, and `gauss` is the shape of the curve at other points in the range:
+`linear`, `exp`, 그리고 `gauss` 사이의 차이는, 범위에 있는 다른 지점에서 곡선의 모양이다:
 
-* The `linear` funtion is just a straight line. Once the line hits zero,
-  all values outside the line will return a score of `0.0`.
-* The `exp` (exponential) function decays rapidly, then slows down.
-* The `gauss` (Gaussian) function is bell-shaped--it decays slowly, then
-  rapidly, then slows down again.
+* `linear` function 은 단지 직선이다. 단지, 직선이 0이 되면, 직선 밖의 모든 값은 score `0.0` 으로 반환될 것이다.
+* `exp` (exponential) function 은 급감한다, 그 다음에는 천천히 떨어진다.
+* `gauss` (Gaussian) function 은 종 모양이다. 천천히 감소하고, 그 다음에는 급하게, 그 다음에는 다시 천천히 떨어진다.
 
-Which curve you choose depends entirely on how quickly you want the `_score`
-to decay, the further a value is from the `origin`.
+곡선의 선택은 전적으로, `origin` 에서 떨어져 있는 특정 값에서, 얼마나 빨리 `_score` 를 감소시킬 것인가에 달려 있다.
 
-To return to our example: our user would prefer to rent a vacation home close
-to the center of London (`{ "lat": 51.50, "lon": 0.12}`) and to pay no more
-than £100 a night, but our user considers price to be more important than
-distance. ((("gauss (Gaussian) function", "in function_score query")))  We could write this query as follows:
+예제로 돌아가 보면, 사용자는 London (`{ "lat": 51.50, "lon": 0.12}`) 그리고 도심에 가까운 여름 별장을
+1박에 £100 이하로 빌리는 것을 선호한다. 그리고 거리보다는 가격을 더 중요하게 생각한다.
+((("gauss (Gaussian) function", "in function_score query")))
+아래처럼 query 를 작성할 수 있다:
 
 [source,json]
 ----------------------------------
@@ -102,38 +95,34 @@ GET /_search
   }
 }
 ----------------------------------
-<1> The `location` field is mapped as a `geo_point`.
-<2> The `price` field is numeric.
-<3> See <<Understanding-the-price-Clause>> for the reason that `origin` is `50` instead of `100`.
-<4> The `price` clause has twice the weight of the `location` clause.
+<1> `location` field 는 `geo_point` 로 mapping 되었다.
+<2> `price` field 는 numeric 이다.
+<3> `origin` 이 `100` 이 아니고 `50` 인 이유는 <<Understanding-the-price-Clause>> 참고하자.
+<4> `price` 절은 `location` 절 weight 의 2배이다.
 
-The `location` clause is((("location clause, Gaussian function example"))) easy to understand:
+`location`((("location clause, Gaussian function example"))) 절은 이해하기 쉽다.
 
-* We have specified an `origin` that corresponds to the center of London.
-* Any location within `2km` of the `origin` receives the full score of `1.0`.
-* Locations `5km` (`offset + scale`) from the centre receive a score
-of `0.5`.
+* London 도심에 해당하는 `origin` 을 지정했다.
+* `origin` 에서 `2km` 내의 모든 위치는 모두 score `1.0` 을 받는다.
+* 도심에서 `5km` (`offset + scale`) 이상의 위치는 score `0.5` 를 받는다
 
 [[Understanding-the-price-Clause]]
 === Understanding the price Clause
 
-The `price` clause is a little trickier.((("price clause (Gaussian function example)")))  The user's preferred price is
-anything up to £100, but this example sets the origin to £50.  Prices can't be
-negative, but the lower they are, the better.  Really, any price between £0 and
-£100 should be considered optimal.
+`price` 절은 약간 교묘하다.((("price clause (Gaussian function example)")))
+사용자의 선호 가격은 £100 이하이다. 그러나, 이 예제에서 origin 은 £50 으로 설정되어 있다.
+가격은 –(negative)가 될 수 없다. 그러나 낮을수록 더 좋아한다.
+실제로 £0 과 £100 사이의 모든 가격은 최적의 고려 대상이다.
 
-If we were to set the `origin` to £100, then prices below £100 would receive a
-lower score. Instead, we set both the `origin` and the `offset` to £50.  That
-way, the score decays only for any prices above £100 (`origin + offset`).
+`origin` 을 £100 으로 설정했다면, £100 이하의 가격은 더 낮은 score 를 받을 것이다.
+대신 `origin` 과 `offset` 을 모두 £50 으로 설정했다.
+이런 방식으로, £100 (`offset + scale`) 을 초과하면 score 는 감소한다.
 
 [TIP]
 ==================================================
 
-The `weight` parameter can be used to increase or decrease the contribution of
-individual clauses. ((("weight parameter (in function_score query)"))) The `weight`, which defaults to `1.0`, is multiplied by
-the score from each clause before the scores are combined with the specified
-`score_mode`.
+`weight` 매개변수는 개별 절의 기여도를 증가 또는 감소시키는데 사용될 수 있다.
+((("weight parameter (in function_score query)"))) 기본값이 `1.0` 인 `weight` 는,
+score 가 지정된 `score_mode` 와 조합되기 전에, 각 절의 score와 곱해진다.
 
 ==================================================
-
-

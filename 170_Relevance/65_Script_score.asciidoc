@@ -1,22 +1,20 @@
 [[script-score]]
-=== Scoring with Scripts
+=== Scoring with Scripts - Script 를 이용한 Score 계산
 
-Finally, if none of the `function_score`&#39;s built-in functions suffice, you can
-implement the logic that you need with a script, using the `script_score`
-function.((("function_score query", "using script_score function")))((("script_score function")))((("relevance", "controlling", "scoring with scripts")))
+마지막으로, `function_score` 의 내장 함수 어느 것도 충분하지 않다면,
+`script_score` function ((("function_score query", "using script_score function")))
+((("script_score function")))((("relevance", "controlling", "scoring with scripts")))
+을 사용하여, script 로 필요한 logic 을 구현할 수 있다.
 
-For an example, let's say that we want to factor our profit margin into the
-relevance calculation.  In our business, the profit margin depends on three
-factors:
+예를 들어, relevance 계산에 이윤 폭(margin)을 반영하는 것을 가정해 보자.
+사업에서 이윤 폭은 3가지 요소에 달려 있다.
 
-* The `price` per night of the vacation home.
-* The user's membership level--some levels get a percentage `discount`
-  above a certain price per night `threshold`.
-* The negotiated `margin` as a percentage of the price-per-night, after user
-  discounts.
+* 여름용 별장의 1박당 가격(`price`)
+* 사용자의 회원 단계(level) -- 특정 단계의 회원에게는, 1박당 특정 가격(`threshold`) 이상이면,
+  일정 비율을 할인(`discount`)해 준다.
+* 사용자 할인 후에, 1박당 가격의 일정 비율인 협상 가능한 이윤 폭(`margin`)
 
-The algorithm that we will use to calculate the profit for each home is as
-follows:
+각 별장 별로 이윤을 계산하기 위해, 사용되는 알고리즘은 아래와 같다:
 
 [source,groovy]
 -------------------------
@@ -27,11 +25,10 @@ if (price < threshold) {
 }
 -------------------------
 
-We probably don't want to use the absolute profit as a score; it would
-overwhelm the other factors like location, popularity and features. Instead,
-we can express the profit as a percentage of our `target` profit.  A profit
-margin above our target will have a positive score (greater than `1.0`), and a profit margin below our target will have a negative score (less than
-`1.0`):
+순이익을 score 로 사용하지는 않을 것이다. 그럴 경우, 위치나 인기, 기능 같은 다른 요소를 무시하게 될 것이다.
+대신, 목표(`target`) 이윤의 비율로 이윤을 나타낼 수 있다.
+목표 이상의 이윤 폭은 +(positive, `1.0` 보다 큰) score 를 가질 것이고,
+목표 이하의 이윤 폭은 –(negatice, `1.0` 보다 작은) score 를 가질 것이다.
 
 [source,groovy]
 -------------------------
@@ -43,9 +40,10 @@ if (price < threshold) {
 return profit / target
 -------------------------
 
-The default scripting language in Elasticsearch is
-http://groovy.codehaus.org/[Groovy], which for the most part looks a lot like
-JavaScript.((("Groovy", "script factoring profit margins into relevance calculations"))) The preceding algorithm as a Groovy script would look like this:
+Elasticsearch 에서 기본 script language 는 http://groovy.codehaus.org/[Groovy] 이다.
+대부분의 경우, 이것은 javascript 처럼 보인다.
+((("Groovy", "script factoring profit margins into relevance calculations")))
+Groovy 로 위의 알고리즘을 나타내면, 아래와 같다:
 
 [source,groovy]
 -------------------------
@@ -57,13 +55,10 @@ if (price < threshold) { <2>
 }
 return price * (1 - discount) * margin / target <2>
 -------------------------
-<1> The `price` and `margin` variables are extracted from the `price` and
-    `margin` fields in the document.
-<2> The `threshold`, `discount`, and `target` variables we will pass in as
-    `params`.
+<1> `price` 와 `margin` 변수는 document 의 `price` 와 `margin` field 에서 읽어온다.
+<2> `threshold`, `discount`, `target` 변수는 `params` 으로 넘어온다.
 
-Finally, we can add our `script_score` function to the list of other functions
-that we are already using:
+마지막으로, `script_score` function 을 이미 사용했던 다른 function 의 목록에 추가할 수 있다.
 
 [source,json]
 -------------------------
@@ -80,7 +75,7 @@ GET /_search
             "discount": 0.1,
             "target": 10
           },
-          "script": "price  = doc['price'].value; margin = doc['margin'].value; 
+          "script": "price  = doc['price'].value; margin = doc['margin'].value;
           if (price < threshold) { return price * margin / target };
           return price * (1 - discount) * margin / target;" <3>
         }
@@ -89,35 +84,28 @@ GET /_search
   }
 }
 -------------------------
-<1> The `location` and `price` clauses refer to the example explained in
-    <<decay-functions>>.
-<2> By passing in these variables as `params`, we can change their values
-    every time we run this query without having to recompile the script.
-<3> JSON cannot include embedded newline characters.  Newline characters in
-    the script should  either be escaped as `\n` or replaced with semicolons.
+<1> `location` 과 `price` 절은 <<decay-functions>> 에서 설명한 예제를 참조하고 있다.
+<2> `params` 로 이런 변수를 넘겨, script 를 다시 compile 하지 않고, 이 query 를 실행할 때 마다 이 값을 변경한다.
+<3> JSON 은 내부에 newline 문자를 포함할 수 없다. javascript 에서 newline 문자는,
+    `\n` 으로 escape 되거나 semicolon 으로 대체된다.
 
-This query would return the documents that best satisfy the user's
-requirements for location and price, while still factoring in our need to make
-a profit.
+이 query 는 이윤을 봐야 하는 요구를 충족시키면서,
+위치나 가격에 대한 사용자의 요구사항을 가장 만족시키는 document 를 반환한다.
 
 [TIP]
 ========================================
 
-The `script_score` function provides enormous flexibility.((("scripts", "performance and")))  Within a script,
-you have access to the fields of the document, to the current `_score`, and
-even to the term frequencies, inverse document frequencies, and field length
-norms (see {ref}/modules-advanced-scripting.html[Text scoring in scripts]).
+`script_score` function 은 많은 유연성을 제공한다.((("scripts", "performance and")))
+script 내에서 document 의 field, 현재 `_score`,
+그리고 심지어 TF, IDF, field length norm({ref}/modules-advanced-scripting.html[Text scoring in scripts]) 까지 접근할 수 있다.
 
-That said, scripts can have a performance impact.  If you do find that your
-scripts are not quite fast enough, you have three options:
+즉, script 는 성능에 영향을 줄 수 있다. 만약, script 가 충분히 빠르지 않다고 판단이 되면,
+3가지 옵션을 선택할 수 있다.
 
-* Try to precalculate as much information as possible and include it in each
-  document.
-* Groovy is fast, but not quite as fast as Java.((("Java", "scripting in")))  You could reimplement your
-  script as a native Java script. (See
-  {ref}/modules-scripting.html#native-java-scripts[Native Java Scripts]).
-* Use the `rescore` functionality((("rescoring"))) described in <<rescore-api>> to apply
-  your script to only the best-scoring documents.
+* 가능한 한 많은 정보를 미리 계산하여, 각 document 가 그것을 포함하도록 하자.
+* Groovy 는 빠르다. 그러나 Java 만큼 빠르지 않다.((("Java", "scripting in")))
+  script 를 native java script 로 다시 구현해 보자. ({ref}/modules-scripting.html#native-java-scripts[Native Java Scripts] 참조).
+* script 를 최고의 score 를 가진 document 에게만 적용되도록,
+   <<rescore-api>> 에서 언급한 `rescore` 기능을 사용하자.
 
 ========================================
-

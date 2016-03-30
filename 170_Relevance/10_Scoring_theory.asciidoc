@@ -1,40 +1,58 @@
 [[scoring-theory]]
-=== Relevance score 계산의 이론적 배경
+=== Theory Behind Relevance Scoring - Relevance score 계산의 이론적 배경
 
-Lucene과 Elasticsearch는, 일치하는 document를 찾기 위해 http://en.wikipedia.org/wiki/Standard_Boolean_model[_Boolean model_] 을 사용하고,((("relevance scores", "theory behind", id="ix_relscore", range="startofrange")))((("Boolean Model"))) relevance를 계산하기 위해 <practical-scoring-function,_practical scoring function_> 이라 불리는 수식을 사용한다. 이 수식은 http://en.wikipedia.org/wiki/Tfidf[_term frequency/inverse document frequency_] 와 http://en.wikipedia.org/wiki/Vector_space_model[_vector space model_] 로부터 개념을 가져왔다. 그리고, 조정 계수(coordination factor), field 길이 정규화, 단어나 query에 대한 가중치 부여 등의 현대적인 특징을 추가했다.
+Lucene 과 Elasticsearch 는, 일치하는 document 를 찾기 위해 http://en.wikipedia.org/wiki/Standard_Boolean_model[_Boolean model_] 을 사용하고,((("relevance scores", "theory behind", id="ix_relscore", range="startofrange")))((("Boolean Model")))
+relevance 를 계산하기 위해 <<practical-scoring-function,_practical scoring function_>> 이라 불리는 수식을 사용한다.
+이 수식은 http://en.wikipedia.org/wiki/Tfidf[_term frequency/inverse document frequency_] 와
+http://en.wikipedia.org/wiki/Vector_space_model[_vector space model_] 로부터 개념을 가져왔다.
+그리고, 조정 계수(coordination factor), field 길이 정규화,
+단어나 query 에 대한 가중치 부여 등의 현대적인 특징을 추가했다.
 
 [NOTE]
 ====
-너무 놀라지 말자. 이러한 개념은 이름처럼 그렇게 복잡하지 않다. 여기에서 알고리즘, 수식, 수학적인 모델을 언급하고 있지만, 단순히 사람의 성향을 위해 의도된 것이다. 알고리즘 자체를 이해한다는 것은 결과에 영향을 미치는 요소를 이해하는 것만큼 중요하지 않다.
+너무 놀라지 말자. 이러한 개념은 이름처럼 그렇게 복잡하지 않다.
+여기에서 알고리즘, 수식, 수학적인 모델을 언급하고 있지만, 단순히 사람의 성향을 위해 의도된 것이다.
+알고리즘 자체를 이해한다는 것은 결과에 영향을 미치는 요소를 이해하는 것만큼 중요하지 않다.
 ====
 
 [[boolean-model]]
 ==== Boolean Model
 
-_Boolean model_ 은, 일치하는 document 모두를 찾기 위해, query에서 표현되는 `AND`, `OR`, `NOT` 조건을 적용한다.((("and operator")))((("not operator")))((("or operator")) 아래 query는 `full`, `text`, `search` 그리고 `elasticsearch` 나 `Lucene` 이라는 단어를 가진 document만을 포함한다.
+_Boolean model_ 은, 일치하는 document 모두를 찾기 위해, query 에서 표현되는
+`AND`, `OR`, `NOT` 조건을 적용한다.((("and operator")))((("not operator")))((("or operator")))
+아래 query 는 `full`, `text`, `search` 그리고 `elasticsearch` 나 `lucene` 이라는 단어를 가진
+document 만을 포함한다.
 
     full AND text AND search AND (elasticsearch OR lucene)
 
-이 프로세스는 간단하고 빠르다. 그리고 query에 일치할 수 없는 document를 제외하는데 사용된다.
+이 프로세스는 간단하고 빠르다. 그리고 query 에 일치할 수 없는 document 를 제외하는데 사용된다.
 
 [[tfidf]]
 ==== Term Frequency/Inverse Document Frequency (TF/IDF)
 
-일치하는 document의 목록을 가지고 있다면, relevance로 순위를 매길 필요가 있다.((("Term Frequency/Inverse Document Frequency  (TF/IDF) similarity algorithm"))) 모든 단어를 포함하고 있는 document 뿐만 아니라 어떤 단어는, 다른 단어보다 더 중요하다. 모든 document의 relevance score는 해당 document에 나타나는 검색어 각각의 _비중_ 에 (부분적으로) 달려 있다.
+일치하는 document 의 목록을 가지고 있다면, relevance로 순위를 매길 필요가 있다.
+((("Term Frequency/Inverse Document Frequency  (TF/IDF) similarity algorithm")))
+모든 단어를 포함하고 있는 document 뿐만 아니라 어떤 단어는, 다른 단어보다 더 중요하다.
+모든 document 의 relevance score 는 해당 document 에 나타나는 검색어 각각의 _비중_ 에 (부분적으로) 달려 있다.
 
-단어의 비중은, <relevance-intro> 에서 이미 소개했던, 3가지 요인에 의해 결정된다. 수식은 관심만 가지면 되고 기억할 필요는 없다.
+단어의 비중은, <<relevance-intro>> 에서 이미 소개했던, 3가지 요인에 의해 결정된다.
+수식은 관심만 가지면 되고 기억할 필요는 없다.
 
 [[tf]]
 ===== Term frequency
 
-이 document에 그 단어가 얼마나 자주 나타나는가?((("Term Frequency/Inverse Document Frequency  (TF/IDF) similarity algorithm", "term frequency"))) 더 자주 나타날수록, 더 _높은_ 비중을 가진다. 동일한 단어를 다섯 번 포함하고 있는 field는, 한 번 포함하고 있는 field보다 더 관련 있을 것이다. TF는 아래처럼 계산된다.
+이 document 에 그 단어가 얼마나 자주 나타나는가?((("Term Frequency/Inverse Document Frequency  (TF/IDF) similarity algorithm", "term frequency")))
+더 자주 나타날수록, 더 _높은_ 비중을 가진다.
+동일한 단어를 다섯 번 포함하고 있는 field 는, 한 번 포함하고 있는 field보다 더 관련 있을 것이다.
+TF는 아래처럼 계산된다.
 
 ..........................
 tf(t in d) = √frequency <1>
 ..........................
-<1> Document `d` 에 있는 단어 `t` 에 대한 TF는 document에 나타나는 단어의 횟수의 제곱근이다.
+<1> Document `d` 에 있는 단어 `t` 에 대한 TF 는 document 에 나타나는 단어의 횟수의 제곱근이다.
 
-field에 단어가 얼마나 자주 나타나는지에 대해 관심이 없고, 단어가 존재 여부에만 관심이 있다면, field mapping에서 TF를 비활성화할 수 있다:
+field 에 단어가 얼마나 자주 나타나는지에 대해 관심이 없고, 단어가 존재 여부에만 관심이 있다면,
+field mapping 에서 TF 를 비활성화할 수 있다:
 
 [source,json]
 --------------------------
@@ -52,30 +70,44 @@ PUT /my_index
   }
 }
 --------------------------
-<1> `index_options` 을 `docs` 로 설정하는 것은 단어의 빈도와 위치를 비활성화한다. 이 mapping을 가진 field는, 단어가 몇 번 나타나는지를 세지 않고, phrase query나 proximity query에 사용할 수 없다. Exact-value `not_analyzed` string field는 기본적으로 이 설정을 사용한다. 
+<1> `index_options` 을 `docs` 로 설정하는 것은 단어의 빈도와 위치를 비활성화한다.
+    이 mapping 을 가진 field 는, 단어가 몇 번 나타나는지를 세지 않고,
+    phrase query 나 proximity query 에 사용할 수 없다.
+    Exact-value `not_analyzed` string field 는 기본적으로 이 설정을 사용한다.
 
 [[idf]]
 ===== Inverse document frequency
 
-index에 있는 모든 document에 그 단어가 얼마나 자주 나타나는가? 더 자주 나타날수록, 더 _낮은_ 비중을 가진다.((("inverse document frequency")))((("Term Frequency/Inverse Document Frequency  (TF/IDF) similarity algorithm", "inverse document frequency"))) 대부분의 document에서 나타나는, `and` 나 `the` 처럼 흔한 단어는, relevance에 거의 영향을 끼치지 않는다. 반면에, `elastic` 나 `hippopotamus` 처럼 흔하지 않은 단어는, 가장 흥미로운 document를 주목하는데 도움을 줄 것이다. IDF는 아래처럼 계산된다.
+index 에 있는 모든 document 에 그 단어가 얼마나 자주 나타나는가?
+더 자주 나타날수록, 더 _낮은_ 비중을 가진다.((("inverse document frequency")))((("Term Frequency/Inverse Document Frequency  (TF/IDF) similarity algorithm", "inverse document frequency")))
+대부분의 document 에서 나타나는, `and` 나 `the` 처럼 흔한 단어는, relevance 에 거의 영향을 끼치지 않는다.
+반면에, `elastic` 나 `hippopotamus` 처럼 흔하지 않은 단어는 가장 흥미로운 document를 주목하는데 도움을 줄 것이다.
+IDF 는 아래처럼 계산된다.
 
 ..........................
 idf(t) = 1 + log ( numDocs / (docFreq + 1)) <1>
 ..........................
-<1> 단어 `t` 의 `IDF` 는 index에 있는 document 수를 단어를 포함하고 있는 document 수로 나눈 값의 log이다.
+<1> 단어 `t` 의 `IDF` 는 index 에 있는 document 수를 단어를 포함하고 있는 document 수로 나눈 값의 log 이다.
 
 
 [[field-norm]]
 ===== Field-length norm
 
-field의 길이는 얼마인가? ((("Term Frequency/Inverse Document Frequency  (TF/IDF) similarity algorithm", "field-length norm")))((("field-length norm"))) field가 짧을수록, 더 _높은_ 비중을 가진다. 만약 어떤 단어가 `title` field 같이 짧은 field에 나타나면, 동일한 단어가 훨씬 더 큰 `body` field에 나타나는 것보다, 해당 field의 내용이 단어에 대해 더 _관련_ 있을 것이다. field length norm은 아래와 같이 계산된다:
+field 의 길이는 얼마인가? ((("Term Frequency/Inverse Document Frequency  (TF/IDF) similarity algorithm", "field-length norm")))((("field-length norm")))
+field가 짧을수록, 더 _높은_ 비중을 가진다. 만약 어떤 단어가 `title` field 같이 짧은 field 에 나타나면,
+동일한 단어가 훨씬 더 큰 `body` field 에 나타나는 것보다, 해당 field 의 내용이 단어에 대해 더 _관련_ 있을 것이다.
+field length norm 은 아래와 같이 계산된다:
 
 ..........................
 norm(d) = 1 / √numTerms <1>
 ..........................
-<1> field-length norm (`norm`) 은 field에 있는 단어 수의 제곱근의 역수이다.
+<1> field-length norm (`norm`) 은 field 에 있는 단어 수의 제곱근의 역수이다.
 
-field length ((("string fields", "field-length norm")))norm 은 full text 검색에 중요하지만, 다른 많은 field는 norm에 필요하지 않다. norm은, document의 field 포함 여부에 관계없이, index에 있는 document별로 `string` 별로, 대략 한 byte를 소모한다. Exact-value `not_analyzed` string field는 기본적으로 norm이 비활성 되어 있다. 그러나, `analyzed` field에서 norm을 비활성화하기 위해, field mapping을 사용할 수 있다:
+field length ((("string fields", "field-length norm")))norm 은 full text 검색에 중요하지만,
+다른 많은 field 는 norm 에 필요하지 않다. norm 은, document 의 field 포함 여부에 관계없이,
+index 에 있는 document 별로 `string` 별로, 대략 한 byte 를 소모한다.
+Exact-value `not_analyzed` string field 는 기본적으로 norm 이 비활성 되어 있다.
+그러나, `analyzed` field 에서 norm 을 비활성화하기 위해, field mapping 을 사용할 수 있다:
 
 [source,json]
 --------------------------
@@ -93,23 +125,29 @@ PUT /my_index
   }
 }
 --------------------------
-<1> 이 field는 field-length norm을 고려하지 않을 것이다. 긴 field와 짧은 field는, 동일한 길이인 것처럼, score를 얻을 것이다.
+<1> 이 field 는 field-length norm 을 고려하지 않을 것이다.
+    긴 field 와 짧은 field 는, 동일한 길이인 것처럼, score 를 얻을 것이다.
 
-logging 같은 사용 사례에서, norm은 유용하지 않다. 중요한 것은 어떤 field가 특정 error code나 특정 browser 식별자가 포함되어 있는지 여부이다. field의 길이는 결과에 영향을 주지 않는다. norm을 비활성화하면, 상당한 메모리를 절약할 수 있다.
+logging 같은 사용 사례에서, norm 은 유용하지 않다.
+중요한 것은 어떤 field 가 특정 error code 나 특정 browser 식별자가 포함되어 있는지 여부이다.
+field 의 길이는 결과에 영향을 주지 않는다. norm 을 비활성화하면, 상당한 메모리를 절약할 수 있다.
 
 ===== 함께 두면
 
-TF, IDF, Norm의 3가지 요소는 색인 시에 계산되고 저장된다.((("weight", "calculation of"))) 그들은 특정 document에 있는 단일 단어의 _비중_ 을 계산하는데 사용된다.
+TF, IDF, Norm 의 3가지 요소는 색인 시에 계산되고 저장된다.((("weight", "calculation of")))
+그들은 특정 document 에 있는 단일 단어의 _비중_ 을 계산하는데 사용된다.
 
 [TIP]
 ==================================================
 
-위 수식에서 _document_ 를 언급했을 때, document내에 있는 field에 대해 실제로 이야기했다. 각 field는 그들 자신의 inverted index를 가지고 있다. 따라서, TF/IDF의 목적에 있어, field의 값은 document의 값이다.
+위 수식에서 _document_ 를 언급했을 때, document 내에 있는 field 에 대해 실제로 이야기했다.
+각 field 는 그들 자신의 inverted index 를 가지고 있다.
+따라서, TF/IDF 의 목적에 있어, field 의 값은 document 의 값이다.
 
 ==================================================
 
-`explain` 을 `true` 로 설정하고, 간단한 `term` query를 실행(see
-<explain>)하면, score 계산에 포함되는 요소들이 위에서 설명한 것들임을 알 수 있다.
+`explain` 을 `true` 로 설정하고, 간단한 `term` query 를 실행(<<explain>> 참조)하면,
+score 계산에 포함되는 요소들이 위에서 설명한 것들임을 알 수 있다.
 
 [role="pagebreak-before"]
 [source,json]
@@ -138,41 +176,44 @@ result of:
         idf(docFreq=1, maxDocs=1):           0.30685282 <3>
         fieldNorm(doc=0):                    0.5 <4>
 .......................................................
-<1> Lucene 내부의 doc ID `0` 인 document에 있는 `text` field의 단어 `fox` 에 대한 최종 `score` 
-<2> 이 document에 있는 `text` field에 단어 `fox` 는 한 번만 나타난다.
-<3> 이 index에 있는 모든 document의 `text` field에서 `fox` 의 IDF
-<4> 이 field에 대한 field-length normalization factor
+<1> Lucene 내부의 doc ID `0` 인 document 에 있는 `text` field 의 단어 `fox` 에 대한 최종 `score`
+<2> 이 document 에 있는 `text` field 에 단어 `fox` 는 한 번만 나타난다.
+<3> 이 index 에 있는 모든 document 의 `text` field 에서 `fox` 의 IDF
+<4> 이 field 에 대한 field-length normalization factor
 
-물론, query는 일반적으로 하나 이상의 단어로 구성된다. 따라서, 여러 단어의 비중을 조합할 방법이 필요하다. 이를 위해 Vector Space Model을 사용한다.
+물론, query 는 일반적으로 하나 이상의 단어로 구성된다.
+따라서, 여러 단어의 비중을 조합할 방법이 필요하다. 이를 위해 Vector Space Model 을 사용한다.
 
 [[vector-space-model]]
 ==== Vector Space Model
 
-_vector space model_ 은 document에 대해 다중 단어 query를 ((("Vector Space Model")))비교하는 방식을 제공한다. 출력은 document가 query에 얼마나 많이 일치하는지를 나타내는 하나의 score이다. 이를 하기 위해, document와 query를 _vectors_ 로 표시한다.
+_vector space model_ 은 document 에 대해 다중 단어 query 를 ((("Vector Space Model")))
+비교하는 방식을 제공한다. 출력은 document 가 query 에 얼마나 많이 일치하는지를 나타내는 하나의 score이다.
+이를 하기 위해, document 와 query 를 _vectors_ 로 표시한다.
 
-Vector는 아래와 같이, 실제로 숫자를 포함하고 있는 일 차원 배열이다:
+Vector 는 아래와 같이, 실제로 숫자를 포함하고 있는 일 차원 배열이다:
 
     [1,2,5,22,3,8]
 
-vector space((("Term Frequency/Inverse Document Frequency  (TF/IDF) similarity algorithm", "in Vector Space Model"))) model에서, vector에 있는 각 숫자는((("weight", "calculation of", "in Vector Space Model"))), <<tfidf,term frequency/inverse document frequency>> 로 계산된, 단어의 _비중_ 이다.
+vector space((("Term Frequency/Inverse Document Frequency  (TF/IDF) similarity algorithm", "in Vector Space Model"))) model에서,
+vector에 있는 각 숫자는((("weight", "calculation of", "in Vector Space Model"))),
+<<tfidf,term frequency/inverse document frequency>> 로 계산된, 단어의 _비중_ 이다.
 
 [TIP]
 ==================================================
 
-vector space model에서, TF/IDF는 단어의 비중을 계산하는 기본적인 방법이나, 유일한 방법은 아니다. Okapi-BM25같은 다른 model도 존재하고, Elasticsearch에서 이용할 수 있다. TF/IDF는 간단하고 효율적인 알고리즘이기 때문에, 기본이다. 이는 양질의 검색 결과를 만들어 내고, 오랜 시간 동안 건재했다.
+vector space model에서, TF/IDF는 단어의 비중을 계산하는 기본적인 방법이나,
+유일한 방법은 아니다.
+Okapi-BM25같은 다른 model도 존재하고, Elasticsearch에서 이용할 수 있다.
+TF/IDF는 간단하고 효율적인 알고리즘이기 때문에, 기본이다.
+이는 양질의 검색 결과를 만들어 내고, 오랜 시간 동안 건재했다.
 
 ==================================================
 
-``happy hippopotamus'' 를 검색한다고 가정해 보자. `happy` 같은 흔한 단어는 비중이 낮을 것이다. 반면에 `hippopotamus` 같이 흔하지 않은 단어는 비중이 높을 것이다. `happy` 는 2라는 비중을 가지고, `hippopotamus` 는 5라는 비중을 가진다고 가정해 보자. 이것으로 (0, 0)에서 시작하여 (2, 5)에서 끝나는 선 그래프인 이차원 vector `[2, 5]` 를 구성할 수 있다 <<img-vector-query>>.
-
-////
-Imagine that we have a query for ``happy hippopotamus.''  A common word like
-`happy` will have a low weight, while an uncommon term like `hippopotamus`
-will have a high weight. Let's assume that `happy` has a weight of 2 and
-`hippopotamus` has a weight of 5.  We can plot this simple two-dimensional
-vector&#x2014;`[2,5]`&#x2014;as a line on a graph starting at point (0,0) and
-ending at point (2,5), as shown in <<img-vector-query>>.
-////
+``happy hippopotamus'' 를 검색한다고 가정해 보자. `happy` 같은 흔한 단어는 비중이 낮을 것이다.
+반면에 `hippopotamus` 같이 흔하지 않은 단어는 비중이 높을 것이다.
+`happy` 는 2 라는 비중을 가지고, `hippopotamus` 는 5 라는 비중을 가진다고 가정해 보자.
+이것으로 (0, 0)에서 시작하여 (2, 5)에서 끝나는 선 그래프인 이차원 vector `[2, 5]` 를 구성할 수 있다.
 
 [[img-vector-query]]
 .A two-dimensional query vector for ``happy hippopotamus'' represented
@@ -184,7 +225,9 @@ image::images/elas_17in01.png["The query vector plotted on a graph"]
 2. After Christmas I'm a _hippopotamus_.
 3. The _happy hippopotamus_ helped Harry.
 
-document에 나타나는 각 검색어(`happy` 와 `hippopotamus`)의 비중으로 구성되는, 각 document에 대한 유사한 vector를 생성할 수 있다. 그리고, 그것들로 동일한 그래프를 구성할 수 있다 <<img-vector-docs>>:
+document 에 나타나는 각 검색어(`happy` 와 `hippopotamus`)의 비중으로 구성되는,
+각 document 에 대한 유사한 vector 를 생성할 수 있다.
+그리고, 그것들로 동일한 그래프를 구성할 수 있다.
 
 * Document 1: `(happy,____________)`&#x2014;`[2,0]`
 * Document 2: `( ___ ,hippopotamus)`&#x2014;`[0,5]`
@@ -194,24 +237,24 @@ document에 나타나는 각 검색어(`happy` 와 `hippopotamus`)의 비중으�
 .Query and document vectors for ``happy hippopotamus''
 image::images/elas_17in02.png["The query and document vectors plotted on a graph"]
 
-vector에 대한 좋은 점은 그들을 비교할 수 있다는 점이다. query vector와 document vector 사이의 각도를 측정함으로써, 각 document에 relevance score를 할당하는 것이 가능하다. document 1과 query사이의 각도는 크다. 그러므로 relevance가 낮다. document 2는 query에 더 가깝다. 즉, 상당히 관련 있다. 그리고, document 3은 완전히 일치한다.
+vector 에 대한 좋은 점은 그들을 비교할 수 있다는 점이다.
+query vector와  document vector 사이의 각도를 측정함으로써,
+각 document 에 relevance score 를 할당하는 것이 가능하다.
+document 1 과 query 사이의 각도는 크다. 그러므로 relevance가 낮다.
+document 2 는 query 에 더 가깝다. 즉, 상당히 관련 있다.
+그리고, document 3 은 완전히 일치한다.
 
 [TIP]
 ==================================================
 
-실제로, 이차원 vector(2개의 단어로 된 query)만이 그래프를 쉽게 구성할 수 있다. 다행히도, _선형 대수학_ (linear algebra, vector를 다루는 수학의 일종)은 다차원 vector간의 각도를 비교할 수 있는 도구를 제공한다. 즉, 많은 단어로 구성된 query에 위에서 설명된 원리를 적용할 수 있다. http://en.wikipedia.org/wiki/Cosine_similarity[_cosine similarity_] 를 사용하여 두 개의 vector를 비교하는 방법에 대하여 읽어 볼 수 있다.
-
-////
-In practice, only two-dimensional vectors (queries with two terms) can  be
-plotted easily on a graph. Fortunately, _linear algebra_&#x2014;the branch of
-mathematics that deals with vectors--provides tools to compare the
-angle between multidimensional vectors, which means that we can apply the
-same principles explained above to queries that consist of many terms.
-
-You can read more about how to compare two vectors by using http://en.wikipedia.org/wiki/Cosine_similarity[_cosine similarity_].
-////
+실제로, 이차원 vector(2개의 단어로 된 query)만이 그래프를 쉽게 구성할 수 있다.
+다행히도, _선형 대수학_ (linear algebra, vector를 다루는 수학의 일종)은
+다차원 vector간의 각도를 비교할 수 있는 도구를 제공한다.
+즉, 많은 단어로 구성된 query에 위에서 설명된 원리를 적용할 수 있다.
+http://en.wikipedia.org/wiki/Cosine_similarity[_cosine similarity_] 를 사용하여
+두 개의 vector를 비교하는 방법에 대하여 읽어 볼 수 있다.
 
 ==================================================
 
-지금까지, score 계산의 이론적인 기초에 대해 이야기했고, 이제 Lucene 에서 score 계산이 구현되는 방법에 대해 이야기할 것이다.((("relevance scores", "theory behind", range="endofrange", startref="ix_relscore")))
-
+지금까지, score 계산의 이론적인 기초에 대해 이야기했고,
+이제 Lucene 에서 score 계산이 구현되는 방법에 대해 이야기할 것이다.((("relevance scores", "theory behind", range="endofrange", startref="ix_relscore")))

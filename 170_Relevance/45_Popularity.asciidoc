@@ -1,10 +1,11 @@
 [[boosting-by-popularity]]
-=== Boosting by Popularity
+=== Boosting by Popularity - 인기에 따른 가중치 부여
 
-Imagine that we have a website that hosts blog posts and enables users to vote for the
-blog posts that they like.((("relevance", "controlling", "boosting by popularity")))((("popularity", "boosting by")))((("boosting", "by popularity"))) We would like more-popular posts to appear higher in the
-results list, but still have the full-text score as the main relevance driver.
-We can do this easily by storing the number of votes with each blog post:
+사용자들이 자기가 좋아하는 블로그 게시물에 투표할 수 있는 블로그를 가진 website 를 가정해 보자.
+((("relevance", "controlling", "boosting by popularity")))((("popularity", "boosting by")))
+((("boosting", "by popularity")))
+결과 목록에서 더 높게 나타나는 더 인기 있는 게시물을 좋아하겠지만,
+여전히 relevance score 를 가져야 한다. 각 블로그 게시물의 투표 수를 저장하면, 간단하게 이것을 할 수 있다.
 
 [role="pagebreak-before"]
 [source,json]
@@ -17,8 +18,9 @@ PUT /blogposts/post/1
 }
 -------------------------------
 
-At search time, we can use the `function_score` query ((("function_score query", "field_value_factor function")))((("field_value_factor function")))with the
-`field_value_factor` function to combine the number of votes with the full-text relevance score:
+검색 시에, 투표 수와 full text relevance score 를 조합하기 위하여,
+`field_value_factor` function 으로 `function_score` query
+((("function_score query", "field_value_factor function")))((("field_value_factor function"))) 를 사용할 수 있다:
 
 [source,json]
 -------------------------------
@@ -39,50 +41,42 @@ GET /blogposts/post/_search
   }
 }
 -------------------------------
-<1> The `function_score` query wraps the main query and the function we would
-    like to apply.
-<2> The main query is executed first.
-<3> The `field_value_factor` function is applied to every document matching
-    the main `query`.
-<4> Every document _must_ have a number in the `votes` field for
-    the `function_score` to work.
+<1> `function_score` query 는 적용할 main query 와 function 을 감싼다.
+<2> main query 가 먼저 실행된다
+<3> `field_value_factor` function 은 main `query` 에 일치하는 모든 document 에 적용된다.
+<4> 모든 document 는 `function_score` 를 위해 `votes` field 를 _반드시_ 가지고 있어야 한다.
 
-In the preceding example, the final `_score` for each document has been altered as
-follows:
+위의 예에서, 각 document 에 대한 최종 `_score` 는 아래처럼 변경된다.
 
     new_score = old_score * number_of_votes
 
-This will not give us great results.  The full-text `_score` range
-usually falls somewhere between 0 and 10. As can be seen in <<img-popularity-linear>>, a blog post with 10 votes will
-completely swamp the effect of the full-text score, and a blog post with 0
-votes will reset the score to zero.
+위에서 좋은 결과가 나오지는 않을 것이다. full text `_score` 의 범위는 일반적으로 0 과 10 사이의 어디쯤일 것이다.
+왜냐하면, 투표수가 10 인 블로그 게시물은 full text score 의 효과를 완전히 뒤덮을 것이고,
+투표수가 0 인 게시물은 score 가 0 이 될 것이다.
 
 [[img-popularity-linear]]
 .Linear popularity based on an original `_score` of `2.0`
-image::images/elas_1701.png[Linear popularity based on an original `_score` of `2.0`]
+image::images/elas_1701.png[ 원래의 `_score` 가 `2.0` 인 경우 인기의 선 그래프 ]
 
 
 ==== modifier
 
-A better way to incorporate popularity is to smooth out the `votes` value
-with some `modifier`.  ((("modifier parameter")))((("field_value_factor function", "modifier parameter")))In other words, we want the first few votes to count a
-lot, but for each subsequent vote to count less.  The difference between 0
-votes and 1 vote should be much bigger than the difference between 10 votes
-and 11 votes.
+인기를 통합하는 더 나은 방법은, 어떤 `modifier` 로 `votes` 값을 일정부분 제거하는 것이다.
+((("modifier parameter")))((("field_value_factor function", "modifier parameter")))
+즉, 처음 몇 번은 votes 를 많이 세고, 그 뒤의 votes 는 덜 세는 것이다.
+votes 0 과 1 의 차이는 10 과 11 의 차이보다 훨씬 더 커야 한다.
 
-A typical `modifier` for this use case is `log1p`, which changes the formula
-to the following:
+이 예를 위한 대표적인 `modifier` 는 `log1p` 이다. 따라서 수식은 아래처럼 변경된다.
 
     new_score = old_score * log(1 + number_of_votes)
 
-The `log` function smooths out the effect of the `votes` field to provide a
-curve like the one in <<img-popularity-log>>.
+`log` function 은, 아래와 같은 곡선을 나타내기 위해, `votes` field 의 값을 일정 부분 제거한다.
 
 [[img-popularity-log]]
 .Logarithmic popularity based on an original `_score` of `2.0`
-image::images/elas_1702.png[Logarithmic popularity based on an original `_score` of `2.0`]
+image::images/elas_1702.png[ 원래의 `_score` 가 `2.0` 인 경우 인기의 log 그래프 ]
 
-The request with the `modifier` parameter looks like the following:
+`modifier` 매개변수를 이용한 요청은 아래와 같다:
 
 [source,json]
 -------------------------------
@@ -104,19 +98,18 @@ GET /blogposts/post/_search
   }
 }
 -------------------------------
-<1> Set the `modifier` to `log1p`.
+<1> `modifier` 에 `log1p` 를 설정.
 
 [role="pagebreak-before"]
-The available modifiers are `none` (the default), `log`, `log1p`, `log2p`,
-`ln`, `ln1p`, `ln2p`, `square`, `sqrt`,  and `reciprocal`.  You can read more
-about them in the
-{ref}/query-dsl-function-score-query.html#function-field-value-factor[`field_value_factor` documentation].
+이용할 수 있는 modifier 에는 `none` (default), `log`, `log1p`, `log2p`, `ln`, `ln1p`,
+`ln2p`, `square`, `sqrt` 그리고 `reciprocal` 이 있다.
+{ref}/query-dsl-function-score-query.html#function-field-value-factor[`field_value_factor` documentation] 를 참고하자.
 
 ==== factor
 
-The strength of the popularity effect can be increased or decreased by
-multiplying the value((("factor (function_score)")))((("field_value_factor function", "factor parameter"))) in the `votes` field by some number, called the
-`factor`:
+어떤 숫자를 `votes` field 에 있는 값에 곱하여 ((("factor (function_score)")))
+((("field_value_factor function", "factor parameter"))),
+인기의 효과를 증가 또는 감소시킬 수 있는데, 이를 `factor` 라 한다.
 
 [source,json]
 -------------------------------
@@ -139,44 +132,43 @@ GET /blogposts/post/_search
   }
 }
 -------------------------------
-<1> Doubles the popularity effect
+<1> 인기의 효과를 두 배로 한다.
 
-Adding in a `factor` changes the formula to this:
+`factor` 를 추가하면, 수식은 아래와 같이 변경된다:
 
     new_score = old_score * log(1 + factor * number_of_votes)
 
-A `factor` greater than `1` increases the effect, and a `factor` less than `1`
-decreases the effect, as shown in <<img-popularity-factor>>.
+`factor` 가 `1` 보다 크면 효과는 증가하고, `1` 보다 작으면 감소한다.
 
 [[img-popularity-factor]]
 .Logarithmic popularity with different factors
-image::images/elas_1703.png[Logarithmic popularity with different factors]
+image::images/elas_1703.png[여러 가지 factor에 따른 인기의 log 그래프]
 
 
 ==== boost_mode
 
-Perhaps multiplying the full-text score by the result of the
-`field_value_factor` function ((("function_score query", "boost_mode parameter")))((("boost_mode parameter")))still has too large an effect.  We can control
-how the result of a function is combined with the `_score` from the query by
-using the `boost_mode` parameter, which accepts the following values:
+full text score 를 `field_value_factor` function ((("function_score query", "boost_mode parameter")))
+((("boost_mode parameter"))) 의 결과와 곱하면, 효과가 너무 커질 수 있다.
+`boost_mode` 매개변수를 사용하여, function 의 결과가 query 의 `_score` 와 조합되는 방법을 제어할 수 있다.
+아래와 같은 값이 있다:
 
 `multiply`::
-      Multiply the `_score` with the function result (default)
+      function 의 결과와 `_score` 를 곱한다. (기본값)
 
 `sum`::
-      Add the function result to the `_score`
+      function 의 결과에 `_score` 를 더한다.
 
 `min`::
-      The lower of the `_score` and the function result
+      function 의 결과와 `_score` 중 더 작은 값
 
 `max`::
-      The higher of the `_score` and the function result
+      function 의 결과와 `_score` 중 더 큰 값
 
 `replace`::
-      Replace the `_score` with the function result
+      `_score` 를 function 의 결과로 대체한다.
 
-If, instead of multiplying, we add the function result to the `_score`, we can
-achieve a much smaller effect, especially if we use a low `factor`:
+곱하는 대신에, function 의 결과에 `_score` 를 더한다면,
+특히나 낮은 `factor` 를 사용한다면 훨씬 더 작은 효과를 만들 수 있다.
 
 [source,json]
 -------------------------------
@@ -200,21 +192,21 @@ GET /blogposts/post/_search
   }
 }
 -------------------------------
-<1> Add the function result to the `_score`.
+<1> function 의 결과에 `_score` 를 더한다.
 
-The formula for the preceding request now looks like this (see <<img-popularity-sum>>):
+이제, 위의 요청에 대한 수식은 아래와 같다.
 
     new_score = old_score + log(1 + 0.1 * number_of_votes)
 
 [[img-popularity-sum]]
 .Combining popularity with `sum`
-image::images/elas_1704.png["Combining popularity with `sum`"]
-
+image::images/elas_1704.png["`sum` 을 사용한 인기의 조합"]
 
 ==== max_boost
 
-Finally, we can cap the maximum effect((("function_score query", "max_boost parameter")))((("max_boost parameter"))) that the function can have by using the
-`max_boost` parameter:
+마지막으로, `max_boost` 매개변수를 사용하여, function 이 가질 수 있는 최대 효과를
+((("function_score query", "max_boost parameter")))((("max_boost parameter")))
+제한할 수 있다:
 
 [source,json]
 -------------------------------
@@ -239,9 +231,6 @@ GET /blogposts/post/_search
   }
 }
 -------------------------------
-<1> Whatever the result of the `field_value_factor` function, it will never be
-    greater than `1.5`.
+<1> `field_vaule_factor` function 의 결과는 `1.5` 보다 클 수 없다.
 
-NOTE: The `max_boost` applies a limit to the result of the function only, not
-to the final `_score`.
-
+NOTE: `max_boost` 는, 최종적이 `_score` 가 아닌, function 의 결과의 제한에만 적용한다.

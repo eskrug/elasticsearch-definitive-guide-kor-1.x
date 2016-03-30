@@ -1,22 +1,23 @@
 [[ignoring-tfidf]]
-=== Ignoring TF/IDF
+=== Ignoring TF/IDF - TF/IDF를 무시하려면
 
-Sometimes we just don't care about TF/IDF.((("relevance", "controlling", "ignoring  TF/IDF")))((("Term Frequency/Inverse Document Frequency  (TF/IDF) similarity algorithm", "ignoring")))  All we want to know is that a certain
-word appears in a field. Perhaps we are searching for a vacation home and we
-want to find houses that have as many of these features as possible:
+TF/IDF 에 관계없이,((("relevance", "controlling", "ignoring  TF/IDF")))
+((("Term Frequency/Inverse Document Frequency  (TF/IDF) similarity algorithm", "ignoring")))
+어떤 field에 어떤 단어가 나타나는지 알고 싶을 경우가 있다.
+휴가용 별장을 검색하고 있고, 가능한 한 많은 기능(wifi, 정원, 풀장 등)을 가진 집을 찾고 있다면 말이다.
+
+별장 document는 아래처럼 나타날 것이다:
 
 * WiFi
 * Garden
 * Pool
-
-The vacation home documents look something like this:
 
 [source,json]
 ------------------------------
 { "description": "A delightful four-bedroomed house with ... " }
 ------------------------------
 
-We could use a simple `match` query:
+간단한 `match` query 를 사용할 수 있다:
 
 [source,json]
 ------------------------------
@@ -30,18 +31,17 @@ GET /_search
 }
 ------------------------------
 
-However, this isn't really _full-text search_. In this case, TF/IDF just gets
-in the way.  We don't care whether `wifi` is a common term, or how often it
-appears in the document.  All we care about is that it does appear.
-In fact, we just want to rank houses by the number of features they have--the more, the better. If a feature is present, it should score `1`, and if it
-isn't, `0`.
+그러나, 이것은 진정한 _full-text 검색_ 이 아니다. 이 경우에, TF/IDF는 방해가 될 뿐이다.
+`wifi` 가 document에서 흔한 단어인지, 몇 번 나타나는지는 관심 밖이다.
+우리의 관심은 그것이 존재한다는 사실이다. 가지고 있는 기능의 수를 가지고 집의 순위를 매길 뿐이다.
+기능이 많을수록 더 좋다. 기능이 존재하면, score 는 `1`, 그렇지 않으면 `0` 이다.
 
 [[constant-score-query]]
 ==== constant_score Query
 
-Enter the {ref}/query-dsl-constant-score-query.html[`constant_score`] query.
-This ((("constant_score query")))query can wrap either a query or a filter, and assigns a score of
-`1` to any documents that match, regardless of TF/IDF:
+{ref}/query-dsl-constant-score-query.html[`constant_score`] query 를 시작해 보자.
+이 ((("constant_score query")))query 는 query 나 filter 를 감쌀 수 있고,
+TF/IDF 에 관계없이, 일치하는 모든 document 에 score `1` 을 할당한다.
 
 [source,json]
 ------------------------------
@@ -65,9 +65,8 @@ GET /_search
 }
 ------------------------------
 
-Perhaps not all features are equally important--some have more value to
-the user than others. If the most important feature is the pool, we could
-boost that clause to make it count for more:
+아마도, 모든 기능이 똑같이 중요하지는 않을 것이다. 이용자에게 어떤 것은 다른 것보다 더 중요할 것이다.
+가장 중요한 기능이 pool 이라고 한다면, 더 중요하게 만들기 위해 가중치를 부여할 수 있다:
 
 [source,json]
 ------------------------------
@@ -91,28 +90,27 @@ GET /_search
   }
 }
 ------------------------------
-<1> A matching `pool` clause would add a score of `2`, while
-    the other clauses would add a score of only `1` each.
+<1> `pool` 절에 일치하면 score 에 `2` 를 추가한다.
+    반면에 다른 절은 단지 각각 `1` 을 추가한다.
 
-NOTE: The final score for each result is not simply the sum of the scores of
-all matching clauses.  The <<coord,coordination factor>> and
-<<query-norm,query normalization factor>> are still taken into account.
+NOTE: 각 결과의 최종 score는 단순히 일치하는 모든 절의 score의 합이 아니다.
+각 단어의 조정요소(<<coord,coordination factor>>) 나
+query 정규화 요소(<<query-norm,query normalization factor>>)를 여전히 고려해야 한다.
 
-We could improve our vacation home documents by adding a `not_analyzed`
-`features` field to our vacation homes:
+휴가용 별장에 `not_analyzed` 인 `features` field 를 추가하여, 휴가용 별장 document 를 향상시킬 수 있다.
 
 [source,json]
 ------------------------------
 { "features": [ "wifi", "pool", "garden" ] }
 ------------------------------
 
-By default, a `not_analyzed` field has <<field-norm,field-length norms>>
-disabled ((("not_analyzed fields", "field length norms and index_options")))and has `index_options` set to `docs`, disabling
-<<tf,term frequencies>>, but the problem remains: the
-<<idf,inverse document frequency>> of each term is still taken into account.
+기본적으로, `not_analyzed` field 는 <<field-norm,field-length norms>> 이
+비활성화 ((("not_analyzed fields", "field length norms and index_options"))) 되어 있고,
+`index_options` 이 `docs` 로 설정되어 있고, term frequency(TF)(<<tf,term frequencies>>)도
+비활성화 되어 있다. 그러나, 문제는 남아 있다.
+각 단어의 inverse document frequency(IDF)(<<idf,inverse document frequency>>)는 여전히 참조되고 있다.
 
-We could use the same approach that we used previously, with the `constant_score`
-query:
+`constant_score` query 를 사용하여, 위에서와 동일한 방법을 사용할 수 있다:
 
 [source,json]
 ------------------------------
@@ -137,13 +135,9 @@ GET /_search
 }
 ------------------------------
 
-Really, though, each of these features should be treated like a filter.  A
-vacation home either has the feature or it doesn't--a filter seems like it
-would be a natural fit.  On top of that, if we use filters, we can
-benefit from filter caching.
+실제로 이런 “features” 각각은 filter 처럼 처리된다. 휴가용 별장이 기능을 가지고 있느냐 아니냐의 문제이다.
+filter 에게 꼭 들어맞다. filter 를 사용하면, filter caching 의 이점이 있다고 언급했었다.
 
-The problem is this: filters don't score. What we need is a way of bridging
-the gap between filters and queries. The `function_score` query does this
-and a whole lot more.
-
-
+문제는 filter 는 score 를 계산하지 않는다는 것이다.
+필요한 것은 filter 와 query 사이의 차이점을 메우는 것이다.
+`function_score` query 는 이것 이상의 많은 것을 할 수 있다.

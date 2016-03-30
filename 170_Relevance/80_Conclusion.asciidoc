@@ -1,40 +1,34 @@
 
 [[relevance-conclusion]]
-=== Relevance Tuning Is the Last 10%
+=== Relevance Tuning Is the Last 10% - Relevance 조정은 마지막 10% 이다
 
-In this chapter, we looked at a how Lucene generates scores based on TF/IDF. 
-Understanding the score-generation process((("relevance", "controlling", "tuning relevance"))) is critical so you can
-tune, modulate, attenuate, and manipulate the score for your particular
-business domain.
+이 장에서, TF/IDF 를 기반으로, Lucene 이 score 를 생성하는 방법을 살펴보았다.
+((("relevance", "controlling", "tuning relevance")))
+특정 사업 분야에 대해, score 를 조정하기 위해, score 생성 프로세스를 이해하는 것은 중요하다.
 
-In practice, simple combinations of queries will get you good search results. 
-But to get _great_ search results, you'll often have to start tinkering with
-the previously mentioned tuning methods.
+실제로, query 의 간단한 조합으로 좋은 검색 결과를 얻을 수 있다.
+그러나 _아주 좋은_ 검색 결과를 얻기 위해서는, 이전에 언급한 조정 방법을 가지고, query 를 만지작거리기 시작해야 한다.
 
-Often, applying a boost on a strategic field or rearranging a query to 
-emphasize a particular clause will be sufficient to make your results great.
-Sometimes you'll need more-invasive changes.  This is usually the case if your
-scoring requirements diverge heavily from Lucene's word-based TF/IDF model (for example, you
-want to score based on time or distance).
+종종, 중요한 field에 가중치를 적용하거나, 특정 절을 강조하기 위해, query를 다시 배열하는 것만으로,
+좋은 결과를 얻는 데 충분하다. 때로는 더 급격한 변화가 필요하다.
+score 계산에 대한 요구사항이 Lucene 의 단어 기반의 TF/IDF 모델을 많이 벗어나는 경우
+(예: 시간이나 거리를 기반으로 score 계산을 하는 경우)에, 이것은 일반적이다.
 
-With that said, relevancy tuning is a rabbit hole that you can easily fall into 
-and never emerge.  The concept of _most relevant_ is a nebulous target to hit, and
-different people often have different ideas about document ranking.  It is easy 
-to get into a cycle of constant fiddling without any apparent progress.
+그렇게 말한다면, relevance 조정은 쉽게 빠져서, 절대 빠져나올 수 없는 황당한 상황이 된다.
+_가장 관련있는_ 이라는 개념은 정확히 표현하기가 모호한 대상이고,
+다른 사람들은 document 에 대해 다른 생각을 가지고 있다.
+어떤 분명한 진척 없이, 끊임없는 조작의 반복에 빠지기 쉽다.
 
-We encourage you to avoid this (very tempting) behavior and instead properly
-instrument your search results.  Monitor how often your users click the top
-result, the top 10, and the first page; how often they execute a secondary query
-without selecting a result first; how often they click a result and immediately
-go back to the search results, and so forth.
+이런 (매우 솔깃한) 상태를 피하고, 대신에 검색 결과에 적절한 도구를 설치하기를 권장한다.
+얼마나 자주 사용자가 최상위 결과, 최상위 10개, 첫 번째 페이지를 클릭하는지,
+얼마나 자주 결과를 먼저 선택하지 않고, 보조 query를 실행하는지, 얼마나 자주 결과를 클릭하고,
+즉시 검색결과로 돌아가는지 등등을 관찰하자.
 
-These are all indicators of how relevant your search results are to the user.
-If your query is returning highly relevant results, users will select one of
-the top-five results, find what they want, and leave.  Irrelevant results cause
-users to click around and try new search queries.
+이런 것들이 모두, 검색 결과가 사용자에게 얼마나 관련 있는지를 나타내는 지표이다.
+query 가 관련성이 높은 결과를 반환하는 경우, 사용자는 최상위 5개의 결과 중 하나를 선택할 것이다.
+원하는 것을 찾으면 떠난다. 관련 없는 결과는 사용자에게 여기 저기를 클릭하고, 새로운 검색어를 시도하도록 한다.
 
-Once you have instrumentation in place, tuning your query is simple.  Make a change,
-monitor its effect on your users, and repeat as necessary.  The tools outlined in this
-chapter are just that: tools.  You have to use them appropriately to propel
-your search results into the _great_ category, and the only way to do that is with
-strong measurement of user behavior.
+일단, 도구가 준비가 되면, query 를 조정하는 것은 간단하다. 변경하고, 그것이 사용자에게 미치는 영향을 관찰하자.
+필요에 따라 반복한다. 이 장에서 설명하는 도구는 단지 도구일 뿐이다.
+검색 결과를 _아주 좋게_ 만들기 위해, 그들을 적절하게 사용해야 한다.
+그리고, 그렇게 하는 유일한 방법은 사용자의 행동을 강력하게 측정하는 것이다.

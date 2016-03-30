@@ -1,23 +1,23 @@
 [[function-score-filters]]
-=== Boosting Filtered Subsets
+=== Boosting Filtered Subsets - Filter 된 하위 집합에 가중치 부여
 
-Let's return to the problem that we were dealing with in <<ignoring-tfidf>>,
-where we wanted to score((("boosting", "filtered subsets")))((("relevance", "controlling", "boosting filtered subsets"))) vacation homes by the number of features that each
-home possesses.  We ended that section by wishing for a way to use cached
-filters to affect the score, and with the `function_score` query we can do
-just that.((("function_score query", "boosting filtered subsets")))
+<<ignoring-tfidf>> 에서 다루었던 문제로 돌아가 보면,
+여기에서는 각 여름용 별장이 가지고 있는 기능의 수로, 별장에 score
+((("boosting", "filtered subsets")))((("relevance", "controlling", "boosting filtered subsets")))
+를 계산하려 했다.
+score 에 영향을 미치는 cached filter 를 사용하는 방법으로 마무리 지었고,
+`function_score` query 로 그것을 할 수 있다.((("function_score query", "boosting filtered subsets")))
 
-The examples we have shown thus far have used a single function for all
-documents.  Now we want to divide the results into subsets by using filters (one
-filter per feature), and apply a different function to each subset.
+지금까지 보여준 예들은 모든 document 에 대해, 단일 function 을 사용하고 있다.
+이제, filter (기능별로 하나의 filter) 를 사용하여 결과를 하위 집합으로 분할하고,
+각 하위집합에 서로 다른 function 을 적용해 보자.
 
-The function that we will use in this example is ((("weight function")))the `weight`, which is
-similar to the `boost` parameter accepted by any query.  The difference is
-that the `weight` is not normalized by Lucene into some obscure floating-point
-number; it is used as is.
+이 예에서 사용하려는 function 은 ((("weight function")))`weight` 이다.
+이것은 어떤 query 에서도 사용할 수 있는 `boost` 매개변수와 유사하다.
+차이점은 `weight` 는 Lucene 에 의해 모호한 부동 소수점 수로 정규화되지 않는다는 것이다.
+그냥 그대로 사용된다.
 
-The structure of the query has to change somewhat to incorporate multiple
-functions:
+query 구조는 다수의 function 을 포함하기 위하여 약간 변경된다:
 
 [source,json]
 --------------------------------
@@ -48,59 +48,56 @@ GET /_search
 }
 --------------------------------
 
-<1> This `function_score` query has a `filter` instead of a `query`.
-<2> The `functions` key holds a list of functions that should be applied.
-<3> The function is applied only if the document matches the (optional) `filter`.
-<4> The `pool` feature is more important than the others so it has a higher `weight`.
-<5> The `score_mode` specifies how the values from each function should be combined.
+<1> `function_score` query 는 `query` 대신 `filter` 를 가진다.
+<2> `functions` 는 적용하려는 function 의 목록을 가진다.
+<3> function 은 `filter` (옵션)에 일치하는 document 에게만 적용된다.
+<4> `pool` 기능은 다른 기능보다 중요하기 때문에, `weight` 가 더 높다.
+<5> `score_mode` 는 각 function 의 값이 조합되는 방법을 지정한다.
 
-The new features to note in this example are explained in the following sections.
+이 예에서 몇 가지 새로운 기능들이 나타났다.
 
 ==== filter Versus query
 
-The first thing to note is that  we have specified a `filter` instead ((("filters", "in function_score query")))of a
-`query`. In this example, we do not need full-text search. We just want to
-return all documents that have `Barcelona` in the `city` field, logic that is
-better expressed as a filter instead of a query.  All documents returned by
-the filter will have a `_score` of `1`.  The `function_score` query accepts
-either a `query` or a `filter`. If neither is specified, it will default to
-using the `match_all` query.
+첫 번째는 `query` 대신에 filter((("filters", "in function_score query"))) 를 지정한 것이다.
+이 예에서, full text 검색은 필요 없다. 단지, `city` field 에 `Barcelona` 를 가지고 있는
+모든 document 가 반환되기를 원할 뿐이다. logic 은 query 보다는 filter 로 더 잘 표현할 수 있다.
+filter 에 의해 반환되는 모든 document 는 `_score` 가 `1` 이다.
+`function_score` query 는 `query` 나 `filter` 를 가질 수 있다.
+아무것도 지정되지 않으면, 기본적으로 `match_all` query 가 사용된다.
 
 ==== functions
 
-The `functions` key holds an array of functions to apply.((("function_score query", "functions key")))  Each entry in the
-array may also optionally specify a `filter`, in which case the function will be applied only to documents that match that filter.  In this example, we
-apply a `weight` of `1` (or `2` in the case of `pool`) to any document
-that matches the filter.
+`functions` 은 적용할 function 의 배열을 가진다.((("function_score query", "functions key")))
+배열의 각 요소는 옵션으로 `filter` 를 지정할 수도 있다.
+이 경우에 function 은 해당 filter 에 일치하는 document 에게만 적용된다.
+이 예에서, filter 에 일치하는 모든 document 에게 `weight` `1` 을 적용했다. (`pool` 의 경우에는 `2`)
 
 ==== score_mode
 
-Each function returns a result, and we need a way of reducing these multiple
-results to a single value that can be combined with the original `_score`.
-This is the role ((("function_score query", "score_mode parameter")))((("score_mode parameter")))of the `score_mode` parameter, which accepts the following
-values:
+각 function 이 결과를 반환하면, 다수의 결과를, 원래의 `_score` 와 조합될 수 있도록, 하나의 값으로 줄일 방법이 필요하다.
+이것이 `score_mode` 매개변수의 역할이다((("function_score query", "score_mode parameter")))
+((("score_mode parameter"))).
+아래와 같은 값을 가질 수 있다:
 
-`multiply`::    
-      Function results are multiplied together (default).
-      
-`sum`::        
-      Function results are added up.
-      
-`avg`::         
-      The average of all the function results.
-      
-`max`::         
-      The highest function result is used.
-      
-`min`::         
-      The lowest function result is used.
-      
-`first`::       
-      Uses only the result from the first function that either doesn't have a filter or that has a filter matching the document.
+`multiply`::
+      Function 의 결과를 서로 곱한다. (기본값)
 
-In this case, we want to add the `weight` results from each matching
-filter together to produce the final score, so we have used the `sum` score
-mode.
+`sum`::
+      Function 의 결과는 더해진다.
 
-Documents that don't match any of the filters will keep their original
-`_score` of `1`.
+`avg`::
+      모든 function 결과의 평균값.
+
+`max`::
+      function 의 결과 중 가장 큰 값이 사용된다.
+
+`min`::
+      function 의 결과 중 가장 작은 값이 사용된다.
+
+`first`::
+      filter 를 가지지 않거나, document 와 일치하는 filter 를 가진, 첫 번째 function 에서 나온 결과만을 사용한다.
+
+이 예에서, score_mode 에 `sum` 을 사용했기 때문에,
+최종 score 를 만들어 내기 위해 filter 에 일치하는 각 결과의 `weight` 를 더한다.
+
+어떤 filter에도 일치하지 않는 document는 원래의 `_score` `1` 그대로이다.

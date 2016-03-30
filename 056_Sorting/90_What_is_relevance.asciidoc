@@ -1,44 +1,56 @@
 [[relevance-intro]]
-=== Relevance가 무엇인가?
+=== What Is Relevance? - Relevance가 무엇인가?
 
-기본적으로 결과는 relevance를 기준으로, 내림차순으로 반환된다고 언급한 바 있다.((("relevance", "defined"))) 그런데, relevance가 무엇이고, 어떻게 계산되는가?
+기본적으로 결과는 relevance 를 기준으로, 내림차순으로 반환된다고 언급한 바 있다.((("relevance", "defined")))
+그런데, relevance 가 무엇이고, 어떻게 계산되는가?
 
-각 document의 relevance score는 `_score` 라고 하는, 양(+)의 부동 소수점 정수로 표현된다.((("score", "calculation of"))) `_score` 가 높을수록, 더 관련 있는 document이다.
+각 document 의 relevance score 는 `_score` 라고 하는, 양(+)의 부동 소수점 정수로 표현된다.
+((("score", "calculation of"))) `_score` 가 높을수록, 더 관련 있는 document 이다.
 
-query절은 각 document에 대해, `_score` 를 만들어낸다. score를 계산하는 방법은, query절의 유형에 달려 있다. 각각의 다른 query는 각기 다른 용도로 사용된다. `fuzzy` query는 찾아낸 단어의 철자가, 원래의 검색어에 얼마나 유사한 가를 계산해, `_score` 를 결정하고, `terms` query는 찾아낸 단어의 비율을 포함한다. 그러나, 일반적으로, _relevance_ 는 full text의 내용이 full text query string에 얼마나 유사한가를 계산하는 알고리즘을 의미한다.
+query 절은 각 document 에 대해, `_score` 를 만들어낸다.
+score 를 계산하는 방법은, query 절의 유형에 달려 있다. 각각의 다른 query 는 각기 다른 용도로 사용된다.
+`fuzzy` query 는 찾아낸 단어의 철자가, 원래의 검색어에 얼마나 유사한 가를 계산해, `_score` 를 결정하고,
+`terms` query 는 찾아낸 단어의 비율을 포함한다.
+그러나, 일반적으로, _relevance_ 는 full text 의 내용이 full text query string 에 얼마나 유사한가를 계산하는 알고리즘을 의미한다.
 
-Elasticsearch에 사용되는 표준 _유사성 알고리즘_ 은((("Term Frequency/Inverse Document Frequency  (TF/IDF) similarity algorithm")))((("similarity algorithms", "Term Frequency/Inverse Document Frequency  (TF/IDF)"))) _Term Frequency(TF) / Inverse Document Frequency(IDF)_ 이다. 이는 아래 요소를 따른다.
-
-////
-The standard _similarity algorithm_ used in Elasticsearch is((("Term Frequency/Inverse Document Frequency  (TF/IDF) similarity algorithm")))((("similarity algorithms", "Term Frequency/Inverse Document Frequency  (TF/IDF)"))) known as  _term
-frequency/inverse document frequency_, or _TF/IDF_, which takes the following
-factors into((("inverse document frequency"))) account:
-////
+Elasticsearch 에 사용되는 표준 _유사성 알고리즘_ 은
+((("Term Frequency/Inverse Document Frequency (TF/IDF) similarity algorithm")))
+((("similarity algorithms", "Term Frequency/Inverse Document Frequency  (TF/IDF)")))
+_Term Frequency(TF) / Inverse Document Frequency(IDF)_ 이다. 이는 아래 요소를 따른다.
 
 Term frequency::
 
-  field에 나타나는 단어의 횟수. 많이 나타날수록 관련성이 높다. 어떤 field에 동일한 단어가 5회 언급되었다면, 단 1회 언급된 field보다 관련성이 더 높을 것이다.
+  field 에 나타나는 단어의 횟수. 많이 나타날수록 관련성이 높다.
+  어떤 field 에 동일한 단어가 5회 언급되었다면, 단 1회 언급된 field 보다 관련성이 더 높을 것이다.
 
 Inverse document frequency::
 
-  각 단어가 index에 나타난 횟수. 많이 나타날수록 _관련성_ 이 낮다. 많은 document에 나타난 단어는, 더 드물게 나타나는 단어보다 낮은 _비중_ 을 가진다.
+  각 단어가 index 에 나타난 횟수. 많이 나타날수록 _관련성_ 이 낮다.
+  많은 documen t에 나타난 단어는, 더 드물게 나타나는 단어보다 낮은 _비중_ 을 가진다.
 
 Field-length norm::
 
-  field의 길이. 길수록, field에 있는 단어는 관련성이 낮을 것이다. 짧은 `title` field에 나타난 어떤 단어는, 긴 `content` field에 나타난 동일한 단어보다 높은 비중을 가진다.
+  field 의 길이. 길수록, field 에 있는 단어는 관련성이 낮을 것이다.
+  짧은 `title` field 에 나타난 어떤 단어는, 긴 `content` field 에 나타난 동일한 단어보다 높은 비중을 가진다.
 
-개별 ((("field-length norm")))query 는 phrase query의 단어 근접성(proximity)나 fuzzy query의 단어 유사성(similarity) 같은 다른 요소들과 함께, TF/IDF score를 조합한다.
+개별 ((("field-length norm")))query 는 phrase query 의 단어 근접성(proximity)나
+fuzzy query 의 단어 유사성(similarity) 같은 다른 요소들과 함께, TF/IDF score 를 조합한다.
 
-relevance는 full text 검색에서만 사용되는 것이 아니다. yes/no 절에도 똑같이 적용될 수 있다. 일치하는 절이 더 많을수록, 더 높은 `_score` 를 가진다.
+relevance 는 full text 검색에서만 사용되는 것이 아니다.
+yes/no 절에도 똑같이 적용될 수 있다. 일치하는 절이 더 많을수록, 더 높은 `_score` 를 가진다.
 
-다중 query절이 `bool` query 같은 복합 query((("compound query clauses", "relevance score for results"))) 를 사용하여 조합될 경우, 각 query절에서 나온 `_score` 는 document 전체 `_score` 를 계산하기 위해, 조합된다.
+다중 query 절이 `bool` query 같은 복합 query((("compound query clauses", "relevance score for results")))
+를 사용하여 조합될 경우, 각 query 절에서 나온 `_score` 는 document 전체 `_score` 를 계산하기 위해, 조합된다.
 
-TIP: relevance 계산과 relevance를 조정하는 방법은 <controlling-relevance> 를 참고하자.
+TIP: relevance 계산과 relevance를 조정하는 방법은 <<controlling-relevance>> 를 참고하자.
 
 [[explain]]
-==== Score를 이해하자
+==== Understanding the Score - Score를 이해하자
 
-복잡한 query를 debug하는 경우,((("score", "calculation of")))((("relevance scores", "understanding"))) `_score` 가 계산되는 방법을 정확히 이해하기는 어려울 수 있다. Elasticsearch는 모든 검색 결과에 _설명(explanation)_ 을 추가할 수 있는 옵션을 가지고 있다. `explain` 매개변수를((("explain parameter"))) `true` 로 설정하면 된다.
+복잡한 query 를 debug 하는 경우,((("score", "calculation of")))((("relevance scores", "understanding")))
+`_score` 가 계산되는 방법을 정확히 이해하기는 어려울 수 있다.
+Elasticsearch 는 모든 검색 결과에 _설명(explanation)_ 을 추가할 수 있는 옵션을 가지고 있다.
+`explain` 매개변수를((("explain parameter"))) `true` 로 설정하면 된다.
 
 [source,js]
 --------------------------------------------------
@@ -48,14 +60,16 @@ GET /_search?explain <1>
 }
 --------------------------------------------------
 // SENSE: 056_Sorting/90_Explain.json
-<1> `explain` 매개변수는 모든 검색 결과에, `_score` 가 계산되는 방법에 대한 설명을 추가한다. 
+<1> `explain` 매개변수는 모든 검색 결과에, `_score` 가 계산되는 방법에 대한 설명을 추가한다.
 
 [NOTE]
 ====
-`explain` 을 추가하면, 모든 hit에 굉장히 많은((("explain parameter", "for relevance score calculation"))) 출력이 나온다. 그것이 무엇을 의미하는지 이해하기 위해, 시간을 투자할 가치가 있다. 바로 이해하지 못 할 수도 있지만, 필요할 때 참조할 수 있다. 하나의 `hit` 에 하나씩 출력을 만들어 낸다.
+`explain` 을 추가하면, 모든 hit에 굉장히 많은((("explain parameter", "for relevance score calculation")))
+출력이 나온다. 그것이 무엇을 의미하는지 이해하기 위해, 시간을 투자할 가치가 있다.
+바로 이해하지 못 할 수도 있지만, 필요할 때 참조할 수 있다. 하나의 `hit` 에 하나씩 출력을 만들어 낸다.
 ====
 
-먼저, 일반적인 검색 요청으로 반환된 metadata를 볼 수 있다:
+먼저, 일반적인 검색 요청으로 반환된 metadata 를 볼 수 있다:
 
 [source,js]
 --------------------------------------------------
@@ -67,7 +81,8 @@ GET /_search?explain <1>
     "_source" :     { ... trimmed ... },
 --------------------------------------------------
 
-여기에 document가 존재하는 node와 shard에 대한 정보가 추가된다. 이는 단어와 document 빈도를 index별이 아닌, shard별로 계산하기 때문에, 알고 있는 것이 유용하다:
+여기에 document 가 존재하는 node 와 shard 에 대한 정보가 추가된다.
+이는 단어와 document 빈도를 index 별이 아닌, shard 별로 계산하기 때문에, 알고 있는 것이 유용하다:
 
 [source,js]
 --------------------------------------------------
@@ -75,7 +90,10 @@ GET /_search?explain <1>
     "_node" :       "mzIVYCsqSWCG_M_ZffSs9Q",
 --------------------------------------------------
 
-그리고, `_explanation` 을 제공한다. 각 ((("explanation of relevance score calculation")))((("description", "of relevance score calculations")))항목은 수행된 계산의 유형을 알려주는 `description`, 계산의 결과를 알려주는 `value`, 그리고 요구되는 하위 계산을 알려주는 `details` 를 포함하고 있다.
+그리고, `_explanation` 을 제공한다.
+각 ((("explanation of relevance score calculation")))((("description", "of relevance score calculations")))
+항목은 수행된 계산의 유형을 알려주는 `description`, 계산의 결과를 알려주는 `value`,
+그리고 요구되는 하위 계산을 알려주는 `details` 를 포함하고 있다.
 
 [source,js]
 --------------------------------------------------
@@ -111,49 +129,55 @@ GET /_search?explain <1>
    ]
 }
 --------------------------------------------------
-<1> `honeymoon` 을 위한 score 계산의 요약 
+<1> `honeymoon` 을 위한 score 계산의 요약
 <2> Term Frequency
-<3> Inverse Document Frequency 
+<3> Inverse Document Frequency
 <4> Field-Length Norm
 
-WARNING: `explain` 을 출력하면 비용이 많이 발생한다.((("explain parameter", "overhead of using"))) 단지 debug를 위한 tool이다. 제품에 사용되도록, 남겨두지 않길 바란다.
+WARNING: `explain` 을 출력하면 비용이 많이 발생한다.((("explain parameter", "overhead of using")))
+  단지 debug 를 위한 tool 이다. 제품에 사용되도록, 남겨두지 않길 바란다.
 
-첫 번째 부분은 계산의 요약이다. document 0의 `tweet` field에서 단어 `honeymoon` 의 _비중_ ((("weight", "calculation of")))((("Term Frequency/Inverse Document Frequency  (TF/IDF) similarity algorithm", "weight calculation for a term"))) (TF/IDF)을 계산한 것을 나타낸다.
-
-////
-The first part is the summary of the calculation. It tells us that it has
-calculated the _weight_&#x2014;the ((("weight", "calculation of")))((("Term Frequency/Inverse Document Frequency  (TF/IDF) similarity algorithm", "weight calculation for a term")))TF/IDF--of the term `honeymoon` in the field `tweet`, for document `0`.  (This is
-an internal document ID and, for our purposes, can be ignored.)
-////
+첫 번째 부분은 계산의 요약이다.
+document 0의 `tweet` field 에서 단어 `honeymoon` 의 _비중_ ((("weight", "calculation of")))
+((("Term Frequency/Inverse Document Frequency  (TF/IDF) similarity algorithm", "weight calculation for a term")))
+(TF/IDF) 을 계산한 것을 나타낸다.
 
 그 다음에, 비중이 계산되는 방법을 자세히((("field-length norm")))((("inverse document frequency"))) 알려준다.
 
 Term frequency::
 
-  이 document의 `tweet` field에서 `honeymoon` 이라는 단어가 나타나는 횟수.
+  이 document 의 `tweet` field 에서 `honeymoon` 이라는 단어가 나타나는 횟수.
 
 Inverse document frequency::
 
-  index에 있는 모든 document의 `tweet` field에서 `honeymoon` 이라는 단어가 나타난 횟수.
+  index 에 있는 모든 document 의 `tweet` field에서 `honeymoon` 이라는 단어가 나타난 횟수.
 
 Field-length norm::
 
-  이 document의 `tweet` field의 길이, field가 길수록 이 숫자는 더 작다.
+  이 document 의 `tweet` field 의 길이, field 가 길수록 이 숫자는 더 작다.
 
-더 복잡한 query에 대한 explanation은 매우 복잡해 보일 수 있으나, 위의 예제에서 보이는 것과 동일한 계산을 더 많이 포함하고 있을 뿐이다. 이 정보는 검색의 결과가 저런 순서로 나타나는 이유를 debug할 경우 유용하다.
+더 복잡한 query 에 대한 explanation 은 매우 복잡해 보일 수 있으나,
+위의 예제에서 보이는 것과 동일한 계산을 더 많이 포함하고 있을 뿐이다.
+이 정보는 검색의 결과가 저런 순서로 나타나는 이유를 debug 할 경우 유용하다.
 
 [TIP]
-==================================================================  
-`explain` 의 출력은 JSON으로 읽기가 어려울 수 있다. YAML 형식으로는 읽기가 더 쉽다.((("explain parameter", "formatting output in YAML")))((("YAML, formatting explain output in"))) `format=yaml` 을 query string에 추가하기만 하면 된다.
+==================================================================
+`explain` 의 출력은 JSON으로 읽기가 어려울 수 있다.
+YAML 형식으로는 읽기가 더 쉽다.((("explain parameter", "formatting output in YAML")))
+((("YAML, formatting explain output in"))) `format=yaml` 을
+query string에 추가하기만 하면 된다.
 ==================================================================
 
-
 [[explain-api]]
-==== Document 가 일치하는 이유를 이해하자
+==== Understanding Why a Document Matched - Document 가 일치하는 이유를 이해하자
 
-`explain` 옵션이 모든 결과에 explanation을 추가하면, `explain` API는 특정 document가 일치하는 이유, 더 중요한 이유, 일치하지 _않는_ 이유를 이해하는데 이용할 수 있다.((("relevance", "understanding why a document matched")))((("explain API, understanding why a document matched")))
+`explain` 옵션이 모든 결과에 explanation 을 추가하면,
+`explain` API는 특정 document 가 일치하는 이유,
+더 중요한 이유, 일치하지 _않는_ 이유를 이해하는데 이용할 수 있다.
+((("relevance", "understanding why a document matched")))
+((("explain API, understanding why a document matched")))
 
-요청의 path는 `/index/path/id/_explain` 이다.
+요청의 path 는 `/index/path/id/_explain` 이다.
 
 [source,js]
 --------------------------------------------------
@@ -169,11 +193,12 @@ GET /us/tweet/12/_explain
 --------------------------------------------------
 // SENSE: 056_Sorting/90_Explain_API.json
 
-위에서 보았던, 전체 explanation((("description", "of why a document didn&#x27;t match"))) 을 따라가 보면, `description` 을 볼 수 있다.
+위에서 보았던, 전체 explanation((("description", "of why a document didn&#x27;t match")))
+을 따라가 보면, `description` 을 볼 수 있다.
 
 [source,js]
 --------------------------------------------------
 "failure to match filter: cache(user_id:[2 TO 2])"
 --------------------------------------------------
 
-즉, `user_id` filter 절 때문에 document가 일치하지 않았다.
+즉, `user_id` filter 절 때문에 document 가 일치하지 않았다.

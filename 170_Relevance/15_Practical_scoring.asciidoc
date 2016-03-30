@@ -1,12 +1,10 @@
 [[practical-scoring-function]]
-=== Lucene's Practical Scoring Function
+=== Lucene's Practical Scoring Function - Lucene 의 실질적인 score 계산 함수
 
-For multiterm queries, Lucene takes((("relevance", "controlling", "Lucene&#x27;s practical scoring function", id="ix_relcontPCF", range="startofrange")))((("Boolean Model"))) the <<boolean-model,Boolean model>>,
-<<tfidf,TF/IDF>>, and the <<vector-space-model,vector space model>> and
-combines ((("Term Frequency/Inverse Document Frequency  (TF/IDF) similarity algorithm")))((("Vector Space Model"))) them in a single efficient package that collects matching
-documents and scores them as it goes.
-
-A multiterm query like
+다중 단어 query 의 경우, Lucene 은 <<boolean-model,Boolean model>>,
+<<tfidf,TF/IDF>> 그리고 <<vector-space-model,vector space model>> 을 가지고
+((("relevance", "controlling", "Lucene&#x27;s practical scoring function", id="ix_relcontPCF", range="startofrange")))((("Boolean Model"))),
+일치하는 document 를 수집하고 score 를 계산하는, 하나의 효율적인 패키지로 조합한다.
 
 [source,json]
 ------------------------------
@@ -20,7 +18,7 @@ GET /my_index/doc/_search
 }
 ------------------------------
 
-is rewritten internally to look like this:
+위의 다중 단어 query는, 내부적으로 아래와 같이 다시 작성된다:
 
 [source,json]
 ------------------------------
@@ -37,15 +35,13 @@ GET /my_index/doc/_search
 }
 ------------------------------
 
-The `bool` query implements the Boolean model and, in this example, will
-include only documents that contain either the term `quick` or the term `fox` or
-both.
+`bool` query는 boolean model 을 구현하는데,
+이 경우에는, 단어 `quick` 이나 `fox` 를 가지고 있는 document 만을 포함한다.
 
-As soon as a document matches a query, Lucene calculates its score for that
-query, combining the scores of each matching term.  The formula used for
-scoring is called the _practical scoring function_.((("practical scoring function"))) It looks intimidating, but
-don't be put off--most of the components you already know. It introduces a
-few new elements that we discuss next.
+document 가 query 에 일치하면, Lucene 은 각 일치하는 단어의 score 를 조합하여,
+query 에 대한 score 를 계산한다.
+score 를 계산하는데 사용되는 수식을 _practical scoring function_ 이라 한다.((("practical scoring function")))
+약간 어려워 보이지만, 그렇지 않다. 대부분의 구성요소는 이미 알고 있다. 아래에서 몇 가지 새로운 요소를 소개하겠다.
 
 ................................
 score(q,d)  =  <1>
@@ -59,84 +55,75 @@ score(q,d)  =  <1>
             ) (t in q)    <4>
 ................................
 
-<1> `score(q,d)` is the relevance score of document `d` for query `q`.
-<2> `queryNorm(q)` is the <<query-norm,_query normalization_ factor>> (new).
-<3> `coord(q,d)` is the <<coord,_coordination_ factor>> (new).
-<4> The sum of the weights for each term `t` in the query `q` for document `d`.
-<5> `tf(t in d)` is the <<tf,term frequency>> for term `t` in document `d`.
-<6> `idf(t)` is the <<idf,inverse document frequency>> for term `t`.
-<7> `t.getBoost()` is the <<query-time-boosting,_boost_>>  that has been
-    applied to the query (new).
-<8> `norm(t,d)` is the <<field-norm,field-length norm>>, combined with the
-    <<index-boost,index-time field-level boost>>, if any. (new).
+<1> `score(q, d)` 는 query `q` 에 대한 document `d` 의 relevance score 이다.
+<2> `queryNorm(q)` 는 <<query-norm,_query normalization_ factor>> 이다. (new)
+<3> `coord(q, d)` 는 <<coord,_coordination_ factor>> 이다. (new)
+<4> document `d` 에 대한 query `q` 에서 각 단어 `t` 의 가중치의 합이다.
+<5> `tf(t in d)` 는 document `d` 의 단어 `t` 에 대한 <<tf,term frequency>> 이다.
+<6> `idf(t)` 는 단어 `t` 에 대한 <<idf,inverse document frequency>> 이다.
+<7> `t.getBoost()` 는 query 에 적용된 <<query-time-boosting,_boost_>> 이다. (new)
+<8> `norm(t, d)` 는, <<index-boost,index-time field-level boost>> – 색인 시 field에 가중치 부여로 조합된,
+    <<field-norm,field-length norm>> 이다. [NEW]
 
-You should recognize `score`, `tf`, and `idf`. The  `queryNorm`, `coord`,
-`t.getBoost`, and `norm` are new.
+`score`, `tf`, `idf` 는 알고 있을 것이다.
+`queryNorm`, `coord`, `t.getBoost` 그리고 `norm` 은 새로운 개념이다.
 
-We will talk more about <<query-time-boosting,query-time boosting>>  later in
-this chapter, but first let's get query normalization, coordination, and
-index-time field-level boosting out of the way.
+이 장의 후반부에서, <<query-time-boosting,query-time boosting>> 에 대해 더 이야기할 것이다.
+그러나, 먼저 query 정규화, 조정 그리고 색인 시의 field level boosting 에 대해 이야기해 보자.
 
 [[query-norm]]
-==== Query Normalization Factor
+==== Query Normalization Factor - Query 정규화 요소
 
-The _query normalization factor_ (`queryNorm`) is ((("practical scoring function", "query normalization factor")))((("query normalization factor")))((("normalization", "query normalization factor")))an attempt to _normalize_ a
-query so that the results from one query may be compared with the results of
-another.
+_query 정규화 요소_ (`queryNorm`) 는, 어떤 query 에서 나온 결과를 다른 결과와 비교하기 위해,
+query 를 _정규화_ 하려는 ((("practical scoring function", "query normalization factor")))
+((("query normalization factor")))((("normalization", "query normalization factor")))
+시도이다.
 
 [TIP]
 ==================================================
 
-Even though the intent of the query norm is to make results from different
-queries comparable, it doesn't work very well. The only purpose of
-the relevance `_score` is to sort the results of the current query in the
-correct order. You should not try to compare the relevance scores from
-different queries.
+query norm 의 목적은 다른 query 의 결과와 비교하는 것이지만, 잘 동작하지 않는다.
+실제로, relevance `_score` 의 유일한 목적은 현재 query 의 결과를 올바른 순서로 정렬하는 것이다.
+다른 query 에서 relevance score 와 비교하려 해서는 안 된다.
 
 ==================================================
 
-This factor is calculated at the beginning of the query. The actual
-calculation depends on the queries involved, but a typical implementation is as follows:
+이 요소는 query 의 시작 부분에서 계산된다. 실제 계산은 포함된 query 에 따라 다르지만,
+전형적인 구현은 아래와 같다:
 
 ..........................
 queryNorm = 1 / √sumOfSquaredWeights <1>
 ..........................
-<1> The `sumOfSquaredWeights` is calculated by adding together the IDF of each
-    term in the query, squared.
+<1> `sumOfSquaredWeights` 는 query 에 있는 각 단어의 IDF 를 모두 더한 후 제곱근을 구함으로써 계산된다.
 
-TIP: The same query normalization factor is applied to every document, and you
-have no way of changing it. For all intents and purposes, it can be ignored.
-
+TIP: 동일한 query 의 정규화 요소는 모든 document 에 적용되고, 변경할 수 있는 방법은 없다.
+     모든 의도와 목적을 위해, 그것은 무시될 수 있다.
 
 [[coord]]
-==== Query Coordination
+==== Query Coordination - Query 조정
 
-The _coordination factor_ (`coord`) is used to((("coordination factor (coord)")))((("query coordination")))((("practical scoring function", "coordination factor"))) reward documents that contain a
-higher percentage of the query terms. The more query terms that appear in
-the document, the greater the chances that the document is a good match for
-the query.
+_조정(coordination) 요소_ (`coord`) 는, 높은 비율의 검색어를 포함하고 있는,
+document에 대한 보상으로 사용된다((("coordination factor (coord)")))((("query coordination")))((("practical scoring function", "coordination factor"))).
+document에 나타나는 검색어가 많을 수록, document가 query에 잘 일치할 기회가 더 커진다.
 
-Imagine that we have a query for `quick brown fox`, and that the
-weight for each term is 1.5.  Without the coordination factor, the score would
-just be the sum of the weights of the terms in a document. For instance:
+`quick brown fox` 를 검색하는데, 각 단어의 비중이 1.5 라고 가정해 보자.
+조정요소가 없다면, score 는 document 에 있는 단어의 비중의 합일 것이다.
+예를 들어:
 
 * Document with `fox` -> score: 1.5
 * Document with `quick fox` -> score: 3.0
 * Document with `quick brown fox` -> score: 4.5
 
-The coordination factor multiplies the score by the number of matching terms
-in the document, and divides it by the total number of terms in the query.
-With the coordination factor, the scores would be as follows:
+조정요소는 document 에서 일치하는 단어의 수를 score 에 곱하고, query 에 있는 단어의 총 수로 그것을 나눈다.
+조정 요소를 반영한 score 는 아래와 같다:
 
 * Document with `fox` -> score: `1.5 * 1 / 3` = 0.5
 * Document with `quick fox` -> score: `3.0 * 2 / 3` = 2.0
 * Document with `quick brown fox` -> score: `4.5 * 3 / 3` = 4.5
 
-The coordination factor results in the document that contains all three terms
-being much more relevant than the document that contains just two of them.
-
-Remember that the query for `quick brown fox` is rewritten into a `bool` query
-like this:
+조정요소는, 3개 모두를 포함하고 있는 document 가, 2개의 단어만을 포함하고 있는 document 보다,
+훨씬 더 많이 관련 있다는 결과로 나타난다.
+`quick brown fox` 에 대한 query 는 아래의 `bool` query 처럼 다시 작성된다는 점을 기억하자:
 
 [source,json]
 -------------------------------
@@ -154,19 +141,18 @@ GET /_search
 }
 -------------------------------
 
-The `bool` query uses query coordination by default for all `should` clauses,
-but it does allow you to disable coordination.  Why might you want to do this?
-Well, usually the answer is, you don't.  Query coordination is usually a good
-thing.  When you use a `bool` query to wrap several high-level queries like
-the `match` query, it also makes sense to leave coordination enabled. The more
-clauses that match, the higher the degree of overlap between your search
-request and the documents that are returned.
+`bool` query 는, 기본적으로 모든 `should` 절에 대해, query 조정을 사용한다.
+그러나, 조정을 비활성화할 수 있다.
+왜 이렇게 해야 할까? 일반적으로 그 대답은 “그러지 않아도 된다” 이다.
+query 조정은 일반적으로 좋은 것이다.
+`match` query 같이 높은 수준의 query 를 감싸는 `bool` query 를 사용하는 경우,
+조정을 활성화한 채로 두는 것이 합리적이다. 일치하는 절이 더 많을수록,
+검색 요청과 반환되는 document 가 겹치는 정도가 더 높다.
 
-However, in some advanced use cases, it might make sense to disable
-coordination.  Imagine that you are looking for the synonyms `jump`, `leap`, and
-`hop`.  You don't care how many of these synonyms are present, as they all
-represent the same concept. In fact, only one of the synonyms is likely to be
-present.  This would be a good case for disabling the coordination factor:
+그러나, 몇 가지 고급 사용 사례에서는 조정을 비활성화하는 것이 합리적이다.
+동의어 `jump`, `leap`, `hop` 을 검색한다고 가정해 보자.
+모두 동일한 의미를 나타내는 이들 동의어가 몇 번 나타나는가는 관심이 없다.
+사실, 단 하나의 동의어만이 존재할 것이다. 이것은 조정 요소를 비활성화하는 좋은 예가 될 것이다.
 
 [source,json]
 -------------------------------
@@ -185,49 +171,45 @@ GET /_search
 }
 -------------------------------
 
-When you use synonyms (see <<synonyms>>), this is exactly what
-happens internally: the rewritten query disables coordination for the
-synonyms. ((("synonyms", "query coordination and")))  Most use cases for disabling coordination are handled
-automatically; you don't need to worry about it.
-
+사실, 동의어(<<synonyms>>)를 사용할 때, 다시 작성된 query 는 동의어에 대해 조정을
+비활성화하는 동작이 내부적으로 발생한다. ((("synonyms", "query coordination and")))
+조정을 비활성화하는 대부분의 사용 사례는 자동으로 처리된다. 이에 대해 걱정할 필요가 없다.
 
 [[index-boost]]
-==== Index-Time Field-Level Boosting
+==== Index-Time Field-Level Boosting - 색인 시 Field 에 가중치 부여
 
-We will talk about _boosting_ a field--making it ((("indexing", "field-level index time boosts")))((("boosting", "index time field-level boosting")))((("practical scoring function", "index time field-level boosting")))more important than other
-fields--at query time in <<query-time-boosting>>.  It is also possible
-to apply a boost to a field at index time.  Actually, this boost is applied to
-every term in the field, rather than to the field itself.
+아래 <<query-time-boosting>> 에서,
+query 시에 field 에 _가중치_ 를 부여하는 것 -- 다른 field 보다
+((("indexing", "field-level index time boosts")))((("boosting", "index time field-level boosting")))
+((("practical scoring function", "index time field-level boosting")))
+더 중요하게 만드는 것 -- 에 대해 이야기할 것이다.
+색인 시에 field 에 가중치(boost)를 적용하는 것도 가능하다.
+실제로 이 가중치는 field 자체보다는, field 에 있는 모든 단어에 적용된다.
 
-To store this boost value in the index without using more space
-than necessary, this field-level index-time boost is combined with the ((("field-length norm")))field-length norm (see  <<field-norm>>) and stored in the index as a single byte.
-This is the value returned by `norm(t,d)` in the preceding formula.
+필요한 것보다 더 많은 공간을 사용하지 않고 index 에 이 가중치 값을 저장하기 위해,​
+색인 시의 field 가중치는 ((("field-length norm"))) field-length-norm 과
+조합 (<<field-norm>>) 되고, index 에 단일 byte 로 저장된다.
+이것이 위의 수식에서 `norm(t, d)` 에서 반환되는 값이다.
 
 [WARNING]
 =========================================
 
-We strongly recommend against using field-level index-time boosts for a few
-reasons:
+몇 가지 이유 때문에 색인 시에 field 가중치를 사용하는 것에 대해 강력하게 권고한다.
 
-*  Combining the boost with the field-length norm and storing it in a single
-    byte means that the field-length norm loses precision. The result is that
-    Elasticsearch is unable to distinguish between a field containing three words
-    and a field containing five words.
+* 가중치를 field-length norm 과 조합하고, 그것을 단일 byte 로 저장하는 것은
+  field-length norm 이 정확성을 잃는다는 것을 의미한다.
+  결론적으로 Elasticsearch 는 3 단어를 가진 field 와 5 단어를 가진 field를 구분할 수 없다.
+* 색인 시 가중치를 변경하기 위해, document 모두를 다시 색인 해야 한다.
+  반면에, query 시 가중치는 각 query 마다 바꿀 수 있다.
+* 색인 시 가중치를 가진 field가 다중 값이라면, 가중치는 모든 값에 대해 자신과 곱한다.
+  해당 field 의 비중을 급격히 증가시킨다.
 
-*  To change an index-time boost, you have to reindex all your documents.
-    A query-time boost, on the other hand, can be changed with every query.
-
-*  If a field with an index-time boost has multiple values, the boost is
-    multiplied by itself for every value, dramatically increasing
-    the weight for that field.
-
-<<query-time-boosting,Query-time boosting>> is a much simpler, cleaner, more
-flexible option.
+Query시 가중치 부여(<<query-time-boosting,Query-time boosting>>) 가 훨씬 더 간단하고 깔끔하고,
+더 유연한 옵션이다.
 
 =========================================
 
-With query normalization, coordination, and index-time boosting out of the way,
-we can now move on to the most useful tool for influencing the relevance
-calculation: query-time boosting.((("relevance", "controlling", "Lucene&#x27;s practical scoring function", range="endofrange", startref="ix_relcontPCF")))
-
-
+query 정규화, 조정과 색인 시 가중치 부여가 끝이 났으니,
+relevance 계산에 영향을 끼치는 가장 유용한 도구인,
+query 시 가중치 부여에 대해 알아보자.
+((("relevance", "controlling", "Lucene&#x27;s practical scoring function", range="endofrange", startref="ix_relcontPCF")))

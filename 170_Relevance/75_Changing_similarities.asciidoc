@@ -1,8 +1,10 @@
 [[changing-similarities]]
-=== Changing Similarities
+=== Changing Similarities - Similarity 의 변경
 
-The similarity algorithm can be set on a per-field basis.((("relevance", "controlling", "changing similarities")))((("similarity algorithms", "changing on a per-field basis")))  It's just a matter
-of specifying the chosen algorithm ((("mapping (types)", "specifying similarity algorithm")))in the field's mapping:
+유사성 알고리즘은 기본적으로 field 별로 설정할 수 있다.
+((("relevance", "controlling", "changing similarities")))
+((("similarity algorithms", "changing on a per-field basis")))
+field mapping 에 선택한 알고리즘을 지정하면 된다.((("mapping (types)", "specifying similarity algorithm")))
 
 [source,json]
 ------------------------------
@@ -23,16 +25,17 @@ PUT /my_index
   }
 }
 ------------------------------
-<1> The `title` field uses BM25 similarity.
-<2> The `body` field uses the default similarity (see <<practical-scoring-function>>).
+<1> `title` field는 BM25 를 사용한다.
+<2> `body` 는 기본 알고리즘을 사용한다. (<<practical-scoring-function>> 참고).
 
-Currently, it is not possible to change the `similarity` mapping for an
-existing field.  You would need to reindex your data in order to do that.
+현재, 기존의 field 에 대해 `similarity` mapping 을 변경하는 것은 불가능하다.
+이를 위해서는 데이터를 다시 색인 해야 한다.
 
-==== Configuring BM25
+==== Configuring BM25 - BM25 의 설정
 
-Configuring a similarity is much ((("similarity algorithms", "configuring custom similarities")))((("BM25", "configuring")))like configuring an analyzer. Custom
-similarities can be specified when creating an index. For instance:
+similarity 의 설정은 analyzer 의 설정과 매우 유사하다.
+((("similarity algorithms", "configuring custom similarities")))((("BM25", "configuring")))
+사용자 정의 similarity 는 index 를 생성할 때 지정할 수 있다.
 
 [source,json]
 ------------------------------
@@ -62,16 +65,11 @@ PUT /my_index
   }
 }
 ------------------------------
-<1> Create a custom similarity called `my_bm25`, based on the built-in `BM25` similarity.
-<2> Disable field-length normalization. See <<bm25-tunability>>.
-<3> Field `title` uses the custom similarity `my_bm25`.
-<4> Field `body` uses the built-in similarity `BM25`.
+<1> 내장된 `BM25` similarity 를 기반으로, `my_bm25` 라 불리는 사용자 정의 similarity 를 생성한다.
+<2> field-length normalization 을 비활성화. <<bm25-tunability>> 참고
+<3> `title` field는 사용자 정의 similarity `my_bm25` 를 사용한다.
+<4> `body` field는 내장된 similarity `BM25` 를 사용한다.
 
-TIP: A custom similarity can be updated by closing the index, updating the index settings,
-     and reopening the index.  This allows you to experiment with different configurations
-     without having to reindex your documents.
-
-
-
-
-
+TIP: index 를 닫고, index 설정을 업데이트하고, index 를 다시 open 하여,
+     사용자 정의 similarity 를 업데이트할 수 있다.
+     이를 이용해 document 를 다시 색인 하지 않고, 다른 설정을 실험할 수 있다.

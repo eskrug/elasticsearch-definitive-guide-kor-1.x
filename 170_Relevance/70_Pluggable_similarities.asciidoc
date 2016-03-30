@@ -1,103 +1,83 @@
 [[pluggable-similarites]]
-=== Pluggable Similarity Algorithms
+=== Pluggable Similarity Algorithms - 지원되는 유사성 알고리즘
 
-Before we move on from relevance and scoring, we will finish this chapter with
-a more advanced subject: pluggable similarity algorithms.((("similarity algorithms", "pluggable")))((("relevance", "controlling", "using pluggable similarity algorithms"))) While Elasticsearch
-uses the <<practical-scoring-function>> as its default similarity algorithm,
-it supports other algorithms out of the box, which are listed
-in the {ref}/index-modules-similarity.html#configuration[Similarity Modules] documentation.
+relevance와 score 계산을 마치기 전에, 이 장에서, 더 고급 주제인 이용 가능한 유사성 알고리즘에 대해 이야기할 것이다.
+((("similarity algorithms", "pluggable")))((("relevance", "controlling", "using pluggable similarity algorithms")))
+Elasticsearch 는 기본 유사성 알고리즘으로 <<practical-scoring-function>> 를 사용하는데,
+Elasticsearch 는 몇 가지 뛰어난 다른 알고리즘을 지원한다.
+그 목록은 {ref}/index-modules-similarity.html#configuration[Similarity Modules] 을 참고하기 바란다.
 
 [[bm25]]
 ==== Okapi BM25
 
-The most interesting competitor to TF/IDF and the vector space model is called
-http://en.wikipedia.org/wiki/Okapi_BM25[_Okapi BM25_], which is considered to
-be a _state-of-the-art_ ranking function.((("BM25")))((("Okapi BM25", see="BM25"))) BM25 originates from the
-http://en.wikipedia.org/wiki/Probabilistic_relevance_model[probabilistic relevance model],
-rather than the vector space model, yet((("probabalistic relevance model"))) the algorithm has a lot in common with
-Lucene's practical scoring function.
+TF/IDF와 vector space model에 대한 가장 흥미로운 경쟁자는
+http://en.wikipedia.org/wiki/Okapi_BM25[_Okapi BM25_] 이다.
+이는 최첨단의 순위 function 으로 평가되고 있다.((("BM25")))((("Okapi BM25", see="BM25")))
+BM25는 Vector Space Model 보다는
+http://en.wikipedia.org/wiki/Probabilistic_relevance_model[Probabilistic Relevance Model] 에서 파생되었다.((("probabalistic relevance model")))
+그러나 알고리즘은 Lucene’s practical scoring function 과 많은 공통점을 가지고 있다.
 
-Both use term frequency, inverse document frequency, and field-length
-normalization, but the definition of each of these factors is a little
-different.  Rather than explaining the BM25 formula in detail, we will focus
-on the practical advantages that BM25 offers.
+둘 모두 TF, IDF, field length norm 을 사용한다.
+그러나, 이들 요소 각각에 대한 정의는 약간 다르다.
+BM25 수식을 자세히 설명하는 것보다는, BM25가 주는 실질적인 장점에 집중해 보자.
 
 [[bm25-saturation]]
-===== Term-frequency saturation
+===== Term-frequency saturation - 단어 빈도 포화
 
-Both TF/IDF and BM25 use <<idf,inverse document frequency>> to distinguish
-between common (low value) words and uncommon (high value) words.((("inverse document frequency", "use by TF/IDF and BM25")))  Both also
-recognize (see <<tf>>) that the more often a word appears in a document, the
-more likely is it that the document is relevant for that word.
+TF/IDF 와 BM25 는, 흔한 단어(낮은 값)와 흔하지 않은 단어(높은 값)를 구분하기 위하여,
+<<idf,inverse document frequency>> 를 사용한다.((("inverse document frequency", "use by TF/IDF and BM25")))
+또한 특정 document에 어떤 단어가 더 자주 나타나면,
+document가 해당 단어에 대해 더 관련 있는 것으로 인식한다. (<<tf>> 참조)
 
-However, common words occur commonly. ((("BM25", "term frequency saturation"))) The fact that a common word appears
-many times in one document is offset by the fact that the word appears many
-times in _all_ documents.
+그러나, 흔한 단어는 흔히 나타난다. ((("BM25", "term frequency saturation")))
+흔한 단어가 특정 document 에 많이 나타난다는 사실은, 그 단어가 _모든_ document 에 많이 나타난다는 사실로 상쇄된다.
 
-However, TF/IDF was designed in an era when it was standard practice to
-remove the _most_ common words (or _stopwords_, see <<stopwords>>) from the
-index altogether.((("stopwords", "removal from index"))) The algorithm didn't need to worry about an upper limit for
-term frequency because the most frequent terms had already been removed.
+그러나, TF/IDF 는 그것이 _가장_ 흔한 단어(또는 불용어, _stopwords_ <<stopwords>> 참고)를
+index 에서 완전히 제거하기 위한 표준이었던 시대에 설계되었다.((("stopwords", "removal from index")))
+그 알고리즘은, 가장 흔한 단어들은 이미 제거되었기 때문에, TF 의 상한선에 대해 걱정할 필요가 없다.
 
-In Elasticsearch, the `standard` analyzer--the default for `string` fields--doesn't remove stopwords because, even though they are words of little
-value, they do still have some value.  The result is that, for very long
-documents, the sheer number of occurrences of words like `the` and `and` can
-artificially boost their weight.
+Elasticsearch 에서, `standatd` analyzer--`string` field 를 위한 기본 analyzer-- 는
+불용어(stopwords)를 제거하지 않는다.
+왜냐하면, 그것들이 작은 값을 가지는 단어이긴 하지만, 그래도 어떤 값을 가지고 있다.
+결과적으로, 매우 긴 document 에서, `the`나 `and` 같은 단어의 발생 횟수는 그들의 비중을 비정상적으로 강조한다.
 
-BM25, on the other hand, does have an upper limit.  Terms that appear 5 to 10
-times in a document have a significantly larger impact on relevance than terms
-that appear just once or twice.  However, as can be seen in <<img-bm25-saturation>>, terms that appear 20 times in a
-document have almost the same impact as terms that appear a thousand times or
-more.
-
-This is known as _nonlinear term-frequency saturation_.
+반면에, BM25는 상한선이 있다. 어떤 document에서 5 ~ 10 회 나타나는 단어는 한두 번 나타나는 단어보다
+상당히 큰 영향을 가진다. 그러나 20회 나타나는 단어는 1,000번 이상 나타나는 단어와 거의 동일한 영향을 가진다.
+이것은 _비선형 단어 빈도 포화 (nonlinear term frequency saturation)_ 라고 알려져 있다.
 
 [[img-bm25-saturation]]
 .Term frequency saturation for TF/IDF and BM25
-image::images/elas_1706.png[Term frequency saturation for TF/IDF and BM25]
+image::images/elas_1706.png[TF/IDF 와 BM25 에 대한 Term Frequency saturation]
 
 [[bm25-normalization]]
 ===== Field-length normalization
 
-In <<field-norm>>, we said that Lucene considers shorter fields to have
-more weight than longer fields: the frequency of a term in a field is offset
-by the length of the field.  However, the practical scoring function treats
-all fields in the same way.  It will treat all `title` fields (because they
-are short) as more important than all `body` fields (because they are long).
+<<field-norm>> 에서 언급했듯이, Lucene은 긴 field 보다 짧은 field 에 더 많은 비중을 준다.
+단어의 빈도는 field 의 길이에 의해 상쇄된다.
+그러나 Practical Scoring Function 은 모든 filed 를 동일한 방식으로 취급한다.
+모든 `title` field (길이가 짧다) 를 모든 `body` field (길이가 길다) 보다 더 중요하게 취급한다.
 
-BM25 also considers shorter fields to have more weight than longer fields, but
-it considers each field separately by taking the average length of the field
-into account. It can distinguish between a short `title` field and a `long`
-title field.
+BM25 도 짧은 field 를 긴 field 보다 더 비중 있게 다룬다.
+그러나 filed 길이의 평균을 참작하여, 각 field 를 개별적으로 고려한다.
+짧은 `title` field 와 `긴` title field 를 구분할 수 있다.
 
-CAUTION: In <<query-time-boosting>>, we said that the `title` field has a
-_natural_ boost over the `body` field because of its length.  This natural
-boost disappears with BM25 as differences in field length apply only within a
-single field.
+CAUTION: <<query-time-boosting>> 에서, `title` field 는 길이 때문에 `body` 이상의
+_자연스러운_ 가중치를 가진다고 언급했었다. 하나의 field 에게만 적용되는 field 길이의 차이로 인한,
+이 자연스러운 가중치는 BM25 에서는 사라진다.
 
 [[bm25-tunability]]
-===== Tuning BM25
+===== Tuning BM25 - BM25 의 조정
 
-One of the nice features of BM25 is that, unlike TF/IDF, it has two parameters
-that allow it to be tuned:
+TF/IDF 와 다른, BM25 의 멋진 기능 중의 하나는, 조정을 위한 2개의 매개변수를 가진다는 것이다.
 
 `k1`::
-    This parameter controls how quickly an increase in term frequency results
-    in term-frequency saturation.  The default value is `1.2`. Lower values
-    result in quicker saturation, and higher values in slower saturation.
+    이 매개변수는 Term Frequency Saturation 에서 TF 결과가 얼마나 빨리 증가하는가를 제어할 수 있다.
+    기본값은 `1.2` 이다. 낮은 값은 더 빠른 포화로 나타나고, 높은 값은 더 늦은 포화로 나타난다.
 
 `b`::
-    This parameter controls how much effect field-length normalization should
-    have. A value of `0.0` disables normalization completely, and a value of
-    `1.0` normalizes fully. The default is `0.75`.
+    이 매개변수는 field value normalization 이 얼마나 많은 영향을 줄 수 있는지를 제어할 수 있다.
+    `0.0` 이면 normalization 이 완전히 비활성화된다, `1.0` 이면 전부 정규화한다. 기본값은 `0.75` 이다.
 
-
-The practicalities of tuning BM25 are another matter. The default values for
-`k1` and `b` should be suitable for most document collections, but the
-optimal values really depend on the collection.  Finding good values for your
-collection is a matter of adjusting, checking, and adjusting again.
-
-
-
-
-
+BM25 조정의 실현 가능성은 다른 문제이다. `k1` 과 `b` 의 기본값은 대부분의 document 집합에 대해 적당할 것이다.
+그러나, 실제로 최적 값은 document 집합에 따라 다르다. document 집합을 위한 적절한 값을 찾아내는 방법은
+조정하고 확인하고 다시 조정하는 것이다.
